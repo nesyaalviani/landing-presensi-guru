@@ -1,11 +1,9 @@
 <template>
     <div class="drawer lg:drawer-open">
-        <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+        <input id="my-drawer-4" type="checkbox" class="drawer-toggle" ref="drawerCheckbox" />
         <div class="drawer-content">
-            <!-- Navbar -->
             <nav class="navbar w-full bg-base-300">
-                <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-                    <!-- Sidebar toggle icon -->
+                <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost lg:hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                         stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                         class="my-1.5 inline-block size-4">
@@ -15,21 +13,31 @@
                         <path d="M14 10l2 2l-2 2"></path>
                     </svg>
                 </label>
-                <div class="px-4">Navbar Title</div>
+                <div class="px-4 font-bold">Presensi Guru</div>
             </nav>
-            <!-- Page content here -->
-            <div class="p-4">Page Content</div>
+            <div class="p-4">
+                <slot />
+            </div>
         </div>
-
         <div class="drawer-side is-drawer-close:overflow-visible">
             <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-            <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-                <!-- Sidebar content here -->
+            <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-52">
+
+                <div class="p-4 w-full border-b border-base-300">
+                    <div class="is-drawer-close:hidden flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Presensi+Guru&background=0D8ABC&color=fff&size=128"
+                            alt="Logo Presensi Guru" class="w-10 h-10 rounded" />
+                        <div>
+                            <h2 class="font-bold text-base">Presensi Guru</h2>
+                            <p class="text-xs opacity-60">Sistem Absensi</p>
+                        </div>
+                    </div>
+                </div>
+
                 <ul class="menu w-full grow">
-                    <!-- List item -->
                     <li>
-                        <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
-                            <!-- Home icon -->
+                        <NuxtLink to="/" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            data-tip="Homepage">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                                 stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                                 class="my-1.5 inline-block size-4">
@@ -39,13 +47,11 @@
                                 </path>
                             </svg>
                             <span class="is-drawer-close:hidden">Homepage</span>
-                        </button>
+                        </NuxtLink>
                     </li>
-
-                    <!-- List item -->
                     <li>
-                        <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Settings">
-                            <!-- Settings icon -->
+                        <NuxtLink to="/settings" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            data-tip="Settings">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                                 stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                                 class="my-1.5 inline-block size-4">
@@ -55,10 +61,28 @@
                                 <circle cx="7" cy="7" r="3"></circle>
                             </svg>
                             <span class="is-drawer-close:hidden">Settings</span>
-                        </button>
+                        </NuxtLink>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const drawerCheckbox = ref(null)
+
+onMounted(() => {
+    const handleResize = () => {
+        if (drawerCheckbox.value) {
+            drawerCheckbox.value.checked = window.innerWidth >= 1024
+        }
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+})
+</script>
