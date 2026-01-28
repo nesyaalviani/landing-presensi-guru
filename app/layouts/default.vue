@@ -1,9 +1,9 @@
 <template>
     <div class="drawer lg:drawer-open">
-        <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+        <input id="my-drawer-4" type="checkbox" class="drawer-toggle" ref="drawerCheckbox" />
         <div class="drawer-content">
             <nav class="navbar w-full bg-base-300">
-                <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
+                <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost lg:hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                         stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                         class="my-1.5 inline-block size-4">
@@ -21,7 +21,7 @@
         </div>
         <div class="drawer-side is-drawer-close:overflow-visible">
             <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-            <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
+            <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-52">
                 <ul class="menu w-full grow">
                     <li>
                         <NuxtLink to="/" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
@@ -56,3 +56,21 @@
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const drawerCheckbox = ref(null)
+
+onMounted(() => {
+    const handleResize = () => {
+        if (drawerCheckbox.value) {
+            drawerCheckbox.value.checked = window.innerWidth >= 1024
+        }
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+})
+</script>
