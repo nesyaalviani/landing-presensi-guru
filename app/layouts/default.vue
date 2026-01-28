@@ -2,10 +2,8 @@
     <div class="drawer lg:drawer-open">
         <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content">
-            <!-- Navbar -->
             <nav class="navbar w-full bg-base-300">
                 <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-                    <!-- Sidebar toggle icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                         stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                         class="my-1.5 inline-block size-4">
@@ -17,19 +15,17 @@
                 </label>
                 <div class="px-4">Navbar Title</div>
             </nav>
-            <!-- Page content here -->
-            <div class="p-4">Page Content</div>
+            <div class="p-4">
+                <slot />
+            </div>
         </div>
-
         <div class="drawer-side is-drawer-close:overflow-visible">
             <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
             <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-                <!-- Sidebar content here -->
                 <ul class="menu w-full grow">
-                    <!-- List item -->
                     <li>
-                        <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
-                            <!-- Home icon -->
+                        <NuxtLink to="/" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            data-tip="Homepage">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                                 stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                                 class="my-1.5 inline-block size-4">
@@ -39,13 +35,11 @@
                                 </path>
                             </svg>
                             <span class="is-drawer-close:hidden">Homepage</span>
-                        </button>
+                        </NuxtLink>
                     </li>
-
-                    <!-- List item -->
                     <li>
-                        <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Settings">
-                            <!-- Settings icon -->
+                        <NuxtLink to="/settings" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            data-tip="Settings">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
                                 stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
                                 class="my-1.5 inline-block size-4">
@@ -55,7 +49,7 @@
                                 <circle cx="7" cy="7" r="3"></circle>
                             </svg>
                             <span class="is-drawer-close:hidden">Settings</span>
-                        </button>
+                        </NuxtLink>
                     </li>
                 </ul>
             </div>
