@@ -13,7 +13,7 @@
                         <path d="M14 10l2 2l-2 2"></path>
                     </svg>
                 </label>
-                <div class="px-4">Navbar Title</div>
+                <div class="px-4 font-bold">Presensi Guru</div>
             </nav>
             <div class="p-4">
                 <slot />
@@ -22,6 +22,18 @@
         <div class="drawer-side is-drawer-close:overflow-visible">
             <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
             <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-52">
+
+                <div class="p-4 w-full border-b border-base-300">
+                    <div class="is-drawer-close:hidden flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Presensi+Guru&background=0D8ABC&color=fff&size=128"
+                            alt="Logo Presensi Guru" class="w-10 h-10 rounded" />
+                        <div>
+                            <h2 class="font-bold text-base">Presensi Guru</h2>
+                            <p class="text-xs opacity-60">Sistem Absensi</p>
+                        </div>
+                    </div>
+                </div>
+
                 <ul class="menu w-full grow">
                     <li>
                         <NuxtLink to="/" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
