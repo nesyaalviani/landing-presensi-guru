@@ -1,6 +1,6 @@
 <template>
   <div class="w-screen bg-gray-100">
-    <div v-if="isMobile && isSidebarOpen" @click="closeSidebar" class="fixed inset-0 z-20 bg-black/10 lg:hidden" />
+    <div v-if="isMobile && isSidebarOpen" @click="closeSidebar" class="fixed inset-0 z-20 lg:hidden" />
 
     <aside ref="sidebar" class="fixed left-0 top-0 h-screen w-64 z-30 transition-transform duration-300"
       :class="sidebarClasses">
