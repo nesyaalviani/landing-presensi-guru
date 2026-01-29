@@ -63,11 +63,15 @@
         <!-- Right side - User menu -->
         <div class="flex items-center space-x-4">
           <!-- User Profile -->
-          <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
-            <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
+          <div v-if="user" class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
+            <img 
+              class="h-8 w-8 rounded-full object-cover" 
+              :src="avatarUrl" 
+              :alt="user.name" 
+            />
             <div class="hidden md:block">
-              <p class="text-sm font-medium text-gray-700">Admin User</p>
-              <p class="text-xs text-gray-500">Administrator</p>
+              <p class="text-sm font-medium text-gray-700">{{ user.name }}</p>
+              <p class="text-xs text-gray-500 capitalize">{{ user.role }}</p>
             </div>
             <ChevronDown class="h-4 w-4 text-gray-600" />
           </div>
@@ -89,6 +93,7 @@ import { ref, onMounted, computed } from 'vue'
 import { Home, School, BookOpen, Calendar, ChevronDown } from 'lucide-vue-next'
 
 const route = useRoute()
+const user = ref(null)
 
 // Compute page title based on current route
 const pageTitle = computed(() => {
@@ -99,6 +104,13 @@ const pageTitle = computed(() => {
     '/jadwal': 'Jadwal Pelajaran'
   }
   return titles[route.path] || 'Dashboard'
+})
+
+// Generate avatar URL based on user name
+const avatarUrl = computed(() => {
+  if (!user.value) return ''
+  const name = encodeURIComponent(user.value.name)
+  return `https://ui-avatars.com/api/?name=${name}&background=fb7185&color=fff&size=128`
 })
 
 // Function to determine if a link is active
@@ -120,9 +132,26 @@ const getLinkClass = (path) => {
   return `${baseClasses} border-l-rose-600 text-gray-600 hover:border-l-4 hover:border-l-rose-600 hover:text-rose-600 focus:border-l-4`
 }
 
+// Load user data from localStorage
+const loadUserData = () => {
+  if (process.client) {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      try {
+        user.value = JSON.parse(userData)
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
+    }
+  }
+}
+
 const drawerCheckbox = ref(null)
 
 onMounted(() => {
+    // Load user data
+    loadUserData()
+
     const handleResize = () => {
         if (drawerCheckbox.value) {
             drawerCheckbox.value.checked = window.innerWidth >= 1024
