@@ -69,77 +69,28 @@
           <h2 class="text-xl font-semibold text-gray-800">{{ pageTitle }}</h2>
         </div>
 
-        <div class="flex mt-10 flex-1 flex-col pb-10">
-          <div class="">
-            <nav class="flex-1">
-              <NuxtLink to="/" :class="getLinkClass('/')">
-                <Home class="mr-4 h-5 w-5 align-middle" />
-                Dashboard
-              </NuxtLink>
-
-              <NuxtLink to="/settings" :class="getLinkClass('/settings')">
-                <School class="mr-4 h-5 w-5 align-middle" />
-                Data Kelas
-              </NuxtLink>
-
-              <NuxtLink to="/mata-pelajaran" :class="getLinkClass('/mata-pelajaran')">
-                <BookOpen class="mr-4 h-5 w-5 align-middle" />
-                Mata Pelajaran
-              </NuxtLink>
-
-              <NuxtLink to="/jadwal" :class="getLinkClass('/jadwal')">
-                <Calendar class="mr-4 h-5 w-5 align-middle" />
-                Jadwal Pelajaran
-              </NuxtLink>
-            </nav>
-
-            <span class="ml-3 mt-10 mb-2 block text-xs font-semibold text-gray-500">User Mangement</span>
-
-            <nav class="flex-1">
-              <a href="#"
-                class="flex cursor-pointer items-center border-l-blue-600 py-2 px-4 text-sm font-medium text-gray-600 outline-none transition-all duration-100 ease-in-out hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4">
-                <Users class="mr-4 h-5 w-5 align-middle" />
-                User
-              </a>
-            </nav>
+        <!-- Right side - User menu -->
+        <div class="flex items-center space-x-4">
+          <!-- User Profile -->
+          <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
+            <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
+            <div class="hidden md:block">
+              <p class="text-sm font-medium text-gray-700">Admin User</p>
+              <p class="text-xs text-gray-500">Administrator</p>
+            </div>
+            <ChevronDown class="h-4 w-4 text-gray-600" />
           </div>
         </div>
       </div>
     </div>
+  </nav>
 
-    <!-- Main Content Area -->
-    <div class="ml-64 min-h-screen">
-      <nav class="fixed top-0 right-0 left-64 bg-white shadow-sm z-20">
-        <div class="px-6 py-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <h2 class="text-xl font-semibold text-gray-800">{{ pageTitle }}</h2>
-            </div>
-
-            <!-- Right side - User menu -->
-            <div class="flex items-center space-x-4">
-              <!-- User Profile -->
-              <div
-                class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
-                <img class="h-8 w-8 rounded-full object-cover"
-                  src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
-                <div class="hidden md:block">
-                  <p class="text-sm font-medium text-gray-700">Admin User</p>
-                  <p class="text-xs text-gray-500">Administrator</p>
-                </div>
-                <ChevronDown class="h-4 w-4 text-gray-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div class="pt-25 p-6">
-        <slot />
-      </div>
-    </div>
-
+  <div class="pt-25 p-6">
+    <slot />
   </div>
+</div>
+
+</div>
 </template>
 
 <script setup>
@@ -170,7 +121,7 @@ const isActive = (path) => {
 // Function to get link classes based on active state
 const getLinkClass = (path) => {
   const baseClasses = 'flex cursor-pointer items-center py-3 px-4 text-sm font-medium outline-none transition-all duration-100 ease-in-out'
-
+  
   if (isActive(path)) {
     return `${baseClasses} border-l-4 border-l-blue-600 text-blue-600 focus:border-l-4`
   }
@@ -181,14 +132,14 @@ const getLinkClass = (path) => {
 const drawerCheckbox = ref(null)
 
 onMounted(() => {
-  const handleResize = () => {
-    if (drawerCheckbox.value) {
-      drawerCheckbox.value.checked = window.innerWidth >= 1024
+    const handleResize = () => {
+        if (drawerCheckbox.value) {
+            drawerCheckbox.value.checked = window.innerWidth >= 1024
+        }
     }
-  }
 
-  handleResize()
-  window.addEventListener('resize', handleResize)
-  return () => window.removeEventListener('resize', handleResize)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
 })
 </script>
