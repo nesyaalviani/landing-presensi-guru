@@ -13,7 +13,7 @@
       :class="isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'"
     >
       <div class="flex h-full flex-col overflow-y-auto rounded-br-lg rounded-tr-lg bg-white pt-4 shadow-md">
-        <div class="flex mt-2 items-center px-4 shadow-sm pb-3">
+        <div class="flex mt-2 items-center px-4 pb-3">
           <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="" />
           <div class="flex ml-3 flex-col">
             <h3 class="font-medium">Presensi Guru</h3>
@@ -21,7 +21,7 @@
           </div>
         </div>
 
-        <div class="flex mt-10 flex-1 flex-col pb-10">
+        <div class="flex mt-4 flex-1 flex-col pb-10">
           <div class="">
             <nav class="flex-1">
               <NuxtLink 
@@ -61,7 +61,7 @@
               </NuxtLink>
             </nav>
 
-            <span class="ml-3 mt-10 mb-2 block text-xs font-semibold text-gray-500">User Management</span>
+            <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">User Management</span>
 
             <nav class="flex-1">
               <a href="#" class="flex cursor-pointer items-center border-l-blue-600 py-2 px-4 text-sm font-medium text-gray-600 outline-none transition-all duration-100 ease-in-out hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4">
