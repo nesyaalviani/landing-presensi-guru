@@ -2,8 +2,8 @@
    <div class="w-screen bg-gray-100">
   <!-- Sidebar -->
   <div class="fixed left-0 top-0 h-screen w-64 z-30">
-  <div class="flex h-full flex-col overflow-y-auto rounded-br-lg rounded-tr-lg bg-white pt-5 shadow-md">
-    <div class="flex mt-2 items-center px-4 shadow-sm pb-2">
+  <div class="flex h-full flex-col overflow-y-auto rounded-br-lg rounded-tr-lg bg-white pt-4 shadow-md">
+    <div class="flex mt-2 items-center px-4 shadow-sm pb-3">
       <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="" />
       <div class="flex ml-3 flex-col">
         <h3 class="font-medium">Presensi Guru</h3>
@@ -46,6 +46,15 @@
             Jadwal Pelajaran
           </NuxtLink>
         </nav>
+
+         <span class="ml-3 mt-10 mb-2 block text-xs font-semibold text-gray-500">User Mangement</span>
+
+        <nav class="flex-1">
+          <a href="#" class="flex cursor-pointer items-center border-l-blue-600 py-2 px-4 text-sm font-medium text-gray-600 outline-none transition-all duration-100 ease-in-out hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4">
+            <Users class="mr-4 h-5 w-5 align-middle" />
+            User
+          </a>
+        </nav>
       </div>
     </div>
   </div>
@@ -86,7 +95,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -114,10 +123,10 @@ const getLinkClass = (path) => {
   const baseClasses = 'flex cursor-pointer items-center py-3 px-4 text-sm font-medium outline-none transition-all duration-100 ease-in-out'
   
   if (isActive(path)) {
-    return `${baseClasses} border-l-4 border-l-rose-600 text-rose-600 focus:border-l-4`
+    return `${baseClasses} border-l-4 border-l-blue-600 text-blue-600 focus:border-l-4`
   }
   
-  return `${baseClasses} border-l-rose-600 text-gray-600 hover:border-l-4 hover:border-l-rose-600 hover:text-rose-600 focus:border-l-4`
+  return `${baseClasses} border-l-blue-600 text-gray-600 hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4`
 }
 
 const drawerCheckbox = ref(null)
