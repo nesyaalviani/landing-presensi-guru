@@ -1,5 +1,5 @@
 <template>
-  <div class="w-screen bg-gray-100">
+  <div class="w-screen bg-[rgb(248,248,248)]">
     <!-- Mobile Overlay -->
     <div 
       v-if="isMobile && isSidebarOpen" 
@@ -34,8 +34,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/settings" 
-                :class="getLinkClass('/settings')"
+                to="/DataKelas" 
+                :class="getLinkClass('/DataKelas')"
                 @click="closeSidebar"
               >
                 <School class="mr-4 h-5 w-5 align-middle" />
@@ -43,8 +43,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/mata-pelajaran" 
-                :class="getLinkClass('/mata-pelajaran')"
+                to="/MataPelajaran" 
+                :class="getLinkClass('/MataPelajaran')"
                 @click="closeSidebar"
               >
                 <BookOpen class="mr-4 h-5 w-5 align-middle" />
@@ -52,8 +52,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/jadwal" 
-                :class="getLinkClass('/jadwal')"
+                to="/JadwalPelajaran" 
+                :class="getLinkClass('/JadwalPelajaran')"
                 @click="closeSidebar"
               >
                 <Calendar class="mr-4 h-5 w-5 align-middle" />
@@ -64,10 +64,14 @@
             <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">User Management</span>
 
             <nav class="flex-1">
-              <a href="#" class="flex cursor-pointer items-center border-l-blue-600 py-2 px-4 text-sm font-medium text-gray-600 outline-none transition-all duration-100 ease-in-out hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4">
+              <NuxtLink 
+                to="/ManajemenUser" 
+                :class="getLinkClass('/ManajemenUser')"
+                @click="closeSidebar"
+              >
                 <Users class="mr-4 h-5 w-5 align-middle" />
                 User
-              </a>
+              </NuxtLink>
             </nav>
           </div>
         </div>
@@ -140,9 +144,9 @@ const isSidebarOpen = ref(false)
 const pageTitle = computed(() => {
   const titles = {
     '/': 'Dashboard',
-    '/settings': 'Data Kelas',
-    '/mata-pelajaran': 'Mata Pelajaran',
-    '/jadwal': 'Jadwal Pelajaran'
+    '/DataKelas': 'Data Kelas',
+    '/MataPelajaran': 'Mata Pelajaran',
+    '/JadwalPelajaran': 'Jadwal Pelajaran'
   }
   return titles[route.path] || 'Dashboard'
 })
