@@ -1,5 +1,5 @@
 <template>
-  <div class="w-screen bg-[rgb(248,248,248)]">
+  <div class="w-full bg-[rgb(248,248,248)]">
     <!-- Mobile Overlay -->
     <div 
       v-if="isMobile && isSidebarOpen" 
@@ -33,9 +33,13 @@
                 Dashboard
               </NuxtLink>
 
+              <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
+                Classroom Management
+              </span>
+
               <NuxtLink 
-                to="/DataKelas" 
-                :class="getLinkClass('/DataKelas')"
+                to="/classroom" 
+                :class="getLinkClass('/classroom')"
                 @click="closeSidebar"
               >
                 <School class="mr-4 h-5 w-5 align-middle" />
@@ -43,8 +47,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/MataPelajaran" 
-                :class="getLinkClass('/MataPelajaran')"
+                to="/subjects" 
+                :class="getLinkClass('/subjects')"
                 @click="closeSidebar"
               >
                 <BookOpen class="mr-4 h-5 w-5 align-middle" />
@@ -52,8 +56,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/JadwalPelajaran" 
-                :class="getLinkClass('/JadwalPelajaran')"
+                to="/schedule" 
+                :class="getLinkClass('/schedule')"
                 @click="closeSidebar"
               >
                 <Calendar class="mr-4 h-5 w-5 align-middle" />
@@ -65,8 +69,8 @@
 
             <nav class="flex-1">
               <NuxtLink 
-                to="/ManajemenUser" 
-                :class="getLinkClass('/ManajemenUser')"
+                to="/users" 
+                :class="getLinkClass('/users')"
                 @click="closeSidebar"
               >
                 <Users class="mr-4 h-5 w-5 align-middle" />
@@ -80,7 +84,7 @@
 
     <!-- Main Content Area -->
     <div class="lg:ml-64 min-h-screen">
-      <nav class="fixed top-0 right-0 left-0 lg:left-64 bg-white shadow-sm z-20">
+      <nav class="sticky top-0 right-0 left-0 lg:left-64 bg-white shadow-sm z-20">
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -125,7 +129,7 @@
         </div>
       </nav>
 
-      <div class="pt-25 p-6">
+      <div class="p-6">
         <slot />
       </div>
     </div>
@@ -144,9 +148,10 @@ const isSidebarOpen = ref(false)
 const pageTitle = computed(() => {
   const titles = {
     '/': 'Dashboard',
-    '/DataKelas': 'Data Kelas',
-    '/MataPelajaran': 'Mata Pelajaran',
-    '/JadwalPelajaran': 'Jadwal Pelajaran'
+    '/classroom': 'Data Kelas',
+    '/subjects': 'Mata Pelajaran',
+    '/schedule': 'Jadwal Pelajaran',
+    '/users': 'User Management'
   }
   return titles[route.path] || 'Dashboard'
 })
