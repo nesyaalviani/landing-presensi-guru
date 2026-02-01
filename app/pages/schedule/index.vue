@@ -7,7 +7,7 @@
                     <!-- Filter Hari -->
                     <div class="relative w-full sm:w-44">
                         <select
-                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
+                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
                             <option value="">Hari ini</option>
                             <option value="rpl">Senin</option>
                             <option value="rpl">Selasa</option>
@@ -19,7 +19,7 @@
                     <!-- Filter Kelas -->
                     <div class="relative w-full sm:w-32">
                         <select
-                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
+                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
                             <option value="">Semua kelas</option>
                             <option value="10">X RPL 1</option>
                             <option value="11">XI MPLB 2</option>
@@ -34,7 +34,7 @@
                 <div class="flex items-center w-full sm:w-auto">
                     <NuxtLink
                         to="/schedule/create"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg">
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg">
                         <Plus class="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
                         Tambah
                     </NuxtLink>
@@ -42,7 +42,7 @@
             </div>
 
             <!-- Table Card -->
-            <div class="bg-white shadow overflow-hidden rounded-lg">
+            <div class="bg-white shadow overflow-hidden rounded-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
