@@ -1,5 +1,5 @@
 <template>
-    <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white">
+    <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
             <!-- Header -->
             <!-- <div class="mb-6">
