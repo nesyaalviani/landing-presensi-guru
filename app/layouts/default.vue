@@ -12,7 +12,7 @@
       class="fixed left-0 top-0 h-screen w-64 z-30 transition-transform duration-300"
       :class="isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'"
     >
-      <div class="flex h-full flex-col overflow-y-auto rounded-br-lg rounded-tr-lg bg-white pt-4 shadow-md">
+      <div class="flex h-full flex-col overflow-y-auto bg-white pt-4 shadow-md">
         <div class="flex mt-2 items-center px-4 pb-3">
           <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="" />
           <div class="flex ml-3 flex-col">
