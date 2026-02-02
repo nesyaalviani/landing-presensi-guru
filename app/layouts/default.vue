@@ -77,6 +77,16 @@
                 User
               </NuxtLink>
             </nav>
+            <nav class="flex-1">
+              <NuxtLink 
+                to="/teacher" 
+                :class="getLinkClass('/teacher')"
+                @click="closeSidebar"
+              >
+                <Users class="mr-4 h-5 w-5 align-middle" />
+                Guru
+              </NuxtLink>
+            </nav>
           </div>
         </div>
       </div>
@@ -115,14 +125,59 @@
 
             <!-- Right side - User menu -->
             <div class="flex items-center space-x-4">
-              <!-- User Profile -->
-              <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors">
-                <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
-                <div class="hidden md:block">
-                  <p class="text-sm font-medium text-gray-700">Admin User</p>
-                  <p class="text-xs text-gray-500">Administrator</p>
+              <div class="relative">
+                <div 
+                  @click="isDropdownOpen = !isDropdownOpen"
+                  class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                >
+                  <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
+                  <div class="hidden md:block">
+                    <p class="text-sm font-medium text-gray-700">Admin User</p>
+                    <p class="text-xs text-gray-500">Administrator</p>
+                  </div>
+                  <ChevronDown 
+                    :class="['h-4 w-4 text-gray-600 transition-transform duration-200', isDropdownOpen ? 'rotate-180' : '']" 
+                  />
                 </div>
-                <ChevronDown class="h-4 w-4 text-gray-600" />
+
+                <!-- Dropdown Menu -->
+                <Transition
+                  enter-active-class="transition ease-out duration-100"
+                  enter-from-class="transform opacity-0 scale-95"
+                  enter-to-class="transform opacity-100 scale-100"
+                  leave-active-class="transition ease-in duration-75"
+                  leave-from-class="transform opacity-100 scale-100"
+                  leave-to-class="transform opacity-0 scale-95"
+                >
+                  <div 
+                    v-if="isDropdownOpen"
+                    class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50"
+                  >
+                    <div class="py-1">
+                      <!-- Profile Menu Item -->
+                      <NuxtLink 
+                        to="/profile"
+                        @click="handleProfile"
+                        class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <UserCircle class="h-4 w-4 mr-3 text-gray-500" />
+                        Profil Saya
+                      </NuxtLink>
+
+                      <!-- Divider -->
+                      <div class="border-t border-gray-100 my-1"></div>
+
+                      <!-- Logout Menu Item -->
+                      <button 
+                        @click="handleLogout"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut class="h-4 w-4 mr-3" />
+                        Keluar
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
             </div>
           </div>
@@ -138,11 +193,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown, Users } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut } from 'lucide-vue-next'
 
 const route = useRoute()
 const isMobile = ref(false)
 const isSidebarOpen = ref(false)
+const isDropdownOpen = ref(false)
 
 // Compute page title based on current route
 const pageTitle = computed(() => {
@@ -151,7 +207,9 @@ const pageTitle = computed(() => {
     '/classroom': 'Data Kelas',
     '/subjects': 'Mata Pelajaran',
     '/schedule': 'Jadwal Pelajaran',
-    '/users': 'User Management'
+    '/users': 'User Management',
+    '/profile': 'Profil Saya',
+    '/teacher': 'Guru'
   }
   return titles[route.path] || 'Dashboard'
 })
@@ -186,6 +244,19 @@ const closeSidebar = () => {
   }
 }
 
+const handleProfile = () => {
+  isDropdownOpen.value = false
+  // Navigation will be handled by NuxtLink
+}
+
+const handleLogout = () => {
+  isDropdownOpen.value = false
+  // Tambahkan logic logout di sini
+  console.log('Logging out...')
+  // Contoh: clear token, redirect ke login, dll
+  // navigateTo('/login')
+}
+
 // Check screen size
 const checkScreenSize = () => {
   if (process.client) {
@@ -202,10 +273,25 @@ const checkScreenSize = () => {
   }
 }
 
+// Close dropdown when clicking outside
+const handleClickOutside = (event) => {
+  if (isDropdownOpen.value) {
+    const dropdown = event.target.closest('.relative')
+    if (!dropdown || !dropdown.querySelector('.absolute')) {
+      isDropdownOpen.value = false
+    }
+  }
+}
+
 // Close sidebar on escape key
 const handleEscapeKey = (e) => {
-  if (e.key === 'Escape' && isMobile.value && isSidebarOpen.value) {
-    closeSidebar()
+  if (e.key === 'Escape') {
+    if (isMobile.value && isSidebarOpen.value) {
+      closeSidebar()
+    }
+    if (isDropdownOpen.value) {
+      isDropdownOpen.value = false
+    }
   }
 }
 
@@ -215,6 +301,7 @@ onMounted(() => {
     checkScreenSize()
     window.addEventListener('resize', checkScreenSize)
     window.addEventListener('keydown', handleEscapeKey)
+    document.addEventListener('click', handleClickOutside)
   }
 })
 
@@ -222,11 +309,13 @@ onUnmounted(() => {
   if (process.client) {
     window.removeEventListener('resize', checkScreenSize)
     window.removeEventListener('keydown', handleEscapeKey)
+    document.removeEventListener('click', handleClickOutside)
   }
 })
 
-// Close sidebar when route changes (mobile)
+// Close sidebar and dropdown when route changes
 watch(() => route.path, () => {
   closeSidebar()
+  isDropdownOpen.value = false
 })
 </script>

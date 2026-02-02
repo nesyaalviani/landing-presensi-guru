@@ -4,45 +4,6 @@
             <div class="bg-white rounded-sm border border-gray-200">
                 <div class="p-6 sm:p-8">
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-
-                         <!-- Role -->
-                        <div>
-                            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                Role <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <!-- Admin Card -->
-                                <div @click="formData.role = 'admin'" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
-                                    formData.role === 'admin'
-                                        ? 'border-blue-500 bg-blue-500 text-white'
-                                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
-                                ]">
-                                    <span class="text-sm font-medium">Admin</span>
-                                </div>
-
-                                <!-- KM Card -->
-                                <div @click="formData.role = 'km'" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
-                                    formData.role === 'km'
-                                        ? 'border-blue-500 bg-blue-500 text-white'
-                                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
-                                ]">
-                                    <span class="text-sm font-medium">KM</span>
-                                </div>
-
-                                <!-- Petugas Piket Card -->
-                                <div @click="formData.role = 'petugas_piket'" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
-                                    formData.role === 'petugas_piket'
-                                        ? 'border-blue-500 bg-blue-500 text-white'
-                                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
-                                ]">
-                                    <span class="text-sm font-medium">Petugas Piket</span>
-                                </div>
-                            </div>
-                            <p class="mt-1.5 text-xs text-gray-500">Pilih role sesuai dengan tugas pengguna</p>
-                        </div>
                         <!-- Nama -->
                         <div>
                             <label for="nama" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -61,7 +22,7 @@
                         <!-- Email -->
                         <div>
                             <label for="email" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                Email <span class="text-red-500">*</span>
+                                Username <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 id="email" 
@@ -110,7 +71,7 @@
                     <div class="flex items-center gap-2 text-xs text-gray-600">
                         <Info class="h-4 w-4 text-blue-500 shrink-0" />
                         <p>
-                            <span class="font-medium">Catatan:</span> Pastikan email belum terdaftar sebelumnya dan password cukup kuat untuk keamanan akun.
+                            <span class="font-medium">Catatan:</span> Pastikan username belum terdaftar sebelumnya dan password cukup kuat untuk keamanan akun.
                         </p>
                     </div>
                 </div>

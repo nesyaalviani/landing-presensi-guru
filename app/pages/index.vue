@@ -73,11 +73,10 @@
 
       <!-- Search and Filter Bar -->
       <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <!-- Search -->
+          <!-- Search -->
         <div class="relative w-full sm:max-w-md">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input type="text" placeholder="Cari nama guru, NIP..."
-            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input type="text" placeholder="Cari berdasarkan nama guru..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
         </div>
       </div>
 
@@ -115,13 +114,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0">
-                      <div
-                        class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                        SN
-                      </div>
-                    </div>
-                    <div class="ml-4">
+                    <div>
                       <div class="text-sm font-medium text-gray-900">Siti Nurhaliza</div>
                       <div class="text-sm text-gray-500">Guru Senior</div>
                     </div>
