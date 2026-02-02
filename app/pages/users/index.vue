@@ -36,34 +36,7 @@
 
             <!-- Table Card -->
             <div class="bg-white shadow overflow-hidden">
-                <!-- Loading State -->
-                <div v-if="usersStore.loading" class="flex items-center justify-center py-12">
-                    <div class="text-center">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <p class="mt-2 text-sm text-gray-500">Memuat data...</p>
-                    </div>
-                </div>
-
-                <!-- Error State -->
-                <div v-else-if="usersStore.error" class="flex items-center justify-center py-12">
-                    <div class="text-center">
-                        <p class="text-sm text-red-600">{{ usersStore.error }}</p>
-                        <button @click="loadUsers"
-                            class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
-                            Coba Lagi
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Empty State -->
-                <div v-else-if="filteredUsers.length === 0" class="flex items-center justify-center py-12">
-                    <div class="text-center">
-                        <p class="text-sm text-gray-500">Tidak ada data user</p>
-                    </div>
-                </div>
-
-                <!-- Table -->
-                <div v-else class="overflow-x-auto">
+                <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
@@ -86,23 +59,71 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ user.name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ user.username }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    <span :class="getRoleBadgeClass(user.role_name)"
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                        {{ getRoleLabel(user.role_name) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ user.id_kelas || '-' }}
-                                </td>
-                            </tr>
+                            <!-- Loading State with Skeleton -->
+                            <template v-if="usersStore.loading">
+                                <tr v-for="i in 5" :key="'skeleton-' + i">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-32"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-40"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-6 w-24 rounded-full"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-8"></div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Error State -->
+                            <template v-else-if="usersStore.error">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-red-600">{{ usersStore.error }}</p>
+                                            <button @click="loadUsers"
+                                                class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
+                                                Coba Lagi
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Empty State -->
+                            <template v-else-if="filteredUsers.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-gray-500">Tidak ada data user</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Data Rows -->
+                            <template v-else>
+                                <tr v-for="user in filteredUsers" :key="user.id"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ user.name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ user.username }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <span :class="getRoleBadgeClass(user.role_name)"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                            {{ getRoleLabel(user.role_name) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ user.id_kelas || '-' }}
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
