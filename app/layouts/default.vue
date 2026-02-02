@@ -1,5 +1,5 @@
 <template>
-  <div class="w-screen bg-[rgb(248,248,248)]">
+  <div class="w-full bg-[rgb(248,248,248)]">
     <!-- Mobile Overlay -->
     <div 
       v-if="isMobile && isSidebarOpen" 
@@ -12,7 +12,7 @@
       class="fixed left-0 top-0 h-screen w-64 z-30 transition-transform duration-300"
       :class="isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'"
     >
-      <div class="flex h-full flex-col overflow-y-auto rounded-br-lg rounded-tr-lg bg-white pt-4 shadow-md">
+      <div class="flex h-full flex-col overflow-y-auto bg-white pt-4 shadow-md">
         <div class="flex mt-2 items-center px-4 pb-3">
           <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="" />
           <div class="flex ml-3 flex-col">
@@ -33,9 +33,13 @@
                 Dashboard
               </NuxtLink>
 
+              <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
+                Classroom Management
+              </span>
+
               <NuxtLink 
-                to="/DataKelas" 
-                :class="getLinkClass('/DataKelas')"
+                to="/classroom" 
+                :class="getLinkClass('/classroom')"
                 @click="closeSidebar"
               >
                 <School class="mr-4 h-5 w-5 align-middle" />
@@ -43,8 +47,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/MataPelajaran" 
-                :class="getLinkClass('/MataPelajaran')"
+                to="/subjects" 
+                :class="getLinkClass('/subjects')"
                 @click="closeSidebar"
               >
                 <BookOpen class="mr-4 h-5 w-5 align-middle" />
@@ -52,8 +56,8 @@
               </NuxtLink>
 
               <NuxtLink 
-                to="/JadwalPelajaran" 
-                :class="getLinkClass('/JadwalPelajaran')"
+                to="/schedule" 
+                :class="getLinkClass('/schedule')"
                 @click="closeSidebar"
               >
                 <Calendar class="mr-4 h-5 w-5 align-middle" />
@@ -65,8 +69,8 @@
 
             <nav class="flex-1">
               <NuxtLink 
-                to="/ManajemenUser" 
-                :class="getLinkClass('/ManajemenUser')"
+                to="/users" 
+                :class="getLinkClass('/users')"
                 @click="closeSidebar"
               >
                 <Users class="mr-4 h-5 w-5 align-middle" />
@@ -80,7 +84,7 @@
 
     <!-- Main Content Area -->
     <div class="lg:ml-64 min-h-screen">
-      <nav class="fixed top-0 right-0 left-0 lg:left-64 bg-white shadow-sm z-20">
+      <nav class="sticky top-0 right-0 left-0 lg:left-64 bg-white shadow-sm z-20">
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -125,7 +129,7 @@
         </div>
       </nav>
 
-      <div class="pt-25 p-6">
+      <div class="p-6">
         <slot />
       </div>
     </div>
@@ -144,9 +148,10 @@ const isSidebarOpen = ref(false)
 const pageTitle = computed(() => {
   const titles = {
     '/': 'Dashboard',
-    '/DataKelas': 'Data Kelas',
-    '/MataPelajaran': 'Mata Pelajaran',
-    '/JadwalPelajaran': 'Jadwal Pelajaran'
+    '/classroom': 'Data Kelas',
+    '/subjects': 'Mata Pelajaran',
+    '/schedule': 'Jadwal Pelajaran',
+    '/users': 'User Management'
   }
   return titles[route.path] || 'Dashboard'
 })
