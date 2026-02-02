@@ -1,26 +1,23 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Header -->
-            <!-- <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Manajemen User</h1>
-            </div> -->
-
             <!-- Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div class="relative w-full sm:w-56">
                         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input type="text" placeholder="Cari berdasarkan email..."
+                        <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama/username..."
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                     </div>
-                    <!-- Filter Hari -->
+                    <!-- Filter Role -->
                     <div class="relative w-full sm:w-44">
-                        <select
+                        <select v-model="selectedRole"
                             class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
-                            <option value="">Pilih Role</option>
-                            <option value="rpl">KM</option>
-                            <option value="rpl">Petugas Piket</option>
+                            <option value="">Semua Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="km">KM</option>
+                            <option value="piket">Petugas Piket</option>
+                            <option value="ks">Kepala Sekolah</option>
                         </select>
                         <ChevronDown
                             class="absolute right-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -29,8 +26,7 @@
 
                 <!-- Tambah Button -->
                 <div class="flex items-center w-full sm:w-auto">
-                    <NuxtLink
-                        to="/users/create"
+                    <NuxtLink to="/users/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg">
                         <Plus class="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
                         Tambah
@@ -50,7 +46,7 @@
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Email
+                                    Username
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -58,50 +54,82 @@
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Aksi
+                                    Kelas
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Row 1 -->
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    Sya
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    xiirpl1@smkn.cisarua.sch.id
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    KM
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Aktif
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <button
-                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                            title="Edit">
-                                            <Pencil class="h-4 w-4" />
-                                        </button>
-                                        <!-- <button class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete">
-                    <Trash2 class="h-4 w-4" />
-                  </button> -->
-                                    </div>
-                                </td>
-                            </tr>
+                            <!-- Loading State with Skeleton -->
+                            <template v-if="usersStore.loading">
+                                <tr v-for="i in 5" :key="'skeleton-' + i">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-32"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-40"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-6 w-24 rounded-full"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-8"></div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Error State -->
+                            <template v-else-if="usersStore.error">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-red-600">{{ usersStore.error }}</p>
+                                            <button @click="loadUsers"
+                                                class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
+                                                Coba Lagi
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Empty State -->
+                            <template v-else-if="filteredUsers.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-gray-500">Tidak ada data user</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- Data Rows -->
+                            <template v-else>
+                                <tr v-for="user in filteredUsers" :key="user.id"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ user.name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ user.username }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <span :class="getRoleBadgeClass(user.role_name)"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                            {{ getRoleLabel(user.role_name) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ user.id_kelas || '-' }}
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
-
             </div>
+
+            <!-- Pagination - Static for now -->
             <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
@@ -114,33 +142,21 @@
                             Next
                         </button>
                     </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                <button
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <ChevronLeft class="h-5 w-5" />
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                    1
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                    2
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                    3
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <ChevronRight class="h-5 w-5" />
-                                </button>
-                            </nav>
-                        </div>
+                    <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <button
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <ChevronLeft class="h-5 w-5" />
+                            </button>
+                            <button
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                1
+                            </button>
+                            <button
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <ChevronRight class="h-5 w-5" />
+                            </button>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -149,5 +165,63 @@
 </template>
 
 <script setup>
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { useUsersStore } from '~/stores/users'
+import { Search, ChevronRight, ChevronLeft, Plus, ChevronDown } from 'lucide-vue-next'
+
+const usersStore = useUsersStore()
+const searchQuery = ref('')
+const selectedRole = ref('')
+
+// Load users on component mount
+onMounted(async () => {
+    await loadUsers()
+})
+
+const loadUsers = async () => {
+    await usersStore.getUsers()
+}
+
+// Filter users based on search and role
+const filteredUsers = computed(() => {
+    let users = usersStore.users
+
+    // Filter by search query
+    if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase()
+        users = users.filter(user =>
+            user.name.toLowerCase().includes(query) ||
+            user.username.toLowerCase().includes(query)
+        )
+    }
+
+    // Filter by role
+    if (selectedRole.value) {
+        users = users.filter(user => user.role_name === selectedRole.value)
+    }
+
+    return users
+})
+
+// Get role badge styling
+const getRoleBadgeClass = (roleName) => {
+    const roleStyles = {
+        'admin': 'bg-purple-100 text-purple-800',
+        'km': 'bg-blue-100 text-blue-800',
+        'piket': 'bg-green-100 text-green-800',
+        'ks': 'bg-yellow-100 text-yellow-800'
+    }
+    return roleStyles[roleName] || 'bg-gray-100 text-gray-800'
+}
+
+// Get role label
+const getRoleLabel = (roleName) => {
+    const roleLabels = {
+        'admin': 'Admin',
+        'km': 'KM',
+        'piket': 'Petugas Piket',
+        'ks': 'Kepala Sekolah'
+    }
+    return roleLabels[roleName] || roleName
+}
 </script>
