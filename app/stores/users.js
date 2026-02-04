@@ -16,7 +16,6 @@ export const useUsersStore = defineStore('users', {
             const config = useRuntimeConfig()
 
             try {
-                // Get token from localStorage
                 let token = null
                 if (process.client) {
                     token = localStorage.getItem('token')
@@ -51,7 +50,6 @@ export const useUsersStore = defineStore('users', {
             const config = useRuntimeConfig()
 
             try {
-                // Get token from localStorage
                 let token = null
                 if (process.client) {
                     token = localStorage.getItem('token')

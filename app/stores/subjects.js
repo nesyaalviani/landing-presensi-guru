@@ -1,4 +1,3 @@
-// stores/subjects.js
 import { defineStore } from 'pinia'
 
 export const useSubjectsStore = defineStore('subjects', {
@@ -64,7 +63,6 @@ export const useSubjectsStore = defineStore('subjects', {
                     body: subjectData
                 })
 
-                // Update subjects list
                 await this.getSubjects()
 
                 this.loading = false
@@ -73,7 +71,6 @@ export const useSubjectsStore = defineStore('subjects', {
                 this.error = error.data?.message || 'Failed to create subject'
                 this.loading = false
 
-                // Handle specific error cases
                 let errorMessage = 'Gagal menambahkan mata pelajaran. Silakan coba lagi.'
                 
                 if (error.data?.message) {
@@ -120,7 +117,6 @@ export const useSubjectsStore = defineStore('subjects', {
                     body: subjectData
                 })
 
-                // Update subjects list
                 await this.getSubjects()
 
                 this.loading = false
@@ -170,7 +166,6 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                // Update subjects list
                 await this.getSubjects()
 
                 this.loading = false

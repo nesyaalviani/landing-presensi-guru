@@ -1,9 +1,7 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Search and Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <!-- Search -->
                 <div class="relative w-full sm:w-56">
                     <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input 
@@ -22,12 +20,10 @@
                 </div>
             </div>
 
-            <!-- Loading State -->
             <div v-if="loading" class="flex items-center justify-center py-12">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
                 <div class="flex items-center gap-2 text-sm text-red-800">
                     <AlertCircle class="h-4 w-4 shrink-0" />
@@ -35,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
             <div v-else class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -60,7 +55,6 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Empty State -->
                             <tr v-if="filteredSubjects.length === 0">
                                 <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
                                     <div class="flex flex-col items-center gap-2">
@@ -71,7 +65,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Data Rows -->
                             <tr 
                                 v-for="subject in filteredSubjects" 
                                 :key="subject.id_mapel"
@@ -172,35 +165,28 @@ import { useSubjectsStore } from '~/stores/subjects'
 
 const subjectsStore = useSubjectsStore()
 
-// Reactive states
 const searchQuery = ref('')
 
-// Computed properties
 const subjects = computed(() => subjectsStore.subjects)
 const loading = computed(() => subjectsStore.loading)
 const error = computed(() => subjectsStore.error)
 
-// Filtered subjects based on search
 const filteredSubjects = computed(() => {
     return subjectsStore.searchSubjects(searchQuery.value)
 })
 
-// Handle delete
 const handleDelete = async (subject) => {
     if (confirm(`Apakah Anda yakin ingin menghapus mata pelajaran "${subject.nama_mapel}"?`)) {
         const result = await subjectsStore.deleteSubject(subject.id_mapel)
         
         if (result.success) {
-            // Success - data akan otomatis terupdate dari store
             alert('Mata pelajaran berhasil dihapus!')
         } else {
-            // Error
             alert(result.message)
         }
     }
 }
 
-// Load data on mount
 onMounted(async () => {
     await subjectsStore.getSubjects()
 })

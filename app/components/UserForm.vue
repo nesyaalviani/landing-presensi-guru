@@ -5,13 +5,11 @@
                 <div class="p-6 sm:p-8">
                     <form @submit.prevent="handleSubmit" class="space-y-6">
 
-                         <!-- Role -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Role <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <!-- Admin Card -->
                                 <div @click="formData.id_role = 1" :class="[
                                     'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 1
@@ -21,7 +19,6 @@
                                     <span class="text-sm font-medium">Admin</span>
                                 </div>
 
-                                <!-- KM Card -->
                                 <div @click="formData.id_role = 2" :class="[
                                     'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 2
@@ -31,7 +28,6 @@
                                     <span class="text-sm font-medium">KM</span>
                                 </div>
 
-                                <!-- Petugas Piket Card -->
                                 <div @click="formData.id_role = 3" :class="[
                                     'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 3
@@ -41,7 +37,6 @@
                                     <span class="text-sm font-medium">Petugas Piket</span>
                                 </div>
 
-                                <!-- Kepala Sekolah Card -->
                                 <div @click="formData.id_role = 4" :class="[
                                     'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 4
@@ -53,7 +48,6 @@
                             </div>
                             <p class="mt-1.5 text-xs text-gray-500">Pilih role sesuai dengan tugas pengguna</p>
                         </div>
-                        <!-- Nama -->
                         <div>
                             <label for="nama" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama <span class="text-red-500">*</span>
@@ -63,7 +57,6 @@
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan nama lengkap pengguna</p>
                         </div>
 
-                        <!-- Username -->
                         <div>
                             <label for="username"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -75,7 +68,6 @@
                             <p class="mt-1.5 text-xs text-gray-500">Username akan digunakan untuk login</p>
                         </div>
 
-                        <!-- Password -->
                         <div>
                             <label for="password"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -89,7 +81,6 @@
 
                         <hr class="border-gray-200" />
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center justify-end gap-3">
                             <NuxtLink to="/users"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
@@ -142,7 +133,6 @@ const formData = ref({
 const isSubmitting = ref(false)
 
 const handleSubmit = async () => {
-    // Validasi
     if (!formData.value.id_role) {
         alert('Silakan pilih role pengguna')
         return

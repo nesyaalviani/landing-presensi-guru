@@ -4,7 +4,6 @@
             <div class="bg-white rounded-sm border border-gray-200">
                 <div class="p-6 sm:p-8">
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-                        <!-- Kode Mata Pelajaran -->
                         <div>
                             <label for="kode" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Kode Mata Pelajaran <span class="text-red-500">*</span>
@@ -21,7 +20,6 @@
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan kode mata pelajaran (maksimal 5 karakter, otomatis uppercase)</p>
                         </div>
 
-                        <!-- Nama Mata Pelajaran -->
                         <div>
                             <label for="nama" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama Mata Pelajaran <span class="text-red-500">*</span>
@@ -36,13 +34,11 @@
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan nama lengkap mata pelajaran</p>
                         </div>
 
-                        <!-- Status -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Status Mata Pelajaran <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <!-- Aktif -->
                                 <label :class="[
                                     'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
                                     formData.status === 'aktif'
@@ -66,7 +62,6 @@
                                     </div>
                                 </label>
 
-                                <!-- Non-Aktif -->
                                 <label :class="[
                                     'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
                                     formData.status === 'nonaktif'
@@ -94,7 +89,6 @@
 
                         <hr class="border-gray-200" />
 
-                        <!-- Error Message -->
                         <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
                             <div class="flex items-center gap-2 text-sm text-red-800">
                                 <AlertCircle class="h-4 w-4 shrink-0" />
@@ -102,7 +96,6 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center justify-end gap-3">
                             <NuxtLink to="/subjects"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
@@ -154,13 +147,11 @@ const loading = ref(false)
 const handleSubmit = async () => {
     errorMessage.value = ''
     
-    // Validasi
     if (!formData.value.kode || !formData.value.nama) {
         errorMessage.value = 'Semua field wajib diisi.'
         return
     }
 
-    // Validasi kode (maksimal 5 karakter)
     if (formData.value.kode.length > 5) {
         errorMessage.value = 'Kode mata pelajaran maksimal 5 karakter.'
         return
@@ -168,10 +159,8 @@ const handleSubmit = async () => {
 
     loading.value = true
 
-    // Convert status dari string ke boolean
     const statusBoolean = formData.value.status === 'aktif' ? true : false
 
-    // DEBUG: Console log untuk melihat data yang dikirim
     console.log('Data yang akan dikirim:', {
         nama_mapel: formData.value.nama,
         kode_mapel: formData.value.kode,
@@ -187,7 +176,6 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        // Redirect ke halaman list subjects
         router.push('/subjects')
     } else {
         errorMessage.value = result.message

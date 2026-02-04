@@ -1,10 +1,8 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <!-- Search Input -->
                     <div class="relative w-full sm:w-80">
                         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input 
@@ -14,7 +12,6 @@
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                     </div>
 
-                    <!-- Filter Mapel -->
                     <div class="relative w-full sm:w-64">
                         <select 
                             v-model="selectedMapel"
@@ -31,7 +28,6 @@
                     </div>
                 </div>
 
-                <!-- Tambah Button -->
                 <div class="flex items-center w-full sm:w-auto">
                     <NuxtLink
                         to="/teacher/create"
@@ -42,12 +38,10 @@
                 </div>
             </div>
 
-            <!-- Loading State -->
             <div v-if="loading" class="flex items-center justify-center py-12">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
                 <div class="flex items-center gap-2 text-sm text-red-800">
                     <AlertCircle class="h-4 w-4 shrink-0" />
@@ -55,7 +49,6 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
             <div v-else class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -80,7 +73,6 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Empty State -->
                             <tr v-if="filteredTeachers.length === 0">
                                 <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
                                     <div class="flex flex-col items-center gap-2">
@@ -91,7 +83,6 @@
                                 </td>
                             </tr>
 
-                            <!-- Data Rows -->
                             <tr 
                                 v-for="teacher in filteredTeachers" 
                                 :key="teacher.id_guru || teacher.nip"
@@ -178,34 +169,26 @@ import { useTeachersStore } from '~/stores/teachers'
 
 const teachersStore = useTeachersStore()
 
-// Reactive states
 const searchQuery = ref('')
 const selectedMapel = ref(null)
 
-// Computed properties
 const teachers = computed(() => teachersStore.teachers)
 const mapels = computed(() => teachersStore.mapels)
 const loading = computed(() => teachersStore.loading)
 const error = computed(() => teachersStore.error)
 
-// Filtered teachers based on search and mapel filter
 const filteredTeachers = computed(() => {
     return teachersStore.searchTeachers(searchQuery.value, selectedMapel.value)
 })
 
-// Get mapel name by id
 const getMapelName = (mapelId) => {
     const mapel = mapels.value.find(m => m.id_mapel === mapelId)
     return mapel ? mapel.nama_mapel : 'Unknown'
 }
 
-// Handle delete
 const handleDelete = async (teacher) => {
     if (confirm(`Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}?`)) {
-        // TODO: Implement delete functionality
         console.log('Delete teacher:', teacher)
-        // await teachersStore.deleteTeacher(teacher.id_guru)
-        // await teachersStore.getTeachers() // Refresh list
     }
 }
 

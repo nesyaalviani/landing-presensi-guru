@@ -1,10 +1,9 @@
-// stores/teachers.js
 import { defineStore } from 'pinia'
 
 export const useTeachersStore = defineStore('teachers', {
     state: () => ({
         teachers: [],
-        mapels: [], // untuk menyimpan daftar mata pelajaran
+        mapels: [],
         loading: false,
         error: null
     }),
@@ -105,7 +104,6 @@ export const useTeachersStore = defineStore('teachers', {
                 this.error = error.data?.message || 'Failed to create teacher'
                 this.loading = false
 
-                // Handle specific error cases
                 let errorMessage = 'Gagal menambahkan guru. Silakan coba lagi.'
                 
                 if (error.data?.message) {
@@ -140,18 +138,15 @@ export const useTeachersStore = defineStore('teachers', {
             )
         },
 
-        // Getter untuk search
         searchTeachers: (state) => (searchQuery, mapelFilter) => {
             let filtered = state.teachers
 
-            // Filter by mapel
             if (mapelFilter) {
                 filtered = filtered.filter(teacher => 
                     teacher.mapel && teacher.mapel.includes(mapelFilter)
                 )
             }
 
-            // Filter by search query
             if (searchQuery) {
                 const query = searchQuery.toLowerCase()
                 filtered = filtered.filter(teacher => 

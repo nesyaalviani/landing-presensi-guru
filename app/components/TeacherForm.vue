@@ -4,7 +4,6 @@
             <div class="bg-white rounded-sm border border-gray-200">
                 <div class="p-6 sm:p-8">
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-                        <!-- Nama Guru -->
                         <div>
                             <label for="nama_guru" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama Guru <span class="text-red-500">*</span>
@@ -19,7 +18,6 @@
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan nama lengkap guru</p>
                         </div>
 
-                        <!-- NIP -->
                         <div>
                             <label for="nip" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 NIP <span class="text-red-500">*</span>
@@ -34,7 +32,6 @@
                             <p class="mt-1.5 text-xs text-gray-500">Nomor Induk Pegawai harus unik</p>
                         </div>
 
-                        <!-- Mata Pelajaran (Multiple Select) -->
                         <div>
                             <label for="mapel" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Mata Pelajaran <span class="text-red-500">*</span>
@@ -54,7 +51,6 @@
                                     <ChevronDown class="h-4 w-4 text-gray-400" />
                                 </button>
 
-                                <!-- Dropdown Menu -->
                                 <div 
                                     v-if="showMapelDropdown"
                                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-sm shadow-lg max-h-60 overflow-auto"
@@ -77,7 +73,6 @@
                                 </div>
                             </div>
 
-                            <!-- Selected Items Display -->
                             <div v-if="formData.mapel.length > 0" class="mt-2 flex flex-wrap gap-2">
                                 <span
                                     v-for="mapelId in formData.mapel"
@@ -99,7 +94,6 @@
 
                         <hr class="border-gray-200" />
 
-                        <!-- Error Message -->
                         <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
                             <div class="flex items-center gap-2 text-sm text-red-800">
                                 <AlertCircle class="h-4 w-4 shrink-0" />
@@ -107,7 +101,6 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center justify-end gap-3">
                             <NuxtLink to="/teachers"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
@@ -159,7 +152,6 @@ const loading = ref(false)
 
 const availableMapels = computed(() => teachersStore.mapels)
 
-// PERBAIKAN: Gunakan id_mapel bukan id
 const getMapelName = (mapelId) => {
     const mapel = availableMapels.value.find(m => m.id_mapel === mapelId)
     return mapel ? mapel.nama_mapel : ''
@@ -172,7 +164,6 @@ const removeMapel = (mapelId) => {
 const handleSubmit = async () => {
     errorMessage.value = ''
     
-    // Validasi
     if (!formData.value.nama_guru || !formData.value.nip) {
         errorMessage.value = 'Semua field wajib diisi.'
         return
@@ -185,7 +176,6 @@ const handleSubmit = async () => {
 
     loading.value = true
 
-    // DEBUG: Console log untuk melihat data yang dikirim
     console.log('Data yang akan dikirim:', {
         nama_guru: formData.value.nama_guru,
         nip: formData.value.nip,
@@ -201,19 +191,16 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        // Redirect ke halaman list teachers
         router.push('/teacher')
     } else {
         errorMessage.value = result.message
     }
 }
 
-// Load mapels on mount
 onMounted(async () => {
     await teachersStore.getMapels()
 })
 
-// Close dropdown when clicking outside
 if (process.client) {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.relative')) {

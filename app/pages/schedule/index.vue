@@ -1,10 +1,8 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <!-- Filter Hari -->
                     <div class="relative w-full sm:w-44">
                         <select
                             class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
@@ -16,7 +14,6 @@
                             class="absolute right-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
 
-                    <!-- Filter Kelas -->
                     <div class="relative w-full sm:w-32">
                         <select
                             class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
@@ -30,7 +27,6 @@
                     </div>
                 </div>
 
-                <!-- Tambah Button -->
                 <div class="flex items-center w-full sm:w-auto">
                     <NuxtLink
                         to="/schedule/create"
@@ -41,7 +37,6 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
             <div class="bg-white shadow overflow-hidden rounded-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -78,7 +73,6 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Row 1 -->
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     07.00 – 08.20 (JP 1–2)

@@ -1,9 +1,7 @@
 <template>
-  <!-- Stats Section -->
   <section>
     <div class="mx-auto max-w-7xl">
       <div class="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Card Jumlah Guru -->
         <div class="px-4 py-6 shadow-lg shadow-blue-100 bg-white rounded-lg">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
@@ -22,7 +20,6 @@
           </div>
         </div>
 
-        <!-- Card Presensi Masuk -->
         <div class="px-4 py-6 shadow-lg shadow-green-100 bg-white rounded-lg">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
@@ -41,7 +38,6 @@
           </div>
         </div>
 
-        <!-- Card Belum Presensi -->
         <div class="px-4 py-6 shadow-lg shadow-rose-100 bg-white rounded-lg">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
@@ -63,24 +59,19 @@
     </div>
   </section>
 
-  <!-- Table Section -->
   <section class="mt-8">
     <div class="mx-auto max-w-7xl">
-      <!-- Header -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Monitoring Presensi Guru Hari Ini</h1>
       </div>
 
-      <!-- Search and Filter Bar -->
       <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <!-- Search -->
         <div class="relative w-full sm:max-w-md">
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input type="text" placeholder="Cari berdasarkan nama guru..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
         </div>
       </div>
 
-      <!-- Table Card -->
       <div class="bg-white rounded-sm shadow overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
@@ -135,7 +126,6 @@
           </table>
         </div>
 
-        <!-- Pagination -->
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
