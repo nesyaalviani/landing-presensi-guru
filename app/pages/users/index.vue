@@ -58,16 +58,16 @@
                             <template v-if="usersStore.loading">
                                 <tr v-for="i in 5" :key="'skeleton-' + i">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-32"></div>
+                                        <div class="skeleton h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-40"></div>
+                                        <div class="skeleton h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-6 w-24 rounded-full"></div>
+                                        <div class="skeleton h-6 w-24 bg-gray-200 rounded-full animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-8"></div>
+                                        <div class="skeleton h-4 w-8 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                 </tr>
                             </template>

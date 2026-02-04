@@ -38,18 +38,7 @@
                 </div>
             </div>
 
-            <div v-if="loading" class="flex items-center justify-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-
-            <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
-                <div class="flex items-center gap-2 text-sm text-red-800">
-                    <AlertCircle class="h-4 w-4 shrink-0" />
-                    <p>{{ error }}</p>
-                </div>
-            </div>
-
-            <div v-else class="bg-white shadow overflow-hidden">
+            <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
@@ -73,91 +62,126 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-if="filteredTeachers.length === 0">
-                                <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <Search class="h-12 w-12 text-gray-300" />
-                                        <p class="font-medium">Tidak ada data guru</p>
-                                        <p class="text-xs">{{ searchQuery || selectedMapel ? 'Tidak ada guru yang sesuai dengan filter' : 'Mulai dengan menambahkan guru baru' }}</p>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template v-if="loading">
+                                <tr v-for="i in 5" :key="'skeleton-' + i">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-6 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="skeleton h-4 w-8 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                </tr>
+                            </template>
 
-                            <tr 
-                                v-for="teacher in filteredTeachers" 
-                                :key="teacher.id_guru || teacher.nip"
-                                class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ teacher.nama_guru }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ teacher.nip }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    <div class="flex flex-wrap gap-1">
-                                        <span 
-                                            v-for="mapelId in teacher.mapel" 
-                                            :key="mapelId"
-                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ getMapelName(mapelId) }}
-                                        </span>
-                                        <span 
-                                            v-if="!teacher.mapel || teacher.mapel.length === 0"
-                                            class="text-gray-400 text-xs italic">
-                                            Tidak ada mapel
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <NuxtLink
-                                            :to="`/teacher/edit/${teacher.id_guru || teacher.nip}`"
-                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                            title="Edit">
-                                            <Pencil class="h-4 w-4" />
-                                        </NuxtLink>
-                                        <button 
-                                            @click="handleDelete(teacher)"
-                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" 
-                                            title="Delete">
-                                            <Trash2 class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template v-else-if="error">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-red-600">{{ error }}</p>
+                                            <button @click="teachersStore.getTeachers()"
+                                                class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
+                                                Coba Lagi
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template v-else-if="filteredTeachers.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <p class="text-sm text-gray-500">Tidak ada data guru</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template v-else>
+                                <tr 
+                                    v-for="teacher in filteredTeachers" 
+                                    :key="teacher.id_guru || teacher.nip"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ teacher.nama_guru }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ teacher.nip }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <div class="flex flex-wrap gap-1">
+                                            <span 
+                                                v-for="mapelId in teacher.mapel" 
+                                                :key="mapelId"
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ getMapelName(mapelId) }}
+                                            </span>
+                                            <span 
+                                                v-if="!teacher.mapel || teacher.mapel.length === 0"
+                                                class="text-gray-400 text-xs italic">
+                                                -
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <div class="flex items-center gap-2">
+                                            <NuxtLink
+                                                :to="`/teacher/edit/${teacher.id_guru || teacher.nip}`"
+                                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                                title="Edit">
+                                                <Pencil class="h-4 w-4" />
+                                            </NuxtLink>
+                                            <button 
+                                                @click="handleDelete(teacher)"
+                                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" 
+                                                title="Delete">
+                                                <Trash2 class="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Pagination (Optional - implement jika API support pagination) -->
-            <!-- <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">
-                                Menampilkan <span class="font-medium">{{ filteredTeachers.length }}</span> dari <span class="font-medium">{{ teachers.length }}</span> data
-                            </p>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                <button
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <ChevronLeft class="h-5 w-5" />
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                    1
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <ChevronRight class="h-5 w-5" />
-                                </button>
-                            </nav>
-                        </div>
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <button
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <ChevronLeft class="h-5 w-5" />
+                            </button>
+                            <button
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                1
+                            </button>
+                            <button
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <ChevronRight class="h-5 w-5" />
+                            </button>
+                        </nav>
                     </div>
                 </div>
-            </div> -->
+            </div>
         </div>
     </section>
 </template>
@@ -192,7 +216,6 @@ const handleDelete = async (teacher) => {
     }
 }
 
-// Load data on mount
 onMounted(async () => {
     await Promise.all([
         teachersStore.getTeachers(),
