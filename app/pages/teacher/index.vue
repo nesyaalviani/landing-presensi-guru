@@ -1,18 +1,33 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Header -->
-            <!-- <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Manajemen User</h1>
-            </div> -->
-
             <!-- Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <!-- Search Input -->
                     <div class="relative w-full sm:w-80">
                         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input type="text" placeholder="Cari berdasarkan nama guru..."
+                        <input 
+                            type="text" 
+                            v-model="searchQuery"
+                            placeholder="Cari berdasarkan nama guru..."
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                    </div>
+
+                    <!-- Filter Mapel -->
+                    <div class="relative w-full sm:w-64">
+                        <select 
+                            v-model="selectedMapel"
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Semua Mata Pelajaran</option>
+                            <option 
+                                v-for="mapel in mapels" 
+                                :key="mapel.id_mapel" 
+                                :value="mapel.id_mapel">
+                                {{ mapel.nama_mapel }}
+                            </option>
+                        </select>
+                        <ChevronDown class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
 
@@ -27,27 +42,36 @@
                 </div>
             </div>
 
+            <!-- Loading State -->
+            <div v-if="loading" class="flex items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
+                <div class="flex items-center gap-2 text-sm text-red-800">
+                    <AlertCircle class="h-4 w-4 shrink-0" />
+                    <p>{{ error }}</p>
+                </div>
+            </div>
+
             <!-- Table Card -->
-            <div class="bg-white shadow overflow-hidden">
+            <div v-else class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nama
+                                    Nama Guru
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Email
+                                    NIP
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
+                                    Mata Pelajaran
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -56,55 +80,73 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Row 1 -->
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <!-- Empty State -->
+                            <tr v-if="filteredTeachers.length === 0">
+                                <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <Search class="h-12 w-12 text-gray-300" />
+                                        <p class="font-medium">Tidak ada data guru</p>
+                                        <p class="text-xs">{{ searchQuery || selectedMapel ? 'Tidak ada guru yang sesuai dengan filter' : 'Mulai dengan menambahkan guru baru' }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Data Rows -->
+                            <tr 
+                                v-for="teacher in filteredTeachers" 
+                                :key="teacher.id_guru || teacher.nip"
+                                class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    Sya
+                                    {{ teacher.nama_guru }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    xiirpl1@smkn.cisarua.sch.id
+                                    {{ teacher.nip }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    KM
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Aktif
-                                    </span>
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span 
+                                            v-for="mapelId in teacher.mapel" 
+                                            :key="mapelId"
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ getMapelName(mapelId) }}
+                                        </span>
+                                        <span 
+                                            v-if="!teacher.mapel || teacher.mapel.length === 0"
+                                            class="text-gray-400 text-xs italic">
+                                            Tidak ada mapel
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
-                                        <button
+                                        <NuxtLink
+                                            :to="`/teacher/edit/${teacher.id_guru || teacher.nip}`"
                                             class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                                             title="Edit">
                                             <Pencil class="h-4 w-4" />
+                                        </NuxtLink>
+                                        <button 
+                                            @click="handleDelete(teacher)"
+                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" 
+                                            title="Delete">
+                                            <Trash2 class="h-4 w-4" />
                                         </button>
-                                        <!-- <button class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete">
-                    <Trash2 class="h-4 w-4" />
-                  </button> -->
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
             </div>
-            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+
+            <!-- Pagination (Optional - implement jika API support pagination) -->
+            <!-- <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Previous
-                        </button>
-                        <button
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Next
-                        </button>
-                    </div>
                     <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                         <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan <span class="font-medium">{{ filteredTeachers.length }}</span> dari <span class="font-medium">{{ teachers.length }}</span> data
+                            </p>
                         </div>
                         <div>
                             <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
@@ -117,14 +159,6 @@
                                     1
                                 </button>
                                 <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                    2
-                                </button>
-                                <button
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                    3
-                                </button>
-                                <button
                                     class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                                     <ChevronRight class="h-5 w-5" />
                                 </button>
@@ -132,11 +166,54 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </section>
 </template>
 
 <script setup>
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, AlertCircle } from 'lucide-vue-next'
+import { useTeachersStore } from '~/stores/teachers'
+
+const teachersStore = useTeachersStore()
+
+// Reactive states
+const searchQuery = ref('')
+const selectedMapel = ref(null)
+
+// Computed properties
+const teachers = computed(() => teachersStore.teachers)
+const mapels = computed(() => teachersStore.mapels)
+const loading = computed(() => teachersStore.loading)
+const error = computed(() => teachersStore.error)
+
+// Filtered teachers based on search and mapel filter
+const filteredTeachers = computed(() => {
+    return teachersStore.searchTeachers(searchQuery.value, selectedMapel.value)
+})
+
+// Get mapel name by id
+const getMapelName = (mapelId) => {
+    const mapel = mapels.value.find(m => m.id_mapel === mapelId)
+    return mapel ? mapel.nama_mapel : 'Unknown'
+}
+
+// Handle delete
+const handleDelete = async (teacher) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}?`)) {
+        // TODO: Implement delete functionality
+        console.log('Delete teacher:', teacher)
+        // await teachersStore.deleteTeacher(teacher.id_guru)
+        // await teachersStore.getTeachers() // Refresh list
+    }
+}
+
+// Load data on mount
+onMounted(async () => {
+    await Promise.all([
+        teachersStore.getTeachers(),
+        teachersStore.getMapels()
+    ])
+})
 </script>

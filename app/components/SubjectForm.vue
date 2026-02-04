@@ -14,9 +14,11 @@
                                 v-model="formData.kode" 
                                 type="text" 
                                 placeholder="Contoh: PW" 
+                                maxlength="5"
                                 required
-                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
-                            <p class="mt-1.5 text-xs text-gray-500">Masukkan kode mata pelajaran (maksimal 5 karakter)</p>
+                                @input="formData.kode = formData.kode.toUpperCase()"
+                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400 uppercase" />
+                            <p class="mt-1.5 text-xs text-gray-500">Masukkan kode mata pelajaran (maksimal 5 karakter, otomatis uppercase)</p>
                         </div>
 
                         <!-- Nama Mata Pelajaran -->
@@ -92,6 +94,14 @@
 
                         <hr class="border-gray-200" />
 
+                        <!-- Error Message -->
+                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
+                            <div class="flex items-center gap-2 text-sm text-red-800">
+                                <AlertCircle class="h-4 w-4 shrink-0" />
+                                <p>{{ errorMessage }}</p>
+                            </div>
+                        </div>
+
                         <!-- Action Buttons -->
                         <div class="flex items-center justify-end gap-3">
                             <NuxtLink to="/subjects"
@@ -99,10 +109,12 @@
                                 <X class="h-4 w-4" />
                                 Batal
                             </NuxtLink>
-                            <button type="submit"
-                                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md">
+                            <button 
+                                type="submit"
+                                :disabled="loading"
+                                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                Simpan Mata Pelajaran
+                                {{ loading ? 'Menyimpan...' : 'Simpan Mata Pelajaran' }}
                             </button>
                         </div>
                     </form>
@@ -123,7 +135,12 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChevronDown, Check, X, Save, Info } from 'lucide-vue-next'
+import { Check, X, Save, Info, AlertCircle } from 'lucide-vue-next'
+import { useSubjectsStore } from '@/stores/subjects'
+import { useRouter } from 'vue-router'
+
+const subjectsStore = useSubjectsStore()
+const router = useRouter()
 
 const formData = ref({
     kode: '',
@@ -131,7 +148,49 @@ const formData = ref({
     status: 'aktif'
 })
 
-const handleSubmit = () => {
-    console.log('Form submitted:', formData.value)
+const errorMessage = ref('')
+const loading = ref(false)
+
+const handleSubmit = async () => {
+    errorMessage.value = ''
+    
+    // Validasi
+    if (!formData.value.kode || !formData.value.nama) {
+        errorMessage.value = 'Semua field wajib diisi.'
+        return
+    }
+
+    // Validasi kode (maksimal 5 karakter)
+    if (formData.value.kode.length > 5) {
+        errorMessage.value = 'Kode mata pelajaran maksimal 5 karakter.'
+        return
+    }
+
+    loading.value = true
+
+    // Convert status dari string ke boolean
+    const statusBoolean = formData.value.status === 'aktif' ? true : false
+
+    // DEBUG: Console log untuk melihat data yang dikirim
+    console.log('Data yang akan dikirim:', {
+        nama_mapel: formData.value.nama,
+        kode_mapel: formData.value.kode,
+        status: statusBoolean
+    })
+
+    const result = await subjectsStore.createSubject({
+        nama_mapel: formData.value.nama,
+        kode_mapel: formData.value.kode,
+        status: statusBoolean
+    })
+
+    loading.value = false
+
+    if (result.success) {
+        // Redirect ke halaman list subjects
+        router.push('/subjects')
+    } else {
+        errorMessage.value = result.message
+    }
 }
 </script>
