@@ -102,7 +102,7 @@
                                     ? 'bg-blue-400 cursor-not-allowed'
                                     : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md'
                             ]">
-                                <Save class="h-4 w-4" :class="{ 'animate-spin': isSubmitting }" />
+                                <Save class="h-4 w-4"/>
                                 {{ isSubmitting ? 'Menyimpan...' : 'Simpan User' }}
                             </button>
                         </div>
