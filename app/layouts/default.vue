@@ -1,6 +1,5 @@
 <template>
   <div class="w-full bg-[rgb(248,248,248)]">
-    <!-- Mobile Overlay -->
     <div 
       v-if="isMobile && isSidebarOpen" 
       @click="closeSidebar" 
@@ -12,7 +11,6 @@
       class="fixed left-0 top-0 h-screen w-64 z-30 transition-transform duration-300"
       :class="isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'">
       <div class="flex h-full flex-col overflow-y-auto bg-white pt-4 shadow-md relative">
-        <!-- Close Button - Mobile Only -->
         <button
           v-if="isMobile"
           @click="closeSidebar"
@@ -102,13 +100,12 @@
       </div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <div class="lg:ml-64 min-h-screen">
       <nav class="sticky top-0 right-0 left-0 lg:left-64 bg-white shadow-sm z-20">
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <!-- Hamburger Menu Button - Mobile Only -->
               <button 
                 v-if="isMobile"
                 @click="toggleSidebar"
@@ -133,7 +130,6 @@
               <h2 class="text-xl font-semibold text-gray-800">{{ pageTitle }}</h2>
             </div>
 
-            <!-- Right side - User menu -->
             <div class="flex items-center space-x-4">
               <div class="relative">
                 <div 
@@ -150,7 +146,6 @@
                   />
                 </div>
 
-                <!-- Dropdown Menu -->
                 <Transition
                   enter-active-class="transition ease-out duration-100"
                   enter-from-class="transform opacity-0 scale-95"
@@ -174,10 +169,8 @@
                         Profil Saya
                       </NuxtLink>
 
-                      <!-- Divider -->
                       <div class="border-t border-gray-100 my-1"></div>
 
-                      <!-- Logout Menu Item -->
                       <button 
                         @click="handleLogout"
                         class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -210,7 +203,6 @@ const isMobile = ref(false)
 const isSidebarOpen = ref(false)
 const isDropdownOpen = ref(false)
 
-// Compute page title based on current route
 const pageTitle = computed(() => {
   const titles = {
     '/': 'Dashboard',
@@ -224,7 +216,6 @@ const pageTitle = computed(() => {
   return titles[route.path] || 'Dashboard'
 })
 
-// Function to determine if a link is active
 const isActive = (path) => {
   if (path === '/') {
     return route.path === '/'
@@ -232,7 +223,6 @@ const isActive = (path) => {
   return route.path.startsWith(path)
 }
 
-// Function to get link classes based on active state
 const getLinkClass = (path) => {
   const baseClasses = 'flex cursor-pointer items-center py-3 px-4 text-sm font-medium outline-none transition-all duration-100 ease-in-out'
   
@@ -243,7 +233,6 @@ const getLinkClass = (path) => {
   return `${baseClasses} border-l-blue-600 text-gray-600 hover:border-l-4 hover:border-l-blue-600 hover:text-blue-600 focus:border-l-4`
 }
 
-// Methods
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
@@ -256,25 +245,18 @@ const closeSidebar = () => {
 
 const handleProfile = () => {
   isDropdownOpen.value = false
-  // Navigation will be handled by NuxtLink
 }
 
 const handleLogout = () => {
   isDropdownOpen.value = false
-  // Tambahkan logic logout di sini
   console.log('Logging out...')
-  // Contoh: clear token, redirect ke login, dll
-  // navigateTo('/login')
 }
 
-// Check screen size
 const checkScreenSize = () => {
   if (process.client) {
     const mobile = window.innerWidth < 1024
     isMobile.value = mobile
     
-    // On desktop: sidebar always open
-    // On mobile: sidebar closed by default
     if (!mobile) {
       isSidebarOpen.value = true
     } else {
@@ -283,7 +265,6 @@ const checkScreenSize = () => {
   }
 }
 
-// Close dropdown when clicking outside
 const handleClickOutside = (event) => {
   if (isDropdownOpen.value) {
     const dropdown = event.target.closest('.relative')
@@ -293,7 +274,6 @@ const handleClickOutside = (event) => {
   }
 }
 
-// Close sidebar on escape key
 const handleEscapeKey = (e) => {
   if (e.key === 'Escape') {
     if (isMobile.value && isSidebarOpen.value) {
@@ -305,7 +285,6 @@ const handleEscapeKey = (e) => {
   }
 }
 
-// Lifecycle hooks
 onMounted(() => {
   if (process.client) {
     checkScreenSize()
@@ -323,7 +302,6 @@ onUnmounted(() => {
   }
 })
 
-// Close sidebar and dropdown when route changes
 watch(() => route.path, () => {
   closeSidebar()
   isDropdownOpen.value = false

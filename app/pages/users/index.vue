@@ -1,7 +1,6 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
-            <!-- Filter Bar -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div class="relative w-full sm:w-56">
@@ -9,7 +8,6 @@
                         <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama/username..."
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                     </div>
-                    <!-- Filter Role -->
                     <div class="relative w-full sm:w-44">
                         <select v-model="selectedRole"
                             class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-gray-700">
@@ -24,7 +22,6 @@
                     </div>
                 </div>
 
-                <!-- Tambah Button -->
                 <div class="flex items-center w-full sm:w-auto">
                     <NuxtLink to="/users/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg">
@@ -34,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -59,25 +55,23 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Loading State with Skeleton -->
                             <template v-if="usersStore.loading">
                                 <tr v-for="i in 5" :key="'skeleton-' + i">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-32"></div>
+                                        <div class="skeleton h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-40"></div>
+                                        <div class="skeleton h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-6 w-24 rounded-full"></div>
+                                        <div class="skeleton h-6 w-24 bg-gray-200 rounded-full animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="skeleton h-4 w-8"></div>
+                                        <div class="skeleton h-4 w-8 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                 </tr>
                             </template>
 
-                            <!-- Error State -->
                             <template v-else-if="usersStore.error">
                                 <tr>
                                     <td colspan="4" class="px-6 py-12">
@@ -92,7 +86,6 @@
                                 </tr>
                             </template>
 
-                            <!-- Empty State -->
                             <template v-else-if="filteredUsers.length === 0">
                                 <tr>
                                     <td colspan="4" class="px-6 py-12">
@@ -103,7 +96,6 @@
                                 </tr>
                             </template>
 
-                            <!-- Data Rows -->
                             <template v-else>
                                 <tr v-for="user in filteredUsers" :key="user.id"
                                     class="hover:bg-gray-50 transition-colors">
@@ -129,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Pagination - Static for now -->
             <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
@@ -173,7 +164,6 @@ const usersStore = useUsersStore()
 const searchQuery = ref('')
 const selectedRole = ref('')
 
-// Load users on component mount
 onMounted(async () => {
     await loadUsers()
 })
@@ -182,11 +172,9 @@ const loadUsers = async () => {
     await usersStore.getUsers()
 }
 
-// Filter users based on search and role
 const filteredUsers = computed(() => {
     let users = usersStore.users
 
-    // Filter by search query
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
         users = users.filter(user =>
@@ -195,7 +183,6 @@ const filteredUsers = computed(() => {
         )
     }
 
-    // Filter by role
     if (selectedRole.value) {
         users = users.filter(user => user.role_name === selectedRole.value)
     }
@@ -203,7 +190,6 @@ const filteredUsers = computed(() => {
     return users
 })
 
-// Get role badge styling
 const getRoleBadgeClass = (roleName) => {
     const roleStyles = {
         'admin': 'bg-purple-100 text-purple-800',
@@ -214,7 +200,6 @@ const getRoleBadgeClass = (roleName) => {
     return roleStyles[roleName] || 'bg-gray-100 text-gray-800'
 }
 
-// Get role label
 const getRoleLabel = (roleName) => {
     const roleLabels = {
         'admin': 'Admin',

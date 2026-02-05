@@ -4,11 +4,8 @@
             <div class="bg-white rounded-sm border border-gray-200">
                 <div class="p-6 sm:p-8">
                     <form @submit.prevent="handleSubmit" class="space-y-6">
-                        <!-- Grid 2 Kolom -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <!-- Kolom Kiri -->
                             <div class="space-y-6">
-                                <!-- Nama Kelas -->
                                 <div>
                                     <label for="nama-kelas"
                                         class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -21,7 +18,6 @@
                                     </p>
                                 </div>
 
-                                <!-- Jurusan -->
                                 <div>
                                     <label for="jurusan"
                                         class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -42,9 +38,7 @@
                                 </div>
                             </div>
 
-                            <!-- Kolom Kanan -->
                             <div class="space-y-6">
-                                <!-- Tingkat -->
                                 <div>
                                     <label for="tingkat"
                                         class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -63,13 +57,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Status -->
                                 <div>
                                     <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                         Status Kelas <span class="text-red-500">*</span>
                                     </label>
                                     <div class="grid grid-cols-2 gap-3">
-                                        <!-- Aktif -->
                                         <label :class="[
                                             'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
                                             formData.status === 'aktif'
@@ -127,7 +119,6 @@
 
                         <hr class="border-gray-200" />
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center justify-end gap-3">
                             <NuxtLink to="/classroom"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
