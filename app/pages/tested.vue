@@ -1,367 +1,255 @@
 <template>
-    <section>
-        <div class="mx-auto max-w-7xl">
-            <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Jadwal Pelajaran - XII RPL 1</h1>
-                <p class="text-sm text-gray-500 mt-1">Semester Genap 2025/2026</p>
-            </div>
-
-            <!-- Wrapper untuk horizontal scroll -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-                <div class="overflow-x-auto custom-scrollbar">
-                    <div class="inline-block min-w-full align-middle">
-                        <div class="schedule-grid">
-                            <!-- Header Row -->
-                            <div class="schedule-header">
-                                <div class="day-header">Hari</div>
-                                <div v-for="(schedule, index) in timeSchedule" :key="index" class="time-header">
-                                    <div class="font-bold">Jam {{ index + 1 }}</div>
-                                    <div class="time-range">{{ schedule }}</div>
-                                </div>
-                            </div>
-
-                            <!-- Schedule Rows -->
-                            <div v-for="(day, dayIndex) in days" :key="dayIndex" class="schedule-row">
-                                <div class="day-cell">{{ day }}</div>
-
-                                <!-- Grid cells untuk setiap jam pelajaran -->
-                                <div class="periods-container">
-                                    <template v-for="(period, periodIndex) in 12" :key="periodIndex">
-                                        <div v-if="shouldRenderCell(dayIndex, periodIndex)"
-                                            :style="getSubjectStyle(dayIndex, periodIndex)" class="subject-cell">
-                                            <div class="subject-name">{{ getSubject(dayIndex, periodIndex)?.subject }}
-                                            </div>
-                                            <div class="teacher-name">{{ getSubject(dayIndex, periodIndex)?.teacher }}
-                                            </div>
-                                        </div>
-                                        <div v-else-if="!isPartOfSubject(dayIndex, periodIndex)" class="empty-cell">
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Legend -->
-            <!-- <div class="mt-6 bg-white rounded-lg shadow border border-gray-200 p-5">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <div class="w-1 h-4 bg-blue-600 rounded"></div>
-                    Keterangan Mata Pelajaran
-                </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    <div v-for="(subject, index) in uniqueSubjects" :key="index"
-                        class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-3 h-3 rounded-sm flex-shrink-0" :style="{ backgroundColor: subject.color }"></div>
-                        <span class="text-xs text-gray-700 font-medium truncate">{{ subject.name }}</span>
-                    </div>
-                </div>
-            </div> -->
+  <div class="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-full mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6 MT-0">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">XII RPL 1</h1>
+            <p class="text-sm text-gray-500 mt-1">SMKN 1 CISARUA - Tahun Ajaran 2024/2025</p>
+          </div>
+          <!-- <div class="text-right">
+            <p class="text-sm text-gray-600">Timetable generated:</p>
+            <p class="text-sm font-semibold text-gray-900">{{ currentDate }}</p>
+          </div> -->
         </div>
-    </section>
+      </div>
+
+      <!-- Schedule Table Container -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Info: Scroll horizontal -->
+        <div class="bg-blue-50 border-b border-blue-100 px-4 py-2.5">
+          <p class="text-xs text-blue-700 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Geser ke kanan untuk melihat jadwal lengkap
+          </p>
+        </div>
+
+        <!-- Scrollable Table -->
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full border-collapse min-w-max">
+            <!-- Table Header -->
+            <thead>
+              <tr class="bg-gray-100 border-b-2 border-gray-800">
+                <th class="day-cell border border-gray-900 p-2 text-left font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10"></th>
+                <template v-for="(slot, index) in timeSlots" :key="index">
+                  <th v-if="slot.type === 'class'" class="time-cell border border-gray-900 p-2 text-center">
+                    <div class="font-semibold text-gray-900 text-base">{{ slot.name }}</div>
+                    <div class="text-gray-600 text-[10px]">{{ slot.time }}</div>
+                  </th>
+                  <th v-else class="border border-gray-900 p-2 bg-white break-cell">
+                    <div class="vertical-text text-xs font-semibold text-gray-700">
+                      {{ slot.name }}
+                    </div>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+
+            <!-- Table Body -->
+            <tbody>
+              <tr v-for="(day, dayName) in schedule" :key="dayName" class="hover:bg-gray-50 transition-colors">
+                <td class="day-cell border border-gray-900 p-3 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">
+                  {{ dayName }}
+                </td>
+                <template v-for="(session, idx) in day" :key="idx">
+                  <td v-if="session.type === 'break'" class="schedule-cell border border-gray-900 bg-white"></td>
+                  <td v-else-if="session.type === 'empty'" class="schedule-cell border border-gray-900 bg-white"></td>
+                  <td v-else class="schedule-cell border border-gray-900 p-0" :style="{ backgroundColor: session.color }">
+                    <button @click="handlePresensi(session, dayName, idx)" class="w-full h-full p-2 text-left hover:opacity-80 hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95">
+                        <div class="font-bold text-sm text-gray-900">{{ session.subject }}</div>
+                        <div class="text-xs mt-1 text-gray-700">{{ session.teacher }}</div>
+                    </button>
+                </td>
+                </template>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-3">Keterangan Mata Pelajaran:</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div v-for="(subject, index) in subjects" :key="index" class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded border border-gray-300 flex-shrink-0" :style="{ backgroundColor: subject.color }"></div>
+            <span class="text-xs text-gray-700">{{ subject.code }} - {{ subject.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 
-const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
+// Current date
+const currentDate = computed(() => {
+  const date = new Date()
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+})
 
-const timeSchedule = [
-    '07:15 - 08:00',
-    '08:00 - 08:45',
-    '08:45 - 09:30',
-    '09:30 - 10:15',
-    '10:15 - 11:00',
-    '11:00 - 11:45',
-    '11:45 - 12:30',
-    '12:30 - 13:15',
-    '13:15 - 14:00',
-    '14:00 - 14:45',
-    '14:45 - 15:30',
-    '15:30 - 16:15'
-]
+// Time slots configuration
+const timeSlots = ref([
+  { name: 'Jam ke-1', time: '6:30 - 7:10', type: 'class' },
+  { name: 'Jam ke-2', time: '7:10 - 7:50', type: 'class' },
+  { name: 'Jam ke-3', time: '7:50 - 8:30', type: 'class' },
+  { name: 'Jam ke-4', time: '8:30 - 9:10', type: 'class' },
+  { name: 'ISTIRAHAT 1', time: '9:10 - 9:25', type: 'break' },
+  { name: 'Jam ke-5', time: '9:25 - 10:05', type: 'class' },
+  { name: 'Jam ke-6', time: '10:05 - 10:45', type: 'class' },
+  { name: 'Jam ke-7', time: '10:45 - 11:25', type: 'class' },
+  { name: 'Jam ke-8', time: '11:25 - 12:05', type: 'class' },
+  { name: 'ISTIRAHAT 2', time: '12:05 - 12:25', type: 'break' },
+  { name: 'Jam ke-9', time: '12:25 - 13:05', type: 'class' },
+  { name: 'Jam ke-10', time: '13:05 - 13:45', type: 'class' },
+  { name: 'Jam ke-11', time: '13:45 - 14:25', type: 'class' },
+  { name: 'Jam ke-12', time: '14:25 - 15:05', type: 'class' },
+])
 
-// Data jadwal pelajaran - format: { subject, teacher, startPeriod, duration, color }
-const scheduleData = {
-    0: [ // Senin
-        { subject: 'Upacara', teacher: 'GURU PIKET', startPeriod: 0, duration: 1, color: '#dc2626' },
-        { subject: 'PPB', teacher: 'SANDI', startPeriod: 1, duration: 2, color: '#0ea5e9' },
-        { subject: 'PPB', teacher: 'SANDI', startPeriod: 3, duration: 2, color: '#0ea5e9' },
-        { subject: 'PKK RPL', teacher: 'YAYA', startPeriod: 5, duration: 2, color: '#06b6d4' },
-        { subject: 'PKK RPL', teacher: 'YAYA', startPeriod: 7, duration: 3, color: '#06b6d4' },
-        { subject: 'BK', teacher: 'MEGA', startPeriod: 10, duration: 2, color: '#84cc16' },
-    ],
-    1: [ // Selasa
-        { subject: 'B INDO', teacher: 'LIPIK', startPeriod: 0, duration: 3, color: '#0ea5e9' },
-        { subject: 'PABP', teacher: 'NURON', startPeriod: 3, duration: 3, color: '#f0abfc' },
-        { subject: 'PROG WEB', teacher: 'INDRI', startPeriod: 6, duration: 3, color: '#f97316' },
-        { subject: 'PROG WEB', teacher: 'INDRI', startPeriod: 9, duration: 3, color: '#fb923c' },
-    ],
-    2: [ // Rabu
-        { subject: 'PBTGM', teacher: 'BONNY', startPeriod: 0, duration: 4, color: '#eab308' },
-        { subject: 'PBTGM', teacher: 'BONNY', startPeriod: 4, duration: 2, color: '#eab308' },
-        { subject: 'MTK', teacher: 'RESTRI', startPeriod: 6, duration: 2, color: '#94a3b8' },
-        { subject: 'MTK', teacher: 'RESTRI', startPeriod: 8, duration: 2, color: '#94a3b8' },
-        { subject: 'PP', teacher: 'ARLI', startPeriod: 10, duration: 1, color: '#a78bfa' },
-        { subject: 'BK', teacher: 'MEGA', startPeriod: 11, duration: 1, color: '#84cc16' },
-    ],
-    3: [ // Kamis
-        { subject: 'BASDAT', teacher: 'TETI', startPeriod: 0, duration: 4, color: '#22c55e' },
-        { subject: 'B JPG', teacher: 'WINDA', startPeriod: 4, duration: 2, color: '#dc2626' },
-        { subject: 'B INGG', teacher: 'RINA', startPeriod: 6, duration: 3, color: '#0ea5e9' },
-        { subject: 'B INGG', teacher: 'RINA', startPeriod: 9, duration: 3, color: '#0ea5e9' },
-    ],
-    4: [ // Jumat
-        { subject: 'B SUND', teacher: 'RIKKA', startPeriod: 0, duration: 2, color: '#06b6d4' },
-        { subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', startPeriod: 2, duration: 3, color: '#eab308' },
-        { subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', startPeriod: 5, duration: 3, color: '#eab308' },
-    ],
-}
+// Subject list with colors
+const subjects = ref([
+  { code: 'PPB', name: 'Pemrograman Perangkat Bergerak', color: '#A7F3D0' },
+  { code: 'PKK RPL', name: 'Produk Kreatif dan Kewirausahaan', color: '#38BDF8' },
+  { code: 'BK', name: 'Bimbingan Konseling', color: '#86EFAC' },
+  { code: 'B INDO', name: 'Bahasa Indonesia', color: '#38BDF8' },
+  { code: 'PABP', name: 'Pendidikan Agama Islam', color: '#F9A8D4' },
+  { code: 'PROG WEB', name: 'Pemrograman Web', color: '#FB923C' },
+])
 
-// Fungsi untuk mendapatkan subject pada period tertentu
-const getSubject = (dayIndex, periodIndex) => {
-    const daySchedule = scheduleData[dayIndex]
-    if (!daySchedule) return null
-
-    return daySchedule.find(item => {
-        const endPeriod = item.startPeriod + item.duration - 1
-        return periodIndex >= item.startPeriod && periodIndex <= endPeriod
-    })
-}
-
-// Fungsi untuk cek apakah cell harus di-render
-const shouldRenderCell = (dayIndex, periodIndex) => {
-    const subject = getSubject(dayIndex, periodIndex)
-    if (!subject) return false
-    return subject.startPeriod === periodIndex
-}
-
-// Fungsi untuk cek apakah period adalah bagian dari subject
-const isPartOfSubject = (dayIndex, periodIndex) => {
-    return getSubject(dayIndex, periodIndex) !== null
-}
-
-// Fungsi untuk mendapatkan style subject
-const getSubjectStyle = (dayIndex, periodIndex) => {
-    const subject = getSubject(dayIndex, periodIndex)
-    if (!subject) return {}
-
-    return {
-        gridColumn: `span ${subject.duration}`,
-        backgroundColor: subject.color,
-    }
-}
-
-// Computed untuk unique subjects
-const uniqueSubjects = computed(() => {
-    const subjects = new Map()
-
-    Object.values(scheduleData).forEach(daySchedule => {
-        daySchedule.forEach(item => {
-            if (!subjects.has(item.subject)) {
-                subjects.set(item.subject, {
-                    name: item.subject,
-                    color: item.color
-                })
-            }
-        })
-    })
-
-    return Array.from(subjects.values()).sort((a, b) => a.name.localeCompare(b.name))
+// Schedule data
+const schedule = ref({
+  'Senin': [
+    { type: 'class', subject: 'Upacara', teacher: 'Upacara', color: '#EF4444' },
+    { type: 'class', subject: 'PPB', teacher: 'SANDI', color: '#A7F3D0' },
+    { type: 'class', subject: 'PPB', teacher: 'SANDI', color: '#A7F3D0' },
+    { type: 'class', subject: 'PPB', teacher: 'SANDI', color: '#A7F3D0' },
+    { type: 'break' },
+    { type: 'class', subject: 'PPB', teacher: 'SANDI', color: '#A7F3D0' },
+    { type: 'class', subject: 'PPB', teacher: 'SANDI', color: '#A7F3D0' },
+    { type: 'class', subject: 'PKK RPL', teacher: 'YAYA', color: '#38BDF8' },
+    { type: 'class', subject: 'PKK RPL', teacher: 'YAYA', color: '#38BDF8' },
+    { type: 'break' },
+    { type: 'class', subject: 'PKK RPL', teacher: 'YAYA', color: '#38BDF8' },
+    { type: 'class', subject: 'PKK RPL', teacher: 'YAYA', color: '#38BDF8' },
+    { type: 'class', subject: 'PKK RPL', teacher: 'YAYA', color: '#38BDF8' },
+    { type: 'class', subject: 'BK', teacher: 'VIRA', color: '#86EFAC' },
+  ],
+  'Selasa': [
+    { type: 'class', subject: 'B INDO', teacher: 'UPIK', color: '#38BDF8' },
+    { type: 'class', subject: 'B INDO', teacher: 'UPIK', color: '#38BDF8' },
+    { type: 'class', subject: 'B INDO', teacher: 'UPIK', color: '#38BDF8' },
+    { type: 'class', subject: 'PABP', teacher: 'NURON', color: '#F9A8D4' },
+    { type: 'break' },
+    { type: 'class', subject: 'PABP', teacher: 'NURON', color: '#F9A8D4' },
+    { type: 'class', subject: 'PABP', teacher: 'NURON', color: '#F9A8D4' },
+    { type: 'class', subject: 'PROG WEB', teacher: 'INDRA', color: '#FB923C' },
+    { type: 'class', subject: 'PROG WEB', teacher: 'INDRA', color: '#FB923C' },
+    { type: 'break' },
+    { type: 'class', subject: 'PROG WEB', teacher: 'INDRA', color: '#FB923C' },
+    { type: 'class', subject: 'PROG WEB', teacher: 'INDRA', color: '#FB923C' },
+    { type: 'class', subject: 'PROG WEB', teacher: 'INDRA', color: '#FB923C' },
+    { type: 'empty' },
+  ],
+  'Rabu': [
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'break' },
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'class', subject: 'PBTGM', teacher: 'DONNY', color: '#FCD34D' },
+    { type: 'class', subject: 'MTK', teacher: 'RESTU', color: '#9CA3AF' },
+    { type: 'class', subject: 'MTK', teacher: 'RESTU', color: '#9CA3AF' },
+    { type: 'break' },
+    { type: 'class', subject: 'MTK', teacher: 'RESTU', color: '#9CA3AF' },
+    { type: 'class', subject: 'PP', teacher: 'AYU R', color: '#A78BFA' },
+    { type: 'class', subject: 'PP', teacher: 'AYU R', color: '#A78BFA' },
+    { type: 'class', subject: 'BK', teacher: 'VIRA', color: '#86EFAC' },
+  ],
+  'Kamis': [
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'break' },
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'class', subject: 'BASDAT', teacher: 'TETI', color: '#86EFAC' },
+    { type: 'class', subject: 'B JPG', teacher: 'RAHMAT', color: '#EF4444' },
+    { type: 'class', subject: 'B INGG', teacher: 'RINA', color: '#38BDF8' },
+    { type: 'break' },
+    { type: 'class', subject: 'B INGG', teacher: 'RINA', color: '#38BDF8' },
+    { type: 'class', subject: 'B INGG', teacher: 'RINA', color: '#38BDF8' },
+    { type: 'class', subject: 'B INGG', teacher: 'RINA', color: '#38BDF8' },
+    { type: 'empty' },
+  ],
+  'Jumat': [
+    { type: 'class', subject: 'B SUND', teacher: 'RIKSA', color: '#DBEAFE' },
+    { type: 'class', subject: 'B SUND', teacher: 'RIKSA', color: '#DBEAFE' },
+    { type: 'class', subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', color: '#FDE047' },
+    { type: 'class', subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', color: '#FDE047' },
+    { type: 'break' },
+    { type: 'class', subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', color: '#FDE047' },
+    { type: 'class', subject: 'MAPIL-D ESGRAF', teacher: 'HANDY', color: '#FDE047' },
+    { type: 'empty' },
+    { type: 'empty' },
+    { type: 'break' },
+    { type: 'empty' },
+    { type: 'empty' },
+    { type: 'empty' },
+    { type: 'empty' },
+  ],
 })
 </script>
 
 <style scoped>
-/* Schedule Grid Layout */
-.schedule-grid {
-    display: grid;
-    grid-template-columns: 140px repeat(12, minmax(110px, 1fr));
-    min-width: max-content;
-}
-
-/* Header Styling */
-.schedule-header {
-    display: contents;
-}
-
-.day-header {
-    position: sticky;
-    left: 0;
-    z-index: 10;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    color: white;
-    font-weight: 700;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 2px solid #1e40af;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.time-header {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    color: white;
-    padding: 0.75rem 0.5rem;
-    text-align: center;
-    font-size: 0.75rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.25rem;
-}
-
-.time-range {
-    font-size: 0.65rem;
-    opacity: 0.9;
-    font-weight: 400;
-}
-
-/* Schedule Row */
-.schedule-row {
-    display: contents;
-}
-
-.schedule-row:hover .day-cell {
-    background-color: #f9fafb;
+.schedule-cell {
+  min-width: 120px;
+  height: 80px;
 }
 
 .day-cell {
-    position: sticky;
-    left: 0;
-    z-index: 10;
-    background: white;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: #1f2937;
-    padding: 1rem 1.5rem;
-    border-right: 2px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  min-width: 100px;
 }
 
-/* Periods Container */
-.periods-container {
-    display: contents;
+.time-cell {
+  min-width: 120px;
 }
 
-/* Subject Cell */
-.subject-cell {
-    background: #3b82f6;
-    color: white;
-    padding: 0.75rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    gap: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    min-height: 80px;
+.break-cell {
+  min-width: 60px;
 }
 
-.subject-cell::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-    pointer-events: none;
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
-.subject-cell:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 5;
-}
-
-.subject-name {
-    font-weight: 700;
-    font-size: 0.8125rem;
-    line-height: 1.3;
-    position: relative;
-    z-index: 1;
-}
-
-.teacher-name {
-    font-size: 0.6875rem;
-    opacity: 0.95;
-    font-weight: 500;
-    position: relative;
-    z-index: 1;
-}
-
-/* Empty Cell */
-.empty-cell {
-    background: #fafafa;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-    min-height: 80px;
-    transition: background-color 0.2s;
-}
-
-.empty-cell:hover {
-    background: #f3f4f6;
-}
-
-/* Custom Scrollbar */
-.custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
+/* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-    height: 10px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 5px;
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 5px;
-    transition: background 0.2s;
+  background: #888;
+  border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+  background: #555;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .schedule-grid {
-        grid-template-columns: 100px repeat(12, minmax(90px, 1fr));
-    }
-
-    .day-cell {
-        font-size: 0.75rem;
-        padding: 0.75rem 1rem;
-    }
-
-    .subject-name {
-        font-size: 0.75rem;
-    }
-
-    .teacher-name {
-        font-size: 0.625rem;
-    }
+/* Sticky column */
+.sticky {
+  position: sticky;
 }
 </style>
