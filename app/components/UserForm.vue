@@ -48,6 +48,25 @@
                             </div>
                             <p class="mt-1.5 text-xs text-gray-500">Pilih role sesuai dengan tugas pengguna</p>
                         </div>
+
+                        <div v-if="formData.id_role === 2">
+                            <label for="kelas" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                Kelas <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select id="kelas" v-model="formData.id_kelas" required
+                                    class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
+                                    <option value="" disabled>Pilih Kelas</option>
+                                    <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
+                                        {{ kelas.name }} - {{ kelas.jurusan }}
+                                    </option>
+                                </select>
+                                <ChevronDown
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            </div>
+                            <p class="mt-1.5 text-xs text-gray-500">KM wajib memiliki kelas</p>
+                        </div>
+
                         <div>
                             <label for="nama" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama <span class="text-red-500">*</span>
@@ -93,7 +112,7 @@
                                     ? 'bg-blue-400 cursor-not-allowed'
                                     : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md'
                             ]">
-                                <Save class="h-4 w-4"/>
+                                <Save class="h-4 w-4" />
                                 {{ isSubmitting ? 'Menyimpan...' : 'Simpan User' }}
                             </button>
                         </div>
@@ -115,26 +134,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUsersStore } from '~/stores/users'
-import { X, Save, Info } from 'lucide-vue-next'
+import { useClassroomsStore } from '~/stores/classrooms'
+import { X, Save, Info, ChevronDown } from 'lucide-vue-next'
 
 const router = useRouter()
 const usersStore = useUsersStore()
+const classroomsStore = useClassroomsStore()
 
 const formData = ref({
     name: '',
     username: '',
     password: '',
-    id_role: null
+    id_role: null,
+    id_kelas: ''
 })
 
+const classrooms = ref([])
 const isSubmitting = ref(false)
+
+onMounted(async () => {
+    const result = await classroomsStore.getClassrooms()
+    if (result.success) {
+        classrooms.value = classroomsStore.classrooms
+    }
+})
+
+watch(() => formData.value.id_role, (newRole) => {
+    if (newRole !== 2) {
+        formData.value.id_kelas = ''
+    }
+})
 
 const handleSubmit = async () => {
     if (!formData.value.id_role) {
         alert('Silakan pilih role pengguna')
+        return
+    }
+
+    if (formData.value.id_role === 2 && !formData.value.id_kelas) {
+        alert('KM wajib memilih kelas')
         return
     }
 
@@ -146,7 +187,15 @@ const handleSubmit = async () => {
     isSubmitting.value = true
 
     try {
-        const result = await usersStore.createUser(formData.value)
+        const userData = {
+            name: formData.value.name,
+            username: formData.value.username,
+            password: formData.value.password,
+            id_role: formData.value.id_role,
+            id_kelas: formData.value.id_role === 2 ? formData.value.id_kelas : null
+        }
+
+        const result = await usersStore.createUser(userData)
 
         if (result.success) {
             alert('User berhasil ditambahkan!')
