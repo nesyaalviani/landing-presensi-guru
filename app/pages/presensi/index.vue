@@ -90,7 +90,7 @@
               <button
                 v-if="schedule.status === 'belum'"
                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
-                @click="handlePresensi(schedule.id)"
+                @click="handlePresensi(schedule)"
               >
                 <svg
                   class="w-5 h-5"
@@ -138,66 +138,55 @@
       </div>
 
       <!-- Pagination -->
-      <div class="mt-8 flex justify-center items-center gap-2">
-        <button
-          class="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-          :disabled="currentPage === 1"
-          @click="currentPage--"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-
-        <button
-          v-for="page in totalPages"
-          :key="page"
-          class="w-10 h-10 rounded hover:bg-gray-100"
-          :class="{
-            'bg-blue-500 text-white hover:bg-blue-600': page === currentPage,
-            'text-gray-700': page !== currentPage,
-          }"
-          @click="currentPage = page"
-        >
-          {{ page }}
-        </button>
-
-        <button
-          class="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-          :disabled="currentPage === totalPages"
-          @click="currentPage++"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
-      </div>
+      <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                <button
+                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <ChevronLeft class="h-5 w-5" />
+                                </button>
+                                <button
+                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                    1
+                                </button>
+                                <button
+                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    2
+                                </button>
+                                <button
+                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    3
+                                </button>
+                                <button
+                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <ChevronRight class="h-5 w-5" />
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { ChevronRight, ChevronLeft} from 'lucide-vue-next'
 
 // Data
 const selectedClass = ref('XII RPL 1')
@@ -252,11 +241,17 @@ const formattedDate = computed(() => {
 })
 
 // Methods
-const handlePresensi = (scheduleId) => {
-  const schedule = schedules.value.find((s) => s.id === scheduleId)
-  if (schedule) {
-    schedule.status = 'hadir'
-    alert(`Presensi untuk ${schedule.subject} berhasil dicatat!`)
-  }
+const handlePresensi = (schedule) => {
+  // Navigasi ke halaman form presensi dengan data jadwal
+  // Menggunakan navigateTo untuk Nuxt 3
+  navigateTo({
+    path: '/presensi/create',
+    query: {
+      mapel: schedule.subject,
+      guru: schedule.teacher,
+      jam: schedule.timeRange,
+      scheduleId: schedule.id
+    }
+  })
 }
 </script>
