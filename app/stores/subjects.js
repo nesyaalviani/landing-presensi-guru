@@ -20,7 +20,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/mapel', {
+                const response = await $fetch('/mapel?all=true', {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -33,6 +33,39 @@ export const useSubjectsStore = defineStore('subjects', {
                 return { success: true, data: response }
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch subjects'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data mata pelajaran.'
+                }
+            }
+        },
+
+        async getSubjectById(subjectId) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/mapel/${subjectId}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch subject'
                 this.loading = false
 
                 return {
@@ -72,11 +105,11 @@ export const useSubjectsStore = defineStore('subjects', {
                 this.loading = false
 
                 let errorMessage = 'Gagal menambahkan mata pelajaran. Silakan coba lagi.'
-                
+
                 if (error.data?.message) {
                     const message = error.data.message.toLowerCase()
-                    
-                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
+
+                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate') || message.includes('digunakan'))) {
                         errorMessage = 'Kode mata pelajaran sudah terdaftar. Gunakan kode yang berbeda.'
                     } else if (message.includes('nama') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
                         errorMessage = 'Nama mata pelajaran sudah ada. Gunakan nama yang berbeda.'
@@ -126,11 +159,11 @@ export const useSubjectsStore = defineStore('subjects', {
                 this.loading = false
 
                 let errorMessage = 'Gagal mengubah mata pelajaran. Silakan coba lagi.'
-                
+
                 if (error.data?.message) {
                     const message = error.data.message.toLowerCase()
-                    
-                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
+
+                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate') || message.includes('digunakan'))) {
                         errorMessage = 'Kode mata pelajaran sudah terdaftar. Gunakan kode yang berbeda.'
                     } else if (message.includes('nama') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
                         errorMessage = 'Nama mata pelajaran sudah ada. Gunakan nama yang berbeda.'
@@ -175,10 +208,10 @@ export const useSubjectsStore = defineStore('subjects', {
                 this.loading = false
 
                 let errorMessage = 'Gagal menghapus mata pelajaran. Silakan coba lagi.'
-                
+
                 if (error.data?.message) {
                     const message = error.data.message.toLowerCase()
-                    
+
                     if (message.includes('digunakan') || message.includes('referenced') || message.includes('constraint')) {
                         errorMessage = 'Mata pelajaran tidak dapat dihapus karena masih digunakan oleh guru.'
                     } else {
@@ -198,7 +231,7 @@ export const useSubjectsStore = defineStore('subjects', {
         getSubjectByCode: (state) => (code) => {
             return state.subjects.find(subject => subject.kode_mapel === code)
         },
-        
+
         getActiveSubjects: (state) => {
             return state.subjects.filter(subject => subject.status === true)
         },
@@ -207,7 +240,7 @@ export const useSubjectsStore = defineStore('subjects', {
             if (!searchQuery) return state.subjects
 
             const query = searchQuery.toLowerCase()
-            return state.subjects.filter(subject => 
+            return state.subjects.filter(subject =>
                 subject.nama_mapel?.toLowerCase().includes(query) ||
                 subject.kode_mapel?.toLowerCase().includes(query)
             )
