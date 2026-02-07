@@ -2,6 +2,6 @@
     <ClassroomForm />
 </template>
 
-<script setup> 
+<script setup>
 import ClassroomForm from '@/components/forms/ClassroomForm.vue';
 </script>

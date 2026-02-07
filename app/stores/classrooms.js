@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 
-export const useSubjectsStore = defineStore('subjects', {
+export const useClassroomsStore = defineStore('classrooms', {
     state: () => ({
-        subjects: [],
+        classrooms: [],
         loading: false,
         error: null
     }),
 
     actions: {
-        async getSubjects() {
+        async getClassrooms() {
             this.loading = true
             this.error = null
 
@@ -20,7 +20,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/mapel?all=true', {
+                const response = await $fetch('/kelas', {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -28,24 +28,21 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                this.subjects = response
+                this.classrooms = response
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to fetch subjects'
+                this.error = error.data?.message || 'Failed to fetch classrooms'
                 this.loading = false
 
                 return {
                     success: false,
-                    message: error.data?.message || 'Gagal mengambil data mata pelajaran.'
+                    message: error.data?.message || 'Gagal mengambil data kelas.'
                 }
             }
         },
 
-        async getSubjectById(subjectId) {
-            this.loading = true
-            this.error = null
-
+        async getClassroomById(id) {
             const config = useRuntimeConfig()
 
             try {
@@ -54,7 +51,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch(`/mapel/${subjectId}`, {
+                const response = await $fetch(`/kelas/${id}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -62,20 +59,16 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to fetch subject'
-                this.loading = false
-
                 return {
                     success: false,
-                    message: error.data?.message || 'Gagal mengambil data mata pelajaran.'
+                    message: error.data?.message || 'Gagal mengambil data kelas.'
                 }
             }
         },
 
-        async createSubject(subjectData) {
+        async createClassroom(classroomData) {
             this.loading = true
             this.error = null
 
@@ -87,36 +80,28 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/mapel', {
+                const response = await $fetch('/kelas', {
                     method: 'POST',
                     baseURL: config.public.apiBase,
                     headers: {
                         ...(token && { Authorization: `Bearer ${token}` })
                     },
-                    body: subjectData
+                    body: classroomData
                 })
-
-                await this.getSubjects()
 
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to create subject'
+                this.error = error.data?.message || 'Failed to create classroom'
                 this.loading = false
 
-                let errorMessage = 'Gagal menambahkan mata pelajaran. Silakan coba lagi.'
+                let errorMessage = 'Gagal menambahkan kelas. Silakan coba lagi.'
 
                 if (error.data?.message) {
-                    const message = error.data.message.toLowerCase()
-
-                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate') || message.includes('digunakan'))) {
-                        errorMessage = 'Kode mata pelajaran sudah terdaftar. Gunakan kode yang berbeda.'
-                    } else if (message.includes('nama') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
-                        errorMessage = 'Nama mata pelajaran sudah ada. Gunakan nama yang berbeda.'
-                    } else if (message.includes('required') || message.includes('wajib')) {
+                    if (error.data.message.includes('sudah dipakai')) {
+                        errorMessage = 'Nama kelas sudah terdaftar. Gunakan nama yang berbeda.'
+                    } else if (error.data.message.includes('tidak lengkap')) {
                         errorMessage = 'Semua field wajib diisi.'
-                    } else if (message.includes('invalid') || message.includes('tidak valid')) {
-                        errorMessage = 'Data yang dimasukkan tidak valid. Periksa kembali input Anda.'
                     } else {
                         errorMessage = error.data.message
                     }
@@ -129,7 +114,7 @@ export const useSubjectsStore = defineStore('subjects', {
             }
         },
 
-        async updateSubject(id, subjectData) {
+        async updateClassroom(id, classroomData) {
             this.loading = true
             this.error = null
 
@@ -141,32 +126,28 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch(`/mapel/${id}`, {
+                const response = await $fetch(`/kelas/${id}`, {
                     method: 'PUT',
                     baseURL: config.public.apiBase,
                     headers: {
                         ...(token && { Authorization: `Bearer ${token}` })
                     },
-                    body: subjectData
+                    body: classroomData
                 })
-
-                await this.getSubjects()
 
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to update subject'
+                this.error = error.data?.message || 'Failed to update classroom'
                 this.loading = false
 
-                let errorMessage = 'Gagal mengubah mata pelajaran. Silakan coba lagi.'
+                let errorMessage = 'Gagal mengupdate kelas. Silakan coba lagi.'
 
                 if (error.data?.message) {
-                    const message = error.data.message.toLowerCase()
-
-                    if (message.includes('kode') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate') || message.includes('digunakan'))) {
-                        errorMessage = 'Kode mata pelajaran sudah terdaftar. Gunakan kode yang berbeda.'
-                    } else if (message.includes('nama') && (message.includes('sudah') || message.includes('exist') || message.includes('duplicate'))) {
-                        errorMessage = 'Nama mata pelajaran sudah ada. Gunakan nama yang berbeda.'
+                    if (error.data.message.includes('sudah dipakai')) {
+                        errorMessage = 'Nama kelas sudah terdaftar. Gunakan nama yang berbeda.'
+                    } else if (error.data.message.includes('tidak lengkap')) {
+                        errorMessage = 'Semua field wajib diisi.'
                     } else {
                         errorMessage = error.data.message
                     }
@@ -179,7 +160,7 @@ export const useSubjectsStore = defineStore('subjects', {
             }
         },
 
-        async deleteSubject(id) {
+        async deleteClassroom(id) {
             this.loading = true
             this.error = null
 
@@ -191,7 +172,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch(`/mapel/${id}`, {
+                const response = await $fetch(`/kelas/${id}`, {
                     method: 'DELETE',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -199,21 +180,17 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                await this.getSubjects()
-
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to delete subject'
+                this.error = error.data?.message || 'Failed to delete classroom'
                 this.loading = false
 
-                let errorMessage = 'Gagal menghapus mata pelajaran. Silakan coba lagi.'
+                let errorMessage = 'Gagal menghapus kelas. Silakan coba lagi.'
 
                 if (error.data?.message) {
-                    const message = error.data.message.toLowerCase()
-
-                    if (message.includes('digunakan') || message.includes('referenced') || message.includes('constraint')) {
-                        errorMessage = 'Mata pelajaran tidak dapat dihapus karena masih digunakan oleh guru.'
+                    if (error.data.message.includes('masih ada')) {
+                        errorMessage = error.data.message
                     } else {
                         errorMessage = error.data.message
                     }
@@ -224,26 +201,27 @@ export const useSubjectsStore = defineStore('subjects', {
                     message: errorMessage
                 }
             }
-        }
-    },
-
-    getters: {
-        getSubjectByCode: (state) => (code) => {
-            return state.subjects.find(subject => subject.kode_mapel === code)
         },
 
-        getActiveSubjects: (state) => {
-            return state.subjects.filter(subject => subject.status === true)
-        },
+        searchClassrooms(searchQuery, tingkatFilter, jurusanFilter) {
+            let filtered = this.classrooms
 
-        searchSubjects: (state) => (searchQuery) => {
-            if (!searchQuery) return state.subjects
+            if (tingkatFilter) {
+                filtered = filtered.filter(classroom => classroom.tingkat === tingkatFilter)
+            }
 
-            const query = searchQuery.toLowerCase()
-            return state.subjects.filter(subject =>
-                subject.nama_mapel?.toLowerCase().includes(query) ||
-                subject.kode_mapel?.toLowerCase().includes(query)
-            )
+            if (jurusanFilter) {
+                filtered = filtered.filter(classroom => classroom.jurusan === jurusanFilter)
+            }
+
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase()
+                filtered = filtered.filter(classroom =>
+                    classroom.name?.toLowerCase().includes(query)
+                )
+            }
+
+            return filtered
         }
     }
 })

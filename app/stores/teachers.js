@@ -43,6 +43,46 @@ export const useTeachersStore = defineStore('teachers', {
             }
         },
 
+        async getTeacherById(id) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const cachedTeacher = this.teachers.find(t => t.id_guru === parseInt(id))
+
+                if (cachedTeacher) {
+                    this.loading = false
+                    return { success: true, data: cachedTeacher }
+                }
+
+                await this.getTeachers()
+                const teacher = this.teachers.find(t => t.id_guru === parseInt(id))
+
+                this.loading = false
+
+                if (teacher) {
+                    return { success: true, data: teacher }
+                } else {
+                    return { success: false, message: 'Guru tidak ditemukan' }
+                }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch teacher'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data guru.'
+                }
+            }
+        },
+
         async getMapels() {
             this.loading = true
             this.error = null
@@ -98,6 +138,8 @@ export const useTeachersStore = defineStore('teachers', {
                     body: teacherData
                 })
 
+                await this.getTeachers()
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -105,13 +147,13 @@ export const useTeachersStore = defineStore('teachers', {
                 this.loading = false
 
                 let errorMessage = 'Gagal menambahkan guru. Silakan coba lagi.'
-                
+
                 if (error.data?.message) {
                     if (error.data.message.includes('NIP')) {
                         errorMessage = 'NIP sudah terdaftar. Gunakan NIP yang berbeda.'
                     } else if (error.data.message.includes('mapel')) {
                         errorMessage = 'Mata pelajaran tidak valid. Periksa kembali pilihan Anda.'
-                    } else if (error.data.message.includes('required')) {
+                    } else if (error.data.message.includes('required') || error.data.message.includes('wajib')) {
                         errorMessage = 'Semua field wajib diisi.'
                     } else {
                         errorMessage = error.data.message
@@ -123,6 +165,91 @@ export const useTeachersStore = defineStore('teachers', {
                     message: errorMessage
                 }
             }
+        },
+
+        async updateTeacher(id, teacherData) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/guru/${id}`, {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: teacherData
+                })
+
+                await this.getTeachers()
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to update teacher'
+                this.loading = false
+
+                let errorMessage = 'Gagal mengupdate guru. Silakan coba lagi.'
+
+                if (error.data?.message) {
+                    if (error.data.message.includes('NIP')) {
+                        errorMessage = 'NIP sudah digunakan oleh guru lain.'
+                    } else if (error.data.message.includes('mapel')) {
+                        errorMessage = 'Mata pelajaran tidak valid.'
+                    } else if (error.data.message.includes('required') || error.data.message.includes('wajib')) {
+                        errorMessage = 'Semua field wajib diisi.'
+                    } else {
+                        errorMessage = error.data.message
+                    }
+                }
+
+                return {
+                    success: false,
+                    message: errorMessage
+                }
+            }
+        },
+
+        async deleteTeacher(id) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                await $fetch(`/guru/${id}`, {
+                    method: 'DELETE',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                this.teachers = this.teachers.filter(t => t.id_guru !== parseInt(id))
+
+                this.loading = false
+                return { success: true }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to delete teacher'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal menghapus guru.'
+                }
+            }
         }
     },
 
@@ -130,32 +257,12 @@ export const useTeachersStore = defineStore('teachers', {
         getTeacherByNip: (state) => (nip) => {
             return state.teachers.find(teacher => teacher.nip === nip)
         },
-        
+
         getTeachersByMapel: (state) => (mapelId) => {
             if (!mapelId) return state.teachers
-            return state.teachers.filter(teacher => 
-                teacher.mapel && teacher.mapel.includes(mapelId)
+            return state.teachers.filter(teacher =>
+                teacher.mapel && teacher.mapel.some(m => m.id_mapel === mapelId)
             )
-        },
-
-        searchTeachers: (state) => (searchQuery, mapelFilter) => {
-            let filtered = state.teachers
-
-            if (mapelFilter) {
-                filtered = filtered.filter(teacher => 
-                    teacher.mapel && teacher.mapel.includes(mapelFilter)
-                )
-            }
-
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase()
-                filtered = filtered.filter(teacher => 
-                    teacher.nama_guru?.toLowerCase().includes(query) ||
-                    teacher.nip?.includes(query)
-                )
-            }
-
-            return filtered
         }
     }
 })

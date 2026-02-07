@@ -1,4 +1,3 @@
-// stores/users.js
 import { defineStore } from 'pinia'
 
 export const useUsersStore = defineStore('users', {
@@ -43,6 +42,36 @@ export const useUsersStore = defineStore('users', {
             }
         },
 
+        async getUserById(userId) {
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/users/${userId}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch user'
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data user.'
+                }
+            }
+        },
+
         async createUser(userData) {
             this.loading = true
             this.error = null
@@ -64,6 +93,8 @@ export const useUsersStore = defineStore('users', {
                     body: userData
                 })
 
+                await this.getUsers()
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -73,6 +104,77 @@ export const useUsersStore = defineStore('users', {
                 return {
                     success: false,
                     message: error.data?.message || 'Gagal menambahkan user. Silakan coba lagi.'
+                }
+            }
+        },
+
+        async updateUser(userId, userData) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/users/${userId}`, {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: userData
+                })
+
+                await this.getUsers()
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to update user'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengupdate user. Silakan coba lagi.'
+                }
+            }
+        },
+
+        async deleteUser(userId) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/users/${userId}`, {
+                    method: 'DELETE',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                await this.getUsers()
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to delete user'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal menghapus user. Silakan coba lagi.'
                 }
             }
         }

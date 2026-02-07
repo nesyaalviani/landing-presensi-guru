@@ -21,79 +21,32 @@
           </svg>
         </button>
 
-        <NuxtLink to="/" class="flex mt-2 items-center px-4 pb-3 cursor-pointer">
-        <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="Logo Presensi Guru" />
-        <div class="flex ml-3 flex-col">
-          <h3 class="font-medium">Presensi Guru</h3>
-          <p class="text-xs text-gray-500">Sistem Absensi</p>
-        </div>
+        <NuxtLink to="/" class="flex mt-2 items-center px-4 pb-3 cursor-pointer" @click="closeSidebar">
+          <img class="h-12 w-auto max-w-full align-middle" src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png" alt="Logo Presensi Guru" />
+          <div class="flex ml-3 flex-col">
+            <h3 class="font-medium">Presensi Guru</h3>
+            <p class="text-xs text-gray-500">Sistem Absensi</p>
+          </div>
         </NuxtLink>
 
         <div class="flex mt-4 flex-1 flex-col pb-10">
           <div class="">
             <nav class="flex-1">
-              <NuxtLink 
-                to="/" 
-                :class="getLinkClass('/')"
-                @click="closeSidebar"
-              >
-                <Home class="mr-4 h-5 w-5 align-middle" />
-                Dashboard
-              </NuxtLink>
-
-              <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
-                Classroom Management
-              </span>
-
-              <NuxtLink 
-                to="/classroom" 
-                :class="getLinkClass('/classroom')"
-                @click="closeSidebar"
-              >
-                <School class="mr-4 h-5 w-5 align-middle" />
-                Data Kelas
-              </NuxtLink>
-
-              <NuxtLink 
-                to="/subjects" 
-                :class="getLinkClass('/subjects')"
-                @click="closeSidebar"
-              >
-                <BookOpen class="mr-4 h-5 w-5 align-middle" />
-                Mata Pelajaran
-              </NuxtLink>
-
-              <NuxtLink 
-                to="/schedule" 
-                :class="getLinkClass('/schedule')"
-                @click="closeSidebar"
-              >
-                <Calendar class="mr-4 h-5 w-5 align-middle" />
-                Jadwal Pelajaran
-              </NuxtLink>
-            </nav>
-
-            <span class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">User Management</span>
-
-            <nav class="flex-1">
-              <NuxtLink 
-                to="/users" 
-                :class="getLinkClass('/users')"
-                @click="closeSidebar"
-              >
-                <Users class="mr-4 h-5 w-5 align-middle" />
-                User
-              </NuxtLink>
-            </nav>
-            <nav class="flex-1">
-              <NuxtLink 
-                to="/teacher" 
-                :class="getLinkClass('/teacher')"
-                @click="closeSidebar"
-              >
-                <Users class="mr-4 h-5 w-5 align-middle" />
-                Guru
-              </NuxtLink>
+              <template v-for="(item, index) in menuItems" :key="index">
+                <span v-if="item.type === 'divider'" class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
+                  {{ item.label }}
+                </span>
+                
+                <NuxtLink 
+                  v-else
+                  :to="item.path" 
+                  :class="getLinkClass(item.path)"
+                  @click="closeSidebar"
+                >
+                  <component :is="iconComponents[item.icon]" class="mr-4 h-5 w-5 align-middle" />
+                  {{ item.label }}
+                </NuxtLink>
+              </template>
             </nav>
           </div>
         </div>
@@ -136,10 +89,10 @@
                   @click="isDropdownOpen = !isDropdownOpen"
                   class="flex items-center space-x-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
                 >
-                  <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin+User&background=fb7185&color=fff" alt="User" />
+                  <img class="h-8 w-8 rounded-full object-cover" :src="userAvatar" :alt="userName" />
                   <div class="hidden md:block">
-                    <p class="text-sm font-medium text-gray-700">Admin User</p>
-                    <p class="text-xs text-gray-500">Administrator</p>
+                    <p class="text-sm font-medium text-gray-700">{{ userName }}</p>
+                    <p class="text-xs text-gray-500">{{ userRoleLabel }}</p>
                   </div>
                   <ChevronDown 
                     :class="['h-4 w-4 text-gray-600 transition-transform duration-200', isDropdownOpen ? 'rotate-180' : '']" 
@@ -159,7 +112,6 @@
                     class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50"
                   >
                     <div class="py-1">
-                      <!-- Profile Menu Item -->
                       <NuxtLink 
                         to="/profile"
                         @click="handleProfile"
@@ -196,12 +148,32 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText } from 'lucide-vue-next'
+import { useAuthStore } from '~/stores/auth'
+import { getMenuByRole, getRoleLabel } from '~/utils/roles'
 
 const route = useRoute()
+const authStore = useAuthStore()
+
 const isMobile = ref(false)
 const isSidebarOpen = ref(false)
 const isDropdownOpen = ref(false)
+
+const iconComponents = {
+  Home,
+  School,
+  BookOpen,
+  Calendar,
+  Users,
+  ClipboardCheck,
+  FileText
+}
+
+const userRole = computed(() => authStore.user?.role)
+const userName = computed(() => authStore.user?.name || 'User')
+const userRoleLabel = computed(() => getRoleLabel(userRole.value))
+const menuItems = computed(() => getMenuByRole(userRole.value))
+const userAvatar = computed(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.value)}&background=fb7185&color=fff`)
 
 const pageTitle = computed(() => {
   const titles = {
@@ -211,7 +183,9 @@ const pageTitle = computed(() => {
     '/schedule': 'Jadwal Pelajaran',
     '/users': 'User Management',
     '/profile': 'Profil Saya',
-    '/teacher': 'Guru'
+    '/teacher': 'Guru',
+    '/attendance': 'Absensi',
+    '/reports': 'Laporan'
   }
   return titles[route.path] || 'Dashboard'
 })
@@ -249,7 +223,8 @@ const handleProfile = () => {
 
 const handleLogout = () => {
   isDropdownOpen.value = false
-  console.log('Logging out...')
+  authStore.logout()
+  navigateTo('/login')
 }
 
 const checkScreenSize = () => {
