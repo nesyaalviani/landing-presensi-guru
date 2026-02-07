@@ -148,7 +148,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText, History, ClipboardList } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
 import { getMenuByRole, getRoleLabel } from '~/utils/roles'
 
@@ -166,7 +166,9 @@ const iconComponents = {
   Calendar,
   Users,
   ClipboardCheck,
-  FileText
+  FileText,
+  History,
+  ClipboardList
 }
 
 const userRole = computed(() => authStore.user?.role)
@@ -185,7 +187,9 @@ const pageTitle = computed(() => {
     '/profile': 'Profil Saya',
     '/teacher': 'Guru',
     '/attendance': 'Absensi',
-    '/reports': 'Laporan'
+    '/reports': 'Laporan',
+    '/presensi': 'Presensi',
+    '/riwayat-presensi': 'Riwayat Presensi'
   }
   return titles[route.path] || 'Dashboard'
 })

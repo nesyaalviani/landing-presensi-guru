@@ -22,7 +22,9 @@ export const ROLE_MENUS = {
     { type: 'divider', label: 'Classroom Management' },
     { path: '/classroom', label: 'Data Kelas', icon: 'School' },
     { path: '/schedule', label: 'Jadwal Pelajaran', icon: 'Calendar' },
-    { path: '/teacher', label: 'Guru', icon: 'Users' }
+    { path: '/teacher', label: 'Guru', icon: 'Users' },
+    { path: '/presensi', label: 'Presensi', icon: 'ClipboardCheck' },
+    { path: '/riwayat-presensi', label: 'Riwayat Presensi', icon: 'History' },
   ],
   
   [ROLES.PIKET]: [
@@ -40,7 +42,7 @@ export const ROLE_MENUS = {
 
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile'],
-  [ROLES.KM]: ['/', 'classroom', 'schedule', 'teacher', 'profile'],
+  [ROLES.KM]: ['/', 'classroom', 'schedule', 'teacher', 'profile', 'presensi', 'riwayat-presensi'],
   [ROLES.PIKET]: ['/', 'attendance', 'profile'],
   [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']
 }
