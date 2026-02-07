@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-3">
-                            <NuxtLink to="/teachers"
+                            <NuxtLink to="/teacher"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
                                 <X class="h-4 w-4" />
                                 Batal
@@ -112,7 +112,7 @@
                                 :disabled="loading || formData.mapel.length === 0"
                                 class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? 'Menyimpan...' : 'Simpan Guru' }}
+                                {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update Guru' : 'Simpan Guru') }}
                             </button>
                         </div>
                     </form>
@@ -135,10 +135,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { X, Save, Info, ChevronDown, AlertCircle } from 'lucide-vue-next'
 import { useTeachersStore } from '~/stores/teachers'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const teachersStore = useTeachersStore()
 const router = useRouter()
+const route = useRoute()
+
+const isEditMode = computed(() => !!route.params.id)
+const teacherId = computed(() => route.params.id)
 
 const formData = ref({
     nama_guru: '',
@@ -161,6 +165,25 @@ const removeMapel = (mapelId) => {
     formData.value.mapel = formData.value.mapel.filter(id => id !== mapelId)
 }
 
+const loadTeacherData = async () => {
+    if (!isEditMode.value) return
+
+    loading.value = true
+    const result = await teachersStore.getTeacherById(teacherId.value)
+    loading.value = false
+
+    if (result.success && result.data) {
+        const teacher = result.data
+        formData.value = {
+            nama_guru: teacher.nama_guru,
+            nip: teacher.nip || '',
+            mapel: teacher.mapel ? teacher.mapel.map(m => m.id_mapel) : []
+        }
+    } else {
+        errorMessage.value = 'Gagal memuat data guru'
+    }
+}
+
 const handleSubmit = async () => {
     errorMessage.value = ''
     
@@ -176,17 +199,18 @@ const handleSubmit = async () => {
 
     loading.value = true
 
-    console.log('Data yang akan dikirim:', {
+    const payload = {
         nama_guru: formData.value.nama_guru,
         nip: formData.value.nip,
         mapel: formData.value.mapel
-    })
+    }
 
-    const result = await teachersStore.createTeacher({
-        nama_guru: formData.value.nama_guru,
-        nip: formData.value.nip,
-        mapel: formData.value.mapel
-    })
+    let result
+    if (isEditMode.value) {
+        result = await teachersStore.updateTeacher(teacherId.value, payload)
+    } else {
+        result = await teachersStore.createTeacher(payload)
+    }
 
     loading.value = false
 
@@ -199,6 +223,7 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
     await teachersStore.getMapels()
+    await loadTeacherData()
 })
 
 if (process.client) {
