@@ -6,12 +6,12 @@
                     <div class="relative w-full sm:w-80">
                         <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama guru..."
-                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none" />
                     </div>
 
                     <div class="relative w-full sm:w-50">
                         <select v-model="selectedMapel"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white pr-8">
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
                             <option :value="null">Semua Mata Pelajaran</option>
                             <option v-for="mapel in mapels" :key="mapel.id_mapel" :value="mapel.id_mapel">
                                 {{ mapel.nama_mapel }}

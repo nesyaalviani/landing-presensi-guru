@@ -41,7 +41,7 @@
                                 type="text" 
                                 placeholder="Contoh: Asep Widiana" 
                                 required
-                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
+                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan nama lengkap guru</p>
                         </div>
 
@@ -55,7 +55,7 @@
                                 type="text"
                                 placeholder="Contoh: 185273770" 
                                 required
-                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
+                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
                             <p class="mt-1.5 text-xs text-gray-500">Nomor Induk Pegawai harus unik</p>
                         </div>
 
@@ -67,7 +67,7 @@
                                 <button
                                     type="button"
                                     @click="showMapelDropdown = !showMapelDropdown"
-                                    class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400 flex items-center justify-between bg-white"
+                                    class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400 flex items-center justify-between bg-white"
                                 >
                                     <span v-if="formData.mapel.length === 0" class="text-gray-500">
                                         Pilih mata pelajaran
@@ -130,12 +130,12 @@
 
                     <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading || formData.mapel.length === 0"
-                                class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
                                 {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update Guru' : 'Simpan Guru') }}
                             </button>
                             <NuxtLink to="/teacher"
-                                class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+                                class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
                                 <X class="h-4 w-4" />
                                 Batal
                             </NuxtLink>
