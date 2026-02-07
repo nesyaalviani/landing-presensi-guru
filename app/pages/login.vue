@@ -44,17 +44,32 @@
                         </div>
                     </div>
 
-                    <div>
-                        <div class="relative w-full">
-                            <input type="password" id="password" v-model="formData.password"
-                                class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
-                                placeholder=" " required />
-                            <label for="password"
-                                class="origin-[0] peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600 absolute left-1 top-2 z-10 -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300">
-                                Masukkan Password Anda
-                            </label>
-                        </div>
-                    </div>
+                    <div class="relative w-full">
+      <input 
+        :type="showPassword ? 'text' : 'password'" 
+        id="password" 
+        v-model="formData.password"
+        class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 pr-10 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
+        placeholder=" " 
+        required 
+      />
+      <label 
+        for="password"
+        class="origin-[0] peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600 absolute left-1 top-2 z-10 -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300"
+      >
+        Masukkan Password Anda
+      </label>
+      
+      <!-- Toggle Password Button -->
+      <button
+        type="button"
+        @click="showPassword = !showPassword"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+      >
+        <Eye v-if="!showPassword" class="h-5 w-5" />
+        <EyeOff v-else class="h-5 w-5" />
+      </button>
+    </div>
 
                     <div class="flex w-full items-center pt-2">
                         <button type="submit" :disabled="isLoading"
@@ -78,6 +93,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useRouter } from 'vue-router'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 definePageMeta({
     layout: false
@@ -91,6 +107,7 @@ const formData = ref({
     password: ''
 })
 
+const showPassword = ref(false)
 const errorMessage = ref('')
 const isLoading = ref(false)
 
