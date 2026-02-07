@@ -43,7 +43,6 @@ export const useUsersStore = defineStore('users', {
         },
 
         async getUserById(userId) {
-            this.loading = true
             this.error = null
 
             const config = useRuntimeConfig()
@@ -62,11 +61,9 @@ export const useUsersStore = defineStore('users', {
                     }
                 })
 
-                this.loading = false
                 return { success: true, data: response }
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch user'
-                this.loading = false
 
                 return {
                     success: false,

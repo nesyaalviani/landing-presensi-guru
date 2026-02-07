@@ -211,9 +211,7 @@ const loadingData = ref(false)
 const loadUserData = async () => {
     if (!isEditMode.value) return
 
-    loadingData.value = true
     const result = await usersStore.getUserById(userId.value)
-    loadingData.value = false
 
     if (result.success && result.data) {
         const user = result.data
@@ -309,11 +307,19 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
+    if (isEditMode.value) {
+        loadingData.value = true
+    }
+
     const classroomResult = await classroomsStore.getClassrooms()
     if (classroomResult.success) {
         classrooms.value = classroomsStore.classrooms
     }
 
     await loadUserData()
+
+    if (isEditMode.value) {
+        loadingData.value = false
+    }
 })
 </script>
