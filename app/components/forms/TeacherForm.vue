@@ -129,7 +129,7 @@
                         </div>
 
                     <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
-                            <button type="submit" :disabled="loading || formData.mapel.length === 0"
+                            <button type="submit" :disabled="loading"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
                                 {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update Guru' : 'Simpan Guru') }}
