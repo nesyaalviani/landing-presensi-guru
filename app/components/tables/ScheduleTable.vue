@@ -3,20 +3,27 @@
         <div class="mx-auto max-w-7xl">
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <div class="relative w-full sm:w-80">
-                        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama/username..."
-                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none" />
+                    <div class="relative w-full sm:w-44">
+                        <select v-model="selectedDay"
+                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Semua Hari</option>
+                            <option value="Senin">Senin</option>
+                            <option value="Selasa">Selasa</option>
+                            <option value="Rabu">Rabu</option>
+                            <option value="Kamis">Kamis</option>
+                            <option value="Jumat">Jumat</option>
+                        </select>
+                        <ChevronDown
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
 
-                    <div class="relative w-full sm:w-50">
-                        <select v-model="selectedRole"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
-                            <option :value="null">Semua Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="km">KM</option>
-                            <option value="piket">Petugas Piket</option>
-                            <option value="ks">Kepala Sekolah</option>
+                    <div class="relative w-full sm:w-44">
+                        <select v-model="selectedClass"
+                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Semua Kelas</option>
+                            <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
+                                {{ kelas.name }}
+                            </option>
                         </select>
                         <ChevronDown
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -24,7 +31,7 @@
                 </div>
 
                 <div class="flex items-center w-full sm:w-auto">
-                    <NuxtLink to="/users/create"
+                    <NuxtLink to="/schedule/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
                         Tambah
@@ -39,19 +46,23 @@
                             <tr>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nama
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Username
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role
+                                    Jam
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Kelas
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Mapel
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Guru
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Hari
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -63,16 +74,19 @@
                             <template v-if="loading">
                                 <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-27 sm:w-32 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-22 bg-gray-200 rounded-full animate-pulse"></div>
+                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-8 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="h-5 w-16 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-7 w-7 bg-gray-200 rounded-md animate-pulse"></div>
@@ -82,10 +96,10 @@
 
                             <template v-else-if="error">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12">
+                                    <td colspan="6" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="usersStore.getUsers()"
+                                            <button @click="schedulesStore.getSchedules()"
                                                 class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
                                                 Coba Lagi
                                             </button>
@@ -94,39 +108,37 @@
                                 </tr>
                             </template>
 
-                            <template v-else-if="filteredUsers.length === 0">
+                            <template v-else-if="filteredSchedules.length === 0">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12">
+                                    <td colspan="6" class="px-6 py-12">
                                         <div class="text-center">
-                                            <p class="text-sm text-gray-500">Tidak ada data user</p>
+                                            <p class="text-sm text-gray-500">Tidak ada data jadwal</p>
                                         </div>
                                     </td>
                                 </tr>
                             </template>
 
                             <template v-else>
-                                <tr v-for="user in filteredUsers" :key="user.id"
+                                <tr v-for="schedule in filteredSchedules" :key="schedule.id_jadwal"
                                     class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ user.name }}
+                                        {{ formatTime(schedule.jam_mulai) }} – {{ formatTime(schedule.jam_selesai) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ user.username }}
+                                        {{ schedule.nama_kelas || '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <span :class="getRoleBadgeClass(user.role?.name)"
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                            {{ getRoleLabel(user.role?.name) }}
-                                        </span>
+                                        {{ schedule.guru?.mapel?.nama_mapel || '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <span v-if="user.kelas">
-                                            {{ user.kelas.name }}
-                                        </span>
-                                        <span v-else class="text-gray-400">-</span>
+                                        {{ schedule.guru?.nama_guru || '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <button @click="toggleDropdown(user.id)" :ref="el => setButtonRef(el, user.id)"
+                                        {{ schedule.hari }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <button @click="toggleDropdown(schedule.id_jadwal)"
+                                            :ref="el => setButtonRef(el, schedule.id_jadwal)"
                                             class="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
                                             title="More actions">
                                             <MoreVertical class="h-4 w-4" />
@@ -179,13 +191,13 @@
                 <div v-if="activeDropdown !== null" :style="dropdownStyle"
                     class="fixed w-48 rounded-lg shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50">
                     <div class="py-1">
-                        <NuxtLink :to="`/users/edit/${activeDropdown}`" @click="closeDropdown"
+                        <NuxtLink :to="`/schedule/edit/${activeDropdown}`" @click="closeDropdown"
                             class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                             <Pencil class="h-4 w-4 mr-3 text-gray-500" />
                             Edit
                         </NuxtLink>
                         <div class="border-t border-gray-100 my-1"></div>
-                        <button @click="handleDelete(getUserById(activeDropdown))"
+                        <button @click="handleDelete(getScheduleById(activeDropdown))"
                             class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
                             <Trash2 class="h-4 w-4 mr-3" />
                             Hapus
@@ -199,38 +211,42 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
-import { useUsersStore } from '~/stores/users'
+import { ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
+import { useSchedulesStore } from '~/stores/schedules'
+import { useClassroomsStore } from '~/stores/classrooms'
 
-const usersStore = useUsersStore()
+const schedulesStore = useSchedulesStore()
+const classroomsStore = useClassroomsStore()
 
-const searchQuery = ref('')
-const selectedRole = ref(null)
+const selectedDay = ref(null)
+const selectedClass = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
-const users = computed(() => usersStore.users)
-const loading = computed(() => usersStore.loading)
-const error = computed(() => usersStore.error)
+const schedules = computed(() => schedulesStore.schedules)
+const classrooms = computed(() => classroomsStore.classrooms)
+const loading = computed(() => schedulesStore.loading)
+const error = computed(() => schedulesStore.error)
 
-const filteredUsers = computed(() => {
-    let filtered = users.value
+const filteredSchedules = computed(() => {
+    let filtered = schedules.value
 
-    if (selectedRole.value) {
-        filtered = filtered.filter(user => user.role?.name === selectedRole.value)
+    if (selectedDay.value) {
+        filtered = filtered.filter(schedule => schedule.hari === selectedDay.value)
     }
 
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(user =>
-            user.name?.toLowerCase().includes(query) ||
-            user.username?.toLowerCase().includes(query)
-        )
+    if (selectedClass.value) {
+        filtered = filtered.filter(schedule => schedule.id_kelas === parseInt(selectedClass.value))
     }
 
     return filtered
 })
+
+const formatTime = (time) => {
+    if (!time) return '-'
+    return time.substring(0, 5)
+}
 
 const setButtonRef = (el, id) => {
     if (el) {
@@ -238,28 +254,8 @@ const setButtonRef = (el, id) => {
     }
 }
 
-const getUserById = (id) => {
-    return users.value.find(u => u.id === id)
-}
-
-const getRoleBadgeClass = (roleName) => {
-    const roleStyles = {
-        'admin': 'bg-purple-100 text-purple-800',
-        'km': 'bg-blue-100 text-blue-800',
-        'piket': 'bg-green-100 text-green-800',
-        'ks': 'bg-yellow-100 text-yellow-800'
-    }
-    return roleStyles[roleName] || 'bg-gray-100 text-gray-800'
-}
-
-const getRoleLabel = (roleName) => {
-    const roleLabels = {
-        'admin': 'Admin',
-        'km': 'KM',
-        'piket': 'Petugas Piket',
-        'ks': 'Kepala Sekolah'
-    }
-    return roleLabels[roleName] || roleName
+const getScheduleById = (id) => {
+    return schedules.value.find(s => s.id_jadwal === id)
 }
 
 const calculateDropdownPosition = (buttonEl) => {
@@ -309,17 +305,20 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
-const handleDelete = async (user) => {
-    if (!user) return
+const handleDelete = async (schedule) => {
+    if (!schedule) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus user ${user.name}?`)) {
-        const result = await usersStore.deleteUser(user.id)
+    const timeRange = `${formatTime(schedule.jam_mulai)} – ${formatTime(schedule.jam_selesai)}`
+    const scheduleInfo = `${schedule.hari}, ${timeRange}, ${schedule.nama_kelas}`
+
+    if (confirm(`Apakah Anda yakin ingin menghapus jadwal "${scheduleInfo}"?`)) {
+        const result = await schedulesStore.deleteSchedule(schedule.id_jadwal)
 
         if (result.success) {
             closeDropdown()
-            alert('User berhasil dihapus')
+            alert('Jadwal berhasil dihapus')
         } else {
-            alert(result.message || 'Gagal menghapus user')
+            alert(result.message || 'Gagal menghapus jadwal')
         }
     }
 }
@@ -341,7 +340,10 @@ const handleScroll = () => {
 }
 
 onMounted(async () => {
-    await usersStore.getUsers()
+    await Promise.all([
+        schedulesStore.getSchedules(),
+        classroomsStore.getClassrooms()
+    ])
 
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
