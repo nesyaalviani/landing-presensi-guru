@@ -43,9 +43,6 @@ export const useClassroomsStore = defineStore('classrooms', {
         },
 
         async getClassroomById(id) {
-            this.loading = true
-            this.error = null
-
             const config = useRuntimeConfig()
 
             try {
@@ -62,12 +59,8 @@ export const useClassroomsStore = defineStore('classrooms', {
                     }
                 })
 
-                this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to fetch classroom'
-                this.loading = false
-
                 return {
                     success: false,
                     message: error.data?.message || 'Gagal mengambil data kelas.'
@@ -208,26 +201,10 @@ export const useClassroomsStore = defineStore('classrooms', {
                     message: errorMessage
                 }
             }
-        }
-    },
-
-    getters: {
-        getClassroomById: (state) => (id) => {
-            return state.classrooms.find(classroom => classroom.id === id)
         },
 
-        getClassroomsByTingkat: (state) => (tingkat) => {
-            if (!tingkat) return state.classrooms
-            return state.classrooms.filter(classroom => classroom.tingkat === tingkat)
-        },
-
-        getClassroomsByJurusan: (state) => (jurusan) => {
-            if (!jurusan) return state.classrooms
-            return state.classrooms.filter(classroom => classroom.jurusan === jurusan)
-        },
-
-        searchClassrooms: (state) => (searchQuery, tingkatFilter, jurusanFilter) => {
-            let filtered = state.classrooms
+        searchClassrooms(searchQuery, tingkatFilter, jurusanFilter) {
+            let filtered = this.classrooms
 
             if (tingkatFilter) {
                 filtered = filtered.filter(classroom => classroom.tingkat === tingkatFilter)
