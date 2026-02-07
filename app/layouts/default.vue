@@ -14,7 +14,7 @@
         <button
           v-if="isMobile"
           @click="closeSidebar"
-          class="absolute top-[0.3rem] right-1 p-2 text-gray-600 rounded-lg transition-colors lg:hidden z-10"
+          class="absolute top-[0.3rem] right-1 p-2 text-gray-600 rounded-sm transition-colors lg:hidden z-10"
           aria-label="Close sidebar">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -109,7 +109,7 @@
                 >
                   <div 
                     v-if="isDropdownOpen"
-                    class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50"
+                    class="absolute right-0 mt-2 w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50"
                   >
                     <div class="py-1">
                       <NuxtLink 

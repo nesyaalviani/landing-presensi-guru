@@ -177,7 +177,7 @@
                 leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100"
                 leave-to-class="transform opacity-0 scale-95">
                 <div v-if="activeDropdown !== null" :style="dropdownStyle"
-                    class="fixed w-48 rounded-lg shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50">
+                    class="fixed w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50">
                     <div class="py-1">
                         <NuxtLink :to="`/users/edit/${activeDropdown}`" @click="closeDropdown"
                             class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
