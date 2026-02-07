@@ -114,13 +114,16 @@
                                         {{ user.username }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <span :class="getRoleBadgeClass(user.role_name)"
+                                        <span :class="getRoleBadgeClass(user.role?.name)"
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                            {{ getRoleLabel(user.role_name) }}
+                                            {{ getRoleLabel(user.role?.name) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ user.id_kelas || '-' }}
+                                        <span v-if="user.kelas">
+                                            {{ user.kelas.name }}
+                                        </span>
+                                        <span v-else class="text-gray-400">-</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         <button @click="toggleDropdown(user.id)" :ref="el => setButtonRef(el, user.id)"
@@ -215,7 +218,7 @@ const filteredUsers = computed(() => {
     let filtered = users.value
 
     if (selectedRole.value) {
-        filtered = filtered.filter(user => user.role_name === selectedRole.value)
+        filtered = filtered.filter(user => user.role?.name === selectedRole.value)
     }
 
     if (searchQuery.value) {
