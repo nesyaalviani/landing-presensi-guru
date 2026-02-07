@@ -24,8 +24,8 @@
 
                 <div class="flex items-center w-full sm:w-auto">
                     <NuxtLink to="/teacher/create"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out shadow-md hover:shadow-lg">
-                        <Plus class="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
+                        <Plus class="h-4 w-4" />
                         Tambah
                     </NuxtLink>
                 </div>
@@ -58,14 +58,13 @@
                             <template v-if="loading">
                                 <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-27 sm:w-32 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex flex-wrap gap-1">
-                                            <div class="h-5 w-18 bg-gray-200 rounded-full animate-pulse"></div>
                                             <div class="h-5 w-22 bg-gray-200 rounded-full animate-pulse"></div>
                                         </div>
                                     </td>
@@ -135,7 +134,7 @@
                 </div>
             </div>
 
-            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
                         <button

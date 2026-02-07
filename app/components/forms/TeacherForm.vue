@@ -3,7 +3,34 @@
         <div class="w-full">
             <div class="bg-white rounded-sm border border-gray-200">
                 <div class="p-6 sm:p-8">
-                    <form @submit.prevent="handleSubmit" class="space-y-6">
+                    <div v-if="loading && isEditMode" class="space-y-6">
+                        <div>
+                            <div class="h-5 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
+                            <div class="h-4 w-48 bg-gray-200 rounded animate-pulse mt-1.5"></div>
+                        </div>
+
+                        <div>
+                            <div class="h-5 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
+                            <div class="h-4 w-56 bg-gray-200 rounded animate-pulse mt-1.5"></div>
+                        </div>
+
+                        <div>
+                            <div class="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
+                            <div class="h-4 w-64 bg-gray-200 rounded animate-pulse mt-1.5"></div>
+                        </div>
+
+                        <hr class="border-gray-200" />
+
+                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
+                            <div class="h-10 w-full sm:w-32 bg-gray-200 rounded-sm animate-pulse"></div>
+                            <div class="h-10 w-full sm:w-32 bg-gray-200 rounded-sm animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <form v-else @submit.prevent="handleSubmit" class="space-y-6">
                         <div>
                             <label for="nama_guru" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama Guru <span class="text-red-500">*</span>
@@ -101,19 +128,17 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end gap-3">
-                            <NuxtLink to="/teacher"
-                                class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
-                                <X class="h-4 w-4" />
-                                Batal
-                            </NuxtLink>
-                            <button 
-                                type="submit"
-                                :disabled="loading || formData.mapel.length === 0"
-                                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
+                            <button type="submit" :disabled="loading || formData.mapel.length === 0"
+                                class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
                                 {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update Guru' : 'Simpan Guru') }}
                             </button>
+                            <NuxtLink to="/teacher"
+                                class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+                                <X class="h-4 w-4" />
+                                Batal
+                            </NuxtLink>
                         </div>
                     </form>
                 </div>
