@@ -32,8 +32,13 @@
         <div class="flex mt-4 flex-1 flex-col pb-10">
           <div class="">
             <nav class="flex-1">
-              <template v-for="item in menuItems" :key="item.path">
+              <template v-for="(item, index) in menuItems" :key="index">
+                <span v-if="item.type === 'divider'" class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
+                  {{ item.label }}
+                </span>
+                
                 <NuxtLink 
+                  v-else
                   :to="item.path" 
                   :class="getLinkClass(item.path)"
                   @click="closeSidebar"
