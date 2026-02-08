@@ -16,22 +16,17 @@ export const ROLE_MENUS = {
     { path: '/users', label: 'User', icon: 'Users' },
     { path: '/teacher', label: 'Guru', icon: 'Users' }
   ],
-  
+
   [ROLES.KM]: [
-    { path: '/', label: 'Dashboard', icon: 'Home' },
-    { type: 'divider', label: 'Classroom Management' },
-    { path: '/classroom', label: 'Data Kelas', icon: 'School' },
-    { path: '/schedule', label: 'Jadwal Pelajaran', icon: 'Calendar' },
-    { path: '/teacher', label: 'Guru', icon: 'Users' },
     { path: '/presensi', label: 'Presensi', icon: 'ClipboardCheck' },
     { path: '/riwayat-presensi', label: 'Riwayat Presensi', icon: 'History' },
   ],
-  
+
   [ROLES.PIKET]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { path: '/attendance', label: 'Absensi', icon: 'ClipboardCheck' }
   ],
-  
+
   [ROLES.KS]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { type: 'divider', label: 'Reporting' },
@@ -42,9 +37,16 @@ export const ROLE_MENUS = {
 
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile'],
-  [ROLES.KM]: ['/', 'classroom', 'schedule', 'teacher', 'profile', 'presensi', 'riwayat-presensi'],
+  [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile'],
   [ROLES.PIKET]: ['/', 'attendance', 'profile'],
   [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']
+}
+
+export const ROLE_DEFAULT_ROUTES = {
+  [ROLES.ADMIN]: '/',
+  [ROLES.KM]: '/presensi',
+  [ROLES.PIKET]: '/',
+  [ROLES.KS]: '/'
 }
 
 export const ROLE_LABELS = {
@@ -65,4 +67,9 @@ export function getRoleLabel(role) {
 export function canAccessPage(role, page) {
   const permissions = ROLE_PERMISSIONS[role] || []
   return permissions.includes(page)
+}
+
+// Fungsi untuk mendapatkan default route berdasarkan role
+export function getDefaultRoute(role) {
+  return ROLE_DEFAULT_ROUTES[role] || '/'
 }
