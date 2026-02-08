@@ -1,8 +1,61 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-2 sm:space-y-3">
-      <div v-if="loading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div class="max-w-5xl space-y-2 sm:space-y-3">
+      <div v-if="loading" class="bg-white rounded-sm border border-gray-200">
+        <div class="p-4 sm:p-6 lg:p-8">
+          <div class="space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <div class="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div class="h-10 sm:h-11 bg-gray-200 rounded-sm animate-pulse"></div>
+              </div>
+              <div>
+                <div class="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div class="h-10 sm:h-11 bg-gray-200 rounded-sm animate-pulse"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="h-4 w-28 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="h-10 sm:h-11 bg-gray-200 rounded-sm animate-pulse"></div>
+            </div>
+
+            <div>
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="h-20 bg-gray-200 rounded-sm animate-pulse"></div>
+                <div class="h-20 bg-gray-200 rounded-sm animate-pulse"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="h-4 w-20 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="h-32 sm:h-40 bg-gray-200 rounded-sm animate-pulse"></div>
+            </div>
+
+            <div>
+              <div class="h-4 w-36 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div class="h-24 bg-gray-200 rounded-sm animate-pulse"></div>
+            </div>
+
+            <hr class="border-gray-200" />
+
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+              <div class="h-10 sm:h-11 w-full sm:w-24 bg-gray-200 rounded-sm animate-pulse"></div>
+              <div class="h-10 sm:h-11 w-full sm:w-36 bg-gray-200 rounded-sm animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gray-50 border-t border-gray-200 rounded-b-sm">
+          <div class="flex items-start sm:items-center gap-2">
+            <div class="h-3 w-3 sm:h-4 sm:w-4 bg-gray-200 rounded animate-pulse shrink-0"></div>
+            <div class="flex-1 space-y-1">
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-else class="bg-white rounded-sm border border-gray-200">
@@ -105,7 +158,6 @@
                 Apakah Guru Memberi Tugas? <span class="text-red-500">*</span>
               </label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Ya Button -->
                 <label :class="[
                   'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
                   presensiData.memberikanTugas === 'ya'
@@ -219,7 +271,7 @@
                 Keterangan Tambahan
               </label>
               <textarea v-model="presensiData.keterangan" rows="4"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400 resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400 resize-none"
                 placeholder="Tambahkan catatan atau keterangan jika diperlukan..."></textarea>
             </div>
           </div>
@@ -228,19 +280,27 @@
 
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none transition-all">
               <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
               Batal
             </button>
-            <button type="button" @click="showConfirmationModal = true" :disabled="!canSubmit"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-              <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg v-if="!isSubmitting" class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              Simpan Presensi
+              <svg v-else class="animate-spin h-3 h-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              {{ isSubmitting ? 'Menyimpan...' : 'Simpan Presensi' }}
             </button>
           </div>
         </div>
@@ -261,98 +321,7 @@
         </div>
       </div>
 
-      <div v-if="showConfirmationModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-        @click="showConfirmationModal = false">
-        <div class="bg-white rounded-lg sm:rounded-xl p-5 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl" @click.stop>
-          <div class="text-center">
-            <div
-              class="mx-auto flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-blue-100 mb-3 sm:mb-4">
-              <svg class="h-6 w-6 sm:h-7 sm:w-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
 
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Konfirmasi Penyimpanan</h3>
-
-            <p class="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6">
-              Apakah kamu yakin ingin menyimpan presensi ini? Pastikan semua data sudah benar.
-            </p>
-
-            <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-5 sm:mb-6 text-left">
-              <div class="space-y-2 text-xs sm:text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Mata Pelajaran:</span>
-                  <span class="font-medium text-gray-900">{{ presensiData.namaMapel }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Status:</span>
-                  <span :class="[
-                    'font-medium',
-                    presensiData.statusKehadiran === 'Hadir' ? 'text-green-600' : 'text-red-600'
-                  ]">
-                    {{ presensiData.statusKehadiran }}
-                  </span>
-                </div>
-                <div v-if="presensiData.foto" class="flex justify-between">
-                  <span class="text-gray-600">Bukti Foto:</span>
-                  <span class="font-medium text-gray-900">✓ Terlampir</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-              <button @click="showConfirmationModal = false" :disabled="isSubmitting"
-                class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                Batal
-              </button>
-              <button @click="handleSubmit" :disabled="isSubmitting"
-                class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="!isSubmitting" class="flex items-center justify-center gap-2">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Ya, Simpan
-                </span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
-                  </svg>
-                  Menyimpan...
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="showSuccessModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-        @click="closeModalAndRedirect">
-        <div class="bg-white rounded-lg sm:rounded-xl p-5 sm:p-6 lg:p-8 max-w-sm sm:max-w-md w-full shadow-2xl"
-          @click.stop>
-          <div class="text-center">
-            <div
-              class="mx-auto flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-green-100 mb-3 sm:mb-4">
-              <svg class="h-6 w-6 sm:h-7 sm:w-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Presensi Berhasil Disimpan!</h3>
-            <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Data presensi kehadiran telah berhasil tersimpan
-            </p>
-            <button @click="closeModalAndRedirect"
-              class="w-full bg-blue-600 text-white font-medium py-2.5 px-4 text-sm sm:text-base rounded-lg hover:bg-blue-700 active:bg-blue-800 transition">
-              Kembali ke Jadwal
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -379,8 +348,6 @@ const presensiData = ref({
 
 const previewImage = ref(null)
 const isSubmitting = ref(false)
-const showConfirmationModal = ref(false)
-const showSuccessModal = ref(false)
 
 onMounted(async () => {
   const jadwalId = route.query.jadwalId
@@ -492,27 +459,19 @@ const handleSubmit = async () => {
     const result = await presensiStore.createPresensi(formData)
 
     if (result.success) {
-      showConfirmationModal.value = false
-      showSuccessModal.value = true
+      router.push('/presensi')
     } else {
       alert(result.message)
-      showConfirmationModal.value = false
     }
   } catch (error) {
     console.error('Error:', error)
     alert('Terjadi kesalahan saat mengirim data. Silakan coba lagi.')
-    showConfirmationModal.value = false
   } finally {
     isSubmitting.value = false
   }
 }
 
 const goBack = () => {
-  router.push('/presensi')
-}
-
-const closeModalAndRedirect = () => {
-  showSuccessModal.value = false
   router.push('/presensi')
 }
 </script>
