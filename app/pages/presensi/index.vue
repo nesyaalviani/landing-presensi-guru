@@ -1,297 +1,313 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-5xl space-y-2 sm:space-y-3">
-      <!-- Header -->
-      <div class="mb-4 sm:mb-6">
-        <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
-        <div class="text-gray-600">
-          <p class="text-base sm:text-lg">{{ formattedDate }}</p>
-          <p class="text-sm sm:text-base">Kelas: {{ selectedClass }}</p>
+    <section class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-6 sm:mb-8">
+          <template v-if="presensiStore.loading">
+            <div class="h-8 sm:h-9 w-48 sm:w-64 bg-gray-200 rounded animate-pulse mb-3 sm:mb-4"></div>
+            <div class="space-y-2">
+              <div class="h-5 sm:h-6 w-56 sm:w-72 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-4 sm:h-5 w-32 sm:w-48 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </template>
+
+          <template v-else>
+            <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
+            <div class="text-gray-600">
+              <p class="text-base sm:text-lg">{{ formattedDate }}</p>
+              <p class="text-sm sm:text-base">Kelas: {{ kelasName }}</p>
+            </div>
+          </template>
         </div>
-      </div>
 
-      <!-- Schedule Cards -->
-      <div class="space-y-3 sm:space-y-4">
-        <div
-          v-for="schedule in schedules"
-          :key="schedule.id"
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
-        >
-          <!-- Mobile Layout -->
-          <div class="block sm:hidden space-y-4">
-            <!-- Time and Status Row -->
-            <div class="flex items-start justify-between">
-              <div class="text-gray-700">
-                <p class="text-base font-medium">{{ schedule.timeRange }}</p>
-                <p class="text-xs text-gray-500">{{ schedule.classTime }}</p>
+        <div v-if="presensiStore.error && !presensiStore.loading"
+          class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
+          <p class="text-red-700 text-sm">{{ presensiStore.error }}</p>
+        </div>
+
+        <div v-if="presensiStore.loading" class="space-y-3 sm:space-y-4 mb-6">
+          <div v-for="i in 5" :key="'skeleton-' + i"
+            class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div class="block sm:hidden space-y-4">
+              <div class="flex items-start justify-between">
+                <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-6 w-28 bg-gray-200 rounded-full animate-pulse"></div>
               </div>
-              
-              <!-- Status Badge Mobile -->
-              <div>
-                <span
-                  v-if="schedule.status === 'belum'"
-                  class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded"
-                >
-                  Belum Presensi
-                </span>
-                <span
-                  v-else-if="schedule.status === 'hadir'"
-                  class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-3 py-1 rounded"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Hadir
-                </span>
+              <div class="space-y-3">
+                <div class="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
               </div>
+              <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
             </div>
 
-            <!-- Subject Info -->
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-lg font-semibold">{{ schedule.subject }}</h3>
-                <span
-                  v-if="schedule.duration"
-                  class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded"
-                >
-                  {{ schedule.duration }}
-                </span>
+            <div class="hidden sm:flex items-start justify-between">
+              <div class="flex gap-4 lg:gap-6 flex-1">
+                <div class="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
+                <div class="flex-1 space-y-3">
+                  <div class="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
+                  <div class="h-7 w-32 bg-gray-200 rounded animate-pulse"></div>
+                </div>
               </div>
-              <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span class="text-sm">{{ schedule.teacher }}</span>
-              </div>
-            </div>
-
-            <!-- Action Button Mobile -->
-            <div class="w-full">
-              <button
-                v-if="schedule.status === 'belum'"
-                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm active:scale-95"
-                @click="handlePresensi(schedule)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Presensi
-              </button>
-              <button
-                v-else
-                class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-lg cursor-default"
-                disabled
-              >
-                Sudah Presensi
-              </button>
+              <div class="h-10 w-28 bg-gray-200 rounded-sm animate-pulse"></div>
             </div>
           </div>
+        </div>
 
-          <!-- Desktop/Tablet Layout -->
-          <div class="hidden sm:flex items-start justify-between">
-            <!-- Left Side: Time and Subject Info -->
-            <div class="flex gap-4 lg:gap-6">
-              <!-- Time Column -->
-              <div class="text-gray-700 min-w-[120px]">
-                <p class="text-base lg:text-lg font-medium">{{ schedule.timeRange }}</p>
-                <p class="text-xs lg:text-sm text-gray-500">{{ schedule.classTime }}</p>
+        <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada jadwal</h3>
+          <p class="mt-1 text-sm text-gray-500">Tidak ada jadwal untuk hari ini.</p>
+        </div>
+
+        <div v-else class="space-y-3 sm:space-y-4 mb-6">
+          <div v-for="schedule in paginatedSchedules" :key="schedule.id"
+            class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div class="block sm:hidden space-y-4">
+              <div class="flex items-start justify-between">
+                <div class="text-gray-700">
+                  <p class="text-base font-medium">{{ schedule.timeRange }}</p>
+                </div>
+
+                <div>
+                  <span v-if="schedule.status === 'belum'"
+                    class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded">
+                    Belum Presensi
+                  </span>
+                  <span v-else-if="schedule.status === 'Pending'"
+                    class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pending
+                  </span>
+                  <span v-else-if="schedule.status === 'Approved'"
+                    class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-3 py-1 rounded">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Disetujui
+                  </span>
+                  <span v-else-if="schedule.status === 'Rejected'"
+                    class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-3 py-1 rounded">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Ditolak
+                  </span>
+                </div>
               </div>
 
-              <!-- Subject and Teacher Info -->
               <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
-                  <span
-                    v-if="schedule.duration"
-                    class="text-xs lg:text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded"
-                  >
-                    ({{ schedule.duration }})
-                  </span>
+                <div class="flex items-center gap-2 mb-2">
+                  <h3 class="text-lg font-semibold">{{ schedule.subject }}</h3>
                 </div>
                 <div class="flex items-center gap-2 text-gray-600">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <span class="text-sm">{{ schedule.teacher }}</span>
                 </div>
+              </div>
 
-                <!-- Status Badge Desktop -->
-                <div class="mt-3">
-                  <span
-                    v-if="schedule.status === 'belum'"
-                    class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded"
-                  >
-                    Belum Presensi
-                  </span>
-                  <span
-                    v-else-if="schedule.status === 'hadir'"
-                    class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Hadir
-                  </span>
-                </div>
+              <div class="w-full">
+                <button v-if="schedule.status === 'belum'"
+                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm active:scale-95"
+                  @click="handlePresensi(schedule)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Presensi
+                </button>
+                <button v-else
+                  class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
+                  disabled>
+                  Sudah Presensi
+                </button>
               </div>
             </div>
 
-            <!-- Right Side: Action Button Desktop -->
-            <div class="flex-shrink-0">
-              <button
-                v-if="schedule.status === 'belum'"
-                class="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
-                @click="handlePresensi(schedule)"
-              >
-                <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Presensi
-              </button>
-              <button
-                v-else
-                class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-lg cursor-default"
-                disabled
-              >
-                Sudah Presensi
-              </button>
+            <div class="hidden sm:flex items-start justify-between">
+              <div class="flex gap-4 lg:gap-6">
+                <div class="text-gray-700 min-w-[120px]">
+                  <p class="text-base lg:text-lg font-medium">{{ schedule.timeRange }}</p>
+                </div>
+
+                <div>
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
+                  </div>
+                  <div class="flex items-center gap-2 text-gray-600 mb-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span class="text-sm">{{ schedule.teacher }}</span>
+                  </div>
+
+                  <div class="mt-3">
+                    <span v-if="schedule.status === 'belum'"
+                      class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
+                      Belum Presensi
+                    </span>
+                    <span v-else-if="schedule.status === 'Pending'"
+                      class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-4 py-1 rounded">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Pending
+                    </span>
+                    <span v-else-if="schedule.status === 'Approved'"
+                      class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Disetujui
+                    </span>
+                    <span v-else-if="schedule.status === 'Rejected'"
+                      class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Ditolak
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex-shrink-0">
+                <button v-if="schedule.status === 'belum'"
+                  class="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
+                  @click="handlePresensi(schedule)">
+                  <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Presensi
+                </button>
+                <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
+                  disabled>
+                  Sudah Presensi
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Info Note -->
-      <div class="mt-4 sm:mt-6 flex items-start gap-2 sm:gap-3 text-gray-600 bg-blue-50 p-3 sm:p-4 rounded-lg">
-        <svg
-          class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-blue-600 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <p class="text-xs sm:text-sm">
-          Klik tombol <strong>'Presensi'</strong> untuk mencatat kehadiran guru di setiap jam pelajaran.
-        </p>
-      </div>
+        <template v-if="presensiStore.loading">
+          <div class="mb-6 bg-gray-200 h-16 sm:h-14 rounded-sm animate-pulse"></div>
+        </template>
+        <div v-else-if="schedules.length > 0"
+          class="mb-6 flex items-start gap-2 sm:gap-3 text-gray-600 bg-blue-50 p-3 sm:p-4 rounded-sm">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd" />
+          </svg>
+          <p class="text-xs sm:text-sm">
+            Klik tombol <strong>'Presensi'</strong> untuk mencatat kehadiran guru di setiap jam pelajaran.
+          </p>
+        </div>
 
-      <!-- Pagination -->
-      <div class="mt-4 sm:mt-6 bg-white rounded-lg border border-gray-200 px-3 sm:px-4 py-3">
-        <div class="flex items-center justify-between">
-          <!-- Mobile Pagination -->
-          <div class="flex-1 flex justify-between sm:hidden">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              class="relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span class="inline-flex items-center text-xs text-gray-700">
-              {{ currentPage }} / {{ totalPages }}
-            </span>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              class="ml-3 relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-
-          <!-- Desktop Pagination -->
-          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700">
-                Halaman <span class="font-medium">{{ currentPage }}</span> dari <span class="font-medium">{{ totalPages }}</span>
-              </p>
+        <div v-if="totalPages > 1 && !presensiStore.loading"
+          class="bg-white rounded-sm border border-gray-200 px-3 sm:px-4 py-3">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button @click="previousPage" :disabled="currentPage === 1"
+                class="relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+              </button>
+              <span class="inline-flex items-center text-xs text-gray-700">
+                {{ currentPage }} / {{ totalPages }}
+              </span>
+              <button @click="nextPage" :disabled="currentPage === totalPages"
+                class="ml-3 relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
             </div>
-            <div>
-              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
-                  @click="previousPage"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft class="h-5 w-5" />
-                </button>
-                <button
-                  v-for="page in visiblePages"
-                  :key="page"
-                  @click="goToPage(page)"
-                  :class="[
+
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Halaman <span class="font-medium">{{ currentPage }}</span> dari <span class="font-medium">{{
+                    totalPages }}</span>
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                  <button @click="previousPage" :disabled="currentPage === 1"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronLeft class="h-5 w-5" />
+                  </button>
+                  <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                     page === currentPage
                       ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
                       : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  ]"
-                >
-                  {{ page }}
-                </button>
-                <button
-                  @click="nextPage"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight class="h-5 w-5" />
-                </button>
-              </nav>
+                  ]">
+                    {{ page }}
+                  </button>
+                  <button @click="nextPage" :disabled="currentPage === totalPages"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronRight class="h-5 w-5" />
+                  </button>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onActivated } from 'vue'
 import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { usePresensiStore } from '~/stores/presensi'
+import { useAuthStore } from '~/stores/auth'
 
-// Data
-const selectedClass = ref('XII RPL 1')
+const presensiStore = usePresensiStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
 const currentPage = ref(1)
-const totalPages = ref(5)
+const itemsPerPage = 10
 
-// Dummy schedule data
-const schedules = ref([
-  {
-    id: 1,
-    timeRange: '07.10 – 09.10',
-    classTime: '08.10 – 09.10',
-    subject: 'PPB',
-    duration: '3 JP',
-    teacher: 'Pak Sandi',
-    status: 'belum', 
-  },
-  {
-    id: 2,
-    timeRange: '09.25 – 10.05',
-    classTime: '09.25 – 10.05',
-    subject: 'B. Indo',
-    duration: null,
-    teacher: 'Bu Ipik',
-    status: 'hadir',
-  },
-  {
-    id: 3,
-    timeRange: '10.20 – 11.40',
-    classTime: '10.20 – 11.40',
-    subject: 'Matematika',
-    duration: '2 JP',
-    teacher: 'Pak Budi',
-    status: 'belum',
+const schedules = computed(() => {
+  return presensiStore.jadwalHariIni || []
+})
+
+const kelasName = computed(() => {
+  const jadwalData = presensiStore.jadwalHariIniResponse
+
+  if (jadwalData?.kelas) {
+    const { name } = jadwalData.kelas
+    return `${name}`
   }
-])
 
-// Computed
+  return authStore.user?.kelas?.name || 'N/A'
+})
+
 const formattedDate = computed(() => {
   const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-  const date = new Date(2026, 1, 5) // February 5, 2026
-  return date.toLocaleDateString('id-ID', options)
+  return new Date().toLocaleDateString('id-ID', options)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(schedules.value.length / itemsPerPage)
+})
+
+const paginatedSchedules = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return schedules.value.slice(start, end)
 })
 
 const visiblePages = computed(() => {
@@ -299,27 +315,27 @@ const visiblePages = computed(() => {
   const maxVisible = 3
   let start = Math.max(1, currentPage.value - 1)
   let end = Math.min(totalPages.value, start + maxVisible - 1)
-  
+
   if (end - start < maxVisible - 1) {
     start = Math.max(1, end - maxVisible + 1)
   }
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
-// Methods
+const fetchJadwal = async () => {
+  await presensiStore.getJadwalHariIni()
+}
+
 const handlePresensi = (schedule) => {
-  navigateTo({
+  router.push({
     path: '/presensi/create',
     query: {
-      mapel: schedule.subject,
-      guru: schedule.teacher,
-      jam: schedule.timeRange,
-      scheduleId: schedule.id
+      jadwalId: schedule.id
     }
   })
 }
@@ -339,4 +355,8 @@ const nextPage = () => {
 const goToPage = (page) => {
   currentPage.value = page
 }
+
+onMounted(async () => {
+  await fetchJadwal()
+})
 </script>

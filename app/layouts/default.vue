@@ -185,7 +185,7 @@ const pageTitle = computed(() => {
     '/schedule': 'Jadwal Pelajaran',
     '/users': 'User Management',
     '/profile': 'Profil Saya',
-    '/teacher': 'Guru',
+    '/teacher': 'Data Guru',
     '/attendance': 'Absensi',
     '/reports': 'Laporan',
     '/presensi': 'Presensi',
