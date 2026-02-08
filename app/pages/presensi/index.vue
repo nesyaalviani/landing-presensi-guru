@@ -70,6 +70,18 @@
               <div class="flex items-start justify-between">
                 <div class="text-gray-700">
                   <p class="text-base font-medium">{{ schedule.timeRange }}</p>
+                  <span v-if="schedule.timeStatus === 'belum_dimulai'"
+                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">
+                    Belum Dimulai
+                  </span>
+                  <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
+                    class="inline-block mt-1 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">
+                    Sedang Berlangsung
+                  </span>
+                  <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
+                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">
+                    Sudah Selesai
+                  </span>
                 </div>
 
                 <div>
@@ -116,13 +128,23 @@
               </div>
 
               <div class="w-full">
-                <button v-if="schedule.status === 'belum'"
+                <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm"
                   @click="handlePresensi(schedule)">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
                   Presensi
+                </button>
+                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
+                  class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
+                  disabled>
+                  Belum Waktunya
+                </button>
+                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
+                  class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
+                  disabled>
+                  Waktu Sudah Lewat
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
@@ -150,7 +172,20 @@
                     <span class="text-sm">{{ schedule.teacher }}</span>
                   </div>
 
-                  <div class="mt-3">
+                  <div class="mt-3 flex items-center gap-2">
+                    <span v-if="schedule.timeStatus === 'belum_dimulai'"
+                      class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
+                      Belum Dimulai
+                    </span>
+                    <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
+                      class="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">
+                      Sedang Berlangsung
+                    </span>
+                    <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
+                      class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
+                      Sudah Selesai
+                    </span>
+
                     <span v-if="schedule.status === 'belum'"
                       class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
                       Belum Presensi
@@ -183,13 +218,21 @@
               </div>
 
               <div class="flex-shrink-0">
-                <button v-if="schedule.status === 'belum'"
+                <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
                   class="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
                   @click="handlePresensi(schedule)">
                   <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
                   Presensi
+                </button>
+                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
+                  class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
+                  Belum Waktunya
+                </button>
+                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
+                  class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
+                  Waktu Sudah Lewat
                 </button>
                 <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
                   disabled>
@@ -211,7 +254,7 @@
               clip-rule="evenodd" />
           </svg>
           <p class="text-xs sm:text-sm">
-            Klik tombol <strong>'Presensi'</strong> untuk mencatat kehadiran guru di setiap jam pelajaran.
+            Tombol <strong>'Presensi'</strong> hanya aktif saat jam pelajaran sedang berlangsung.
           </p>
         </div>
 
@@ -268,7 +311,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
 import { useAuthStore } from '~/stores/auth'
@@ -332,6 +375,10 @@ const fetchJadwal = async () => {
 }
 
 const handlePresensi = (schedule) => {
+  if (schedule.timeStatus !== 'sedang_berlangsung') {
+    return
+  }
+
   router.push({
     path: '/presensi/create',
     query: {

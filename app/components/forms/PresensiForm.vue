@@ -271,7 +271,7 @@
                 Keterangan Tambahan
               </label>
               <textarea v-model="presensiData.keterangan" rows="4"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400 resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400 resize-none"
                 placeholder="Tambahkan catatan atau keterangan jika diperlukan..."></textarea>
             </div>
           </div>
@@ -280,14 +280,14 @@
 
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none transition-all">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
               <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
               Batal
             </button>
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
               <svg v-if="!isSubmitting" class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -357,6 +357,20 @@ onMounted(async () => {
     return
   }
 
+  await presensiStore.getJadwalHariIni()
+
+  const scheduleToday = presensiStore.jadwalHariIni.find(s => s.id == jadwalId)
+
+  if (scheduleToday && scheduleToday.status !== 'belum') {
+    router.push('/presensi')
+    return
+  }
+
+  if (scheduleToday && scheduleToday.timeStatus !== 'sedang_berlangsung') {
+    router.push('/presensi')
+    return
+  }
+
   const result = await presensiStore.getJadwalById(jadwalId)
 
   if (result.success) {
@@ -365,7 +379,6 @@ onMounted(async () => {
     presensiData.value.namaGuru = result.data.namaGuru
     presensiData.value.jamPelajaran = result.data.jamPelajaran
   } else {
-    alert(result.message)
     router.push('/presensi')
   }
 
