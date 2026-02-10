@@ -1,7 +1,7 @@
 <template>
     <div class="flex min-h-screen w-full items-center justify-center bg-[rgb(248,248,248)] px-4 py-8">
         <div class="w-full max-w-md">
-            <div class="rounded-lg border border-gray-200 bg-white px-6 py-8 shadow-sm sm:px-8 sm:py-10">
+            <div class="rounded-sm border border-gray-200 bg-white px-6 py-8 shadow-sm sm:px-8 sm:py-10">
                 <div class="flex items-center justify-center mb-6">
                     <img class="h-16 w-auto sm:h-20 max-w-full align-middle"
                         src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png"
@@ -18,7 +18,7 @@
                     leave-active-class="transition ease-in duration-75"
                     leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                     <div v-if="errorMessage"
-                        class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-6 animate-shake"
+                        class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-sm mb-6 animate-shake"
                         role="alert">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -35,7 +35,7 @@
                     <div>
                         <div class="relative w-full">
                             <input type="text" id="username" v-model="formData.username"
-                                class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
+                                class="peer block w-full appearance-none rounded-sm border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
                                 placeholder=" " required />
                             <label for="username"
                                 class="origin-[0] peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600 absolute left-1 top-2 z-10 -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300">
@@ -49,7 +49,7 @@
         :type="showPassword ? 'text' : 'password'" 
         id="password" 
         v-model="formData.password"
-        class="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 pr-10 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
+        class="peer block w-full appearance-none rounded-sm border border-gray-300 bg-transparent px-2.5 pt-4 pb-2.5 pr-10 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 transition-all"
         placeholder=" " 
         required 
       />
@@ -73,7 +73,7 @@
 
                     <div class="flex w-full items-center pt-2">
                         <button type="submit" :disabled="isLoading"
-                            class="w-full rounded-lg bg-blue-600 py-3 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                            class="w-full rounded-sm bg-blue-600 py-3 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                             {{ isLoading ? 'Memproses...' : 'Masuk' }}
                         </button>
                     </div>

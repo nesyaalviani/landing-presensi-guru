@@ -1,4 +1,4 @@
-import { canAccessPage } from '~/utils/roles'
+import { canAccessPage, getDefaultRoute } from '~/utils/roles'
 
 export default defineNuxtRouteMiddleware((to, from) => {
     const authStore = useAuthStore()
@@ -8,19 +8,26 @@ export default defineNuxtRouteMiddleware((to, from) => {
     const isPublicRoute = publicRoutes.includes(to.path)
 
     if (authStore.isAuthenticated && to.path === '/login') {
-        return navigateTo('/')
+        return navigateTo(getDefaultRoute(authStore.user?.role))
     }
 
     if (!authStore.isAuthenticated && !isPublicRoute) {
         return navigateTo('/login')
     }
 
-    if (authStore.isAuthenticated && to.path !== '/') {
-        const pageName = to.path.split('/')[1]
+    if (authStore.isAuthenticated) {
         const userRole = authStore.user?.role
 
-        if (pageName && !canAccessPage(userRole, pageName)) {
-            return navigateTo('/')
+        if (to.path === '/') {
+            if (!canAccessPage(userRole, '/')) {
+                return navigateTo(getDefaultRoute(userRole))
+            }
+        } else {
+            const pageName = to.path.split('/')[1]
+
+            if (pageName && !canAccessPage(userRole, pageName)) {
+                return navigateTo(getDefaultRoute(userRole))
+            }
         }
     }
 })

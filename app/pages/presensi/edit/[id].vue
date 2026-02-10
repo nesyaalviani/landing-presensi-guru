@@ -1,5 +1,5 @@
 <template>
-    <PresensiForm/>
+    <PresensiForm />
 </template>
 
 <script setup>
