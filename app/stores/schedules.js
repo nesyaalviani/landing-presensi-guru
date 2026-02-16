@@ -28,7 +28,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     }
                 })
 
-                this.schedules = response
+                this.schedules = response.data || [] 
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
