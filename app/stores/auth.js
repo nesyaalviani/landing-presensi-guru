@@ -36,6 +36,39 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
+        async fetchMe() {
+            if (!this.token) {
+                return { success: false, message: 'No token' }
+            }
+
+            const config = useRuntimeConfig()
+
+            try {
+                const response = await $fetch('/auth/me', {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        Authorization: `Bearer ${this.token}`
+                    }
+                })
+
+                this.user = response.user
+
+                if (process.client) {
+                    localStorage.setItem('user', JSON.stringify(response.user))
+                }
+
+                return { success: true, user: response.user }
+            } catch (error) {
+                if (error.status === 401 || error.status === 403) {
+                    this.logout()
+                    return { success: false, shouldLogout: true }
+                }
+
+                return { success: false, message: error.data?.message }
+            }
+        },
+
         logout() {
             this.user = null
             this.token = null
