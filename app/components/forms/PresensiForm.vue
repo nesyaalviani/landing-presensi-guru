@@ -216,12 +216,9 @@
               </div>
             </div>
 
-            <div>
+            <div v-if="presensiData.statusKehadiran === 'Hadir'">
               <label class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                Bukti Foto
-                <span v-if="presensiData.statusKehadiran === 'Hadir'" class="text-red-500">*</span>
-                <span v-else-if="presensiData.statusKehadiran === 'Tidak Hadir'"
-                  class="text-gray-500 text-[10px] sm:text-xs">(Opsional)</span>
+                Bukti Foto <span class="text-red-500">*</span>
               </label>
 
               <div v-if="!previewImage">
