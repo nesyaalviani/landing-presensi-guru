@@ -378,7 +378,6 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
-    // Set loadingData true SEBELUM fetch data jika edit mode
     if (isEditMode.value) {
         loadingData.value = true
     }
