@@ -4,6 +4,10 @@ export const usePresensiStore = defineStore('presensi', {
     state: () => ({
         jadwalHariIni: [],
         jadwalHariIniResponse: null,
+        presensiList: [],
+        presensiPending: [],
+        presensiApproved: [],
+        presensiRejected: [],
         loading: false,
         error: null
     }),
@@ -136,6 +140,125 @@ export const usePresensiStore = defineStore('presensi', {
                     message: errorMessage
                 }
             }
+        },
+
+        async getAllPresensi() {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch('/presensi', {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                this.presensiList = response || []
+
+                this.presensiPending = this.presensiList.filter(p => p.status_approve === 'Pending')
+                this.presensiApproved = this.presensiList.filter(p => p.status_approve === 'Approved')
+                this.presensiRejected = this.presensiList.filter(p => p.status_approve === 'Rejected')
+
+                this.loading = false
+
+                return {
+                    success: true,
+                    data: response
+                }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch presensi'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data presensi.'
+                }
+            }
+        },
+
+        async getPresensiById(presensiId) {
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/presensi/${presensiId}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                return {
+                    success: true,
+                    data: response
+                }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch presensi detail'
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil detail presensi.'
+                }
+            }
+        },
+
+        async approvePresensi(presensiId, statusApprove) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/presensi/${presensiId}/approve`, {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: {
+                        status_approve: statusApprove
+                    }
+                })
+
+                await this.getAllPresensi()
+
+                this.loading = false
+                return {
+                    success: true,
+                    data: response,
+                    message: response.message || 'Presensi berhasil diproses'
+                }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to approve presensi'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal memproses presensi.'
+                }
+            }
         }
     },
 
@@ -162,6 +285,18 @@ export const usePresensiStore = defineStore('presensi', {
 
         kelasInfo: (state) => {
             return state.jadwalHariIniResponse?.kelas || null
+        },
+
+        totalPending: (state) => {
+            return state.presensiPending.length
+        },
+
+        totalApproved: (state) => {
+            return state.presensiApproved.length
+        },
+
+        totalRejected: (state) => {
+            return state.presensiRejected.length
         }
     }
 })

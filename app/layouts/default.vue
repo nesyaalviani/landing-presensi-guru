@@ -186,7 +186,7 @@ const pageTitle = computed(() => {
     '/users': 'User Management',
     '/profile': 'Profil Saya',
     '/teacher': 'Data Guru',
-    '/attendance': 'Absensi',
+    '/approval': 'Absensi',
     '/reports': 'Laporan',
     '/presensi': 'Presensi',
     '/riwayat-presensi': 'Riwayat Presensi'

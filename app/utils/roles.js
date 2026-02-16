@@ -24,7 +24,7 @@ export const ROLE_MENUS = {
 
   [ROLES.PIKET]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
-    { path: '/attendance', label: 'Absensi', icon: 'ClipboardCheck' }
+    { path: '/approval', label: 'Absensi', icon: 'ClipboardCheck' }
   ],
 
   [ROLES.KS]: [
@@ -38,7 +38,7 @@ export const ROLE_MENUS = {
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile'],
-  [ROLES.PIKET]: ['/', 'attendance', 'profile'],
+  [ROLES.PIKET]: ['/', 'approval', 'profile'],
   [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']
 }
 
