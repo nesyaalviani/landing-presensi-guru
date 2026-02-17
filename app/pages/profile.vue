@@ -32,12 +32,10 @@
                 <div class="text-center mt-4">
                   <h2 class="text-lg sm:text-xl font-bold text-gray-900">{{ userData.name }}</h2>
                   <div class="flex items-center justify-center gap-2 mt-2">
-                    <span
-                      :class="[
-                        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                        getRoleBadgeClass(userData.role)
-                      ]"
-                    >
+                    <span :class="[
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                      getRoleBadgeClass(userData.role)
+                    ]">
                       <User class="w-3 h-3 mr-1" />
                       {{ getRoleLabel(userData.role) }}
                     </span>
@@ -66,7 +64,7 @@
         </div>
 
         <div class="lg:col-span-2 space-y-4 sm:space-y-6">
-          <div class="bg-white rounded-lg border border-gray-200">
+          <div class="bg-white rounded-sm border border-gray-200">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <UserCircle class="w-5 h-5 text-blue-600" />

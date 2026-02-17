@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
     <div class="max-w-full mx-auto">
       <!-- Header -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6 MT-0">
+      <div class="bg-white rounded-sm shadow-md p-6 mb-6 MT-0">
         <div class="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">XII RPL 1</h1>
@@ -16,12 +16,13 @@
       </div>
 
       <!-- Schedule Table Container -->
-      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="bg-white rounded-sm shadow-md overflow-hidden">
         <!-- Info: Scroll horizontal -->
         <div class="bg-blue-50 border-b border-blue-100 px-4 py-2.5">
           <p class="text-xs text-blue-700 flex items-center gap-2">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Geser ke kanan untuk melihat jadwal lengkap
           </p>
@@ -33,7 +34,9 @@
             <!-- Table Header -->
             <thead>
               <tr class="bg-gray-100 border-b-2 border-gray-800">
-                <th class="day-cell border border-gray-900 p-2 text-left font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10"></th>
+                <th
+                  class="day-cell border border-gray-900 p-2 text-left font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">
+                </th>
                 <template v-for="(slot, index) in timeSlots" :key="index">
                   <th v-if="slot.type === 'class'" class="time-cell border border-gray-900 p-2 text-center">
                     <div class="font-semibold text-gray-900 text-base">{{ slot.name }}</div>
@@ -51,18 +54,21 @@
             <!-- Table Body -->
             <tbody>
               <tr v-for="(day, dayName) in schedule" :key="dayName" class="hover:bg-gray-50 transition-colors">
-                <td class="day-cell border border-gray-900 p-3 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">
+                <td
+                  class="day-cell border border-gray-900 p-3 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">
                   {{ dayName }}
                 </td>
                 <template v-for="(session, idx) in day" :key="idx">
                   <td v-if="session.type === 'break'" class="schedule-cell border border-gray-900 bg-white"></td>
                   <td v-else-if="session.type === 'empty'" class="schedule-cell border border-gray-900 bg-white"></td>
-                  <td v-else class="schedule-cell border border-gray-900 p-0" :style="{ backgroundColor: session.color }">
-                    <button @click="handlePresensi(session, dayName, idx)" class="w-full h-full p-2 text-left hover:opacity-80 hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95">
-                        <div class="font-bold text-sm text-gray-900">{{ session.subject }}</div>
-                        <div class="text-xs mt-1 text-gray-700">{{ session.teacher }}</div>
+                  <td v-else class="schedule-cell border border-gray-900 p-0"
+                    :style="{ backgroundColor: session.color }">
+                    <button @click="handlePresensi(session, dayName, idx)"
+                      class="w-full h-full p-2 text-left hover:opacity-80 hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95">
+                      <div class="font-bold text-sm text-gray-900">{{ session.subject }}</div>
+                      <div class="text-xs mt-1 text-gray-700">{{ session.teacher }}</div>
                     </button>
-                </td>
+                  </td>
                 </template>
               </tr>
             </tbody>
@@ -71,11 +77,13 @@
       </div>
 
       <!-- Legend -->
-      <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+      <div class="bg-white rounded-sm shadow-md p-6 mt-6">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">Keterangan Mata Pelajaran:</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <div v-for="(subject, index) in subjects" :key="index" class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded border border-gray-300 flex-shrink-0" :style="{ backgroundColor: subject.color }"></div>
+            <div class="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
+              :style="{ backgroundColor: subject.color }">
+            </div>
             <span class="text-xs text-gray-700">{{ subject.code }} - {{ subject.name }}</span>
           </div>
         </div>
