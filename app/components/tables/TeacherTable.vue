@@ -1,24 +1,28 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
+
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+
                     <div class="relative w-full sm:w-80">
-                        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama guru..."
-                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none" />
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none"
+                            @input="onSearchInput" />
                     </div>
 
                     <div class="relative w-full sm:w-50">
                         <select v-model="selectedMapel"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8"
+                            @change="onFilterChange">
                             <option :value="null">Semua Mata Pelajaran</option>
                             <option v-for="mapel in mapels" :key="mapel.id_mapel" :value="mapel.id_mapel">
                                 {{ mapel.nama_mapel }}
                             </option>
                         </select>
                         <ChevronDown
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
 
@@ -36,37 +40,32 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th scope="col"
+                                <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nama Guru
-                                </th>
-                                <th scope="col"
+                                    Nama Guru</th>
+                                <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    NIP
-                                </th>
-                                <th scope="col"
+                                    NIP</th>
+                                <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Mata Pelajaran
-                                </th>
-                                <th scope="col"
+                                    Mata Pelajaran</th>
+                                <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Aksi
-                                </th>
+                                    Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
+
                             <template v-if="loading">
-                                <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
+                                <tr v-for="i in 10" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-27 sm:w-32 bg-gray-200 rounded animate-pulse"></div>
+                                        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-wrap gap-1">
-                                            <div class="h-5 w-22 bg-gray-200 rounded-full animate-pulse"></div>
-                                        </div>
+                                        <div class="h-5 w-24 bg-gray-200 rounded-full animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-7 w-7 bg-gray-200 rounded-md animate-pulse"></div>
@@ -79,7 +78,7 @@
                                     <td colspan="4" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="teachersStore.getTeachers()"
+                                            <button @click="fetchTeachers"
                                                 class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
                                                 Coba Lagi
                                             </button>
@@ -88,7 +87,7 @@
                                 </tr>
                             </template>
 
-                            <template v-else-if="filteredTeachers.length === 0">
+                            <template v-else-if="teachers.length === 0">
                                 <tr>
                                     <td colspan="4" class="px-6 py-12">
                                         <div class="text-center">
@@ -99,7 +98,7 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="teacher in filteredTeachers" :key="teacher.id_guru"
+                                <tr v-for="teacher in teachers" :key="teacher.id_guru"
                                     class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ teacher.nama_guru }}
@@ -114,9 +113,7 @@
                                                 {{ mapel.nama_mapel }}
                                             </span>
                                             <span v-if="!teacher.mapel || teacher.mapel.length === 0"
-                                                class="text-gray-400 text-xs italic">
-                                                -
-                                            </span>
+                                                class="text-gray-400 text-xs italic">-</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -137,27 +134,34 @@
             <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
-                        <button
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1 || loading"
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Previous
                         </button>
-                        <button
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(pagination.page + 1)"
+                            :disabled="pagination.page >= pagination.totalPages || loading"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
                         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1 || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronLeft class="h-5 w-5" />
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                1
+                            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :disabled="loading"
+                                :class="[
+                                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                                    page === pagination.page
+                                        ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                ]">
+                                {{ page }}
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(pagination.page + 1)"
+                                :disabled="pagination.page >= pagination.totalPages || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronRight class="h-5 w-5" />
                             </button>
                         </nav>
@@ -201,43 +205,75 @@ const teachersStore = useTeachersStore()
 
 const searchQuery = ref('')
 const selectedMapel = ref(null)
+let searchTimer = null
+
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
 const teachers = computed(() => teachersStore.teachers)
 const mapels = computed(() => teachersStore.mapels)
+const pagination = computed(() => teachersStore.pagination)
 const loading = computed(() => teachersStore.loading)
 const error = computed(() => teachersStore.error)
 
-const filteredTeachers = computed(() => {
-    let filtered = teachers.value
-
-    if (selectedMapel.value) {
-        filtered = filtered.filter(teacher =>
-            teacher.mapel && teacher.mapel.some(m => m.id_mapel === selectedMapel.value)
-        )
-    }
-
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(teacher =>
-            teacher.nama_guru?.toLowerCase().includes(query) ||
-            teacher.nip?.includes(query)
-        )
-    }
-
-    return filtered
+const rangeStart = computed(() => {
+    if (pagination.value.totalItems === 0) return 0
+    return (pagination.value.page - 1) * pagination.value.perPage + 1
 })
 
-const setButtonRef = (el, id) => {
-    if (el) {
-        buttonRefs.value[id] = el
+const rangeEnd = computed(() => {
+    return Math.min(
+        pagination.value.page * pagination.value.perPage,
+        pagination.value.totalItems
+    )
+})
+
+const visiblePages = computed(() => {
+    const total = pagination.value.totalPages
+    const current = pagination.value.page
+    const maxVisible = 3
+
+    let start = Math.max(1, current - 1)
+    let end = Math.min(total, start + maxVisible - 1)
+
+    if (end - start < maxVisible - 1) {
+        start = Math.max(1, end - maxVisible + 1)
     }
+
+    const pages = []
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
+})
+
+const fetchTeachers = async (page = 1) => {
+    await teachersStore.getTeachers({
+        search: searchQuery.value || undefined,
+        id_mapel: selectedMapel.value || undefined,
+        page
+    })
 }
 
-const getTeacherById = (id) => {
-    return teachers.value.find(t => t.id_guru === id)
+const onSearchInput = () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => {
+        fetchTeachers(1)
+    }, 400)
+}
+
+const onFilterChange = () => {
+    fetchTeachers(1)
+}
+
+const goToPage = (page) => {
+    if (page < 1 || page > pagination.value.totalPages) return
+    fetchTeachers(page)
+}
+
+const getTeacherById = (id) => teachers.value.find(t => t.id_guru === id)
+
+const setButtonRef = (el, id) => {
+    if (el) buttonRefs.value[id] = el
 }
 
 const calculateDropdownPosition = (buttonEl) => {
@@ -250,35 +286,18 @@ const calculateDropdownPosition = (buttonEl) => {
     let top = rect.bottom + 8
     let left = rect.right - dropdownWidth
 
-    if (top + dropdownHeight > window.innerHeight) {
-        top = rect.top - dropdownHeight - 8
-    }
+    if (top + dropdownHeight > window.innerHeight) top = rect.top - dropdownHeight - 8
+    if (left < 8) left = 8
+    if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
 
-    if (left < 8) {
-        left = 8
-    }
-
-    if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-    }
-
-    return {
-        top: `${top}px`,
-        left: `${left}px`
-    }
+    return { top: `${top}px`, left: `${left}px` }
 }
 
 const toggleDropdown = (id) => {
-    if (activeDropdown.value === id) {
-        closeDropdown()
-        return
-    }
-
+    if (activeDropdown.value === id) { closeDropdown(); return }
     activeDropdown.value = id
-
     nextTick(() => {
-        const buttonEl = buttonRefs.value[id]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
+        dropdownStyle.value = calculateDropdownPosition(buttonRefs.value[id])
     })
 }
 
@@ -289,38 +308,33 @@ const closeDropdown = () => {
 
 const handleDelete = async (teacher) => {
     if (!teacher) return
+    if (!confirm(`Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}?`)) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}?`)) {
-        const result = await teachersStore.deleteTeacher(teacher.id_guru)
+    const result = await teachersStore.deleteTeacher(teacher.id_guru)
 
-        if (result.success) {
-            closeDropdown()
-            alert('Guru berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus guru')
-        }
+    if (result.success) {
+        closeDropdown()
+        alert('Guru berhasil dihapus')
+    } else {
+        alert(result.message || 'Gagal menghapus guru')
     }
 }
 
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
-
-    if (!isDropdown && !isButton) {
-        closeDropdown()
-    }
+    if (!isDropdown && !isButton) closeDropdown()
 }
 
 const handleScroll = () => {
     if (activeDropdown.value !== null) {
-        const buttonEl = buttonRefs.value[activeDropdown.value]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
+        dropdownStyle.value = calculateDropdownPosition(buttonRefs.value[activeDropdown.value])
     }
 }
 
 onMounted(async () => {
     await Promise.all([
-        teachersStore.getTeachers(),
+        fetchTeachers(1),
         teachersStore.getMapels()
     ])
 
@@ -332,6 +346,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    clearTimeout(searchTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
