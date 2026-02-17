@@ -2,7 +2,7 @@
   <section>
     <div class="mx-auto max-w-7xl">
       <div class="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="px-4 py-6 shadow-lg shadow-blue-100 bg-white rounded-lg">
+        <div class="px-4 py-6 shadow-lg shadow-blue-100 bg-white rounded-sm">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Jumlah Guru</p>
@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <div class="px-4 py-6 shadow-lg shadow-green-100 bg-white rounded-lg">
+        <div class="px-4 py-6 shadow-lg shadow-green-100 bg-white rounded-sm">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Presensi Masuk</p>
@@ -38,7 +38,7 @@
           </div>
         </div>
 
-        <div class="px-4 py-6 shadow-lg shadow-rose-100 bg-white rounded-lg">
+        <div class="px-4 py-6 shadow-lg shadow-rose-100 bg-white rounded-sm">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Belum Presensi</p>
@@ -68,7 +68,8 @@
       <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div class="relative w-full sm:max-w-md">
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input type="text" placeholder="Cari berdasarkan nama guru..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+          <input type="text" placeholder="Cari berdasarkan nama guru..."
+            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
         </div>
       </div>
 

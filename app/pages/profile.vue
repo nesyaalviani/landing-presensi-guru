@@ -10,42 +10,40 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Left Column: Profile Card -->
         <div class="lg:col-span-1">
-          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div class="bg-white rounded-sm border border-gray-200 overflow-hidden">
             <!-- Profile Header with Gradient -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 h-24 sm:h-32"></div>
-            
+
             <!-- Profile Picture & Info -->
             <div class="px-4 sm:px-6 pb-6">
               <div class="flex flex-col items-center -mt-12 sm:-mt-16">
                 <!-- Avatar -->
                 <div class="relative">
-                  <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
-                    <img
-                      v-if="userData.avatar"
-                      :src="userData.avatar"
-                      :alt="userData.name"
-                      class="w-full h-full object-cover"
-                    />
-                    <div v-else class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                  <div
+                    class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
+                    <img v-if="userData.avatar" :src="userData.avatar" :alt="userData.name"
+                      class="w-full h-full object-cover" />
+                    <div v-else
+                      class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                       <span class="text-3xl sm:text-4xl font-bold text-white">
                         {{ getInitials(userData.name) }}
                       </span>
                     </div>
                   </div>
                   <!-- Status Badge -->
-                  <div class="absolute bottom-1 right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 border-2 border-white rounded-full"></div>
+                  <div
+                    class="absolute bottom-1 right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 border-2 border-white rounded-full">
+                  </div>
                 </div>
 
                 <!-- Name & Role -->
                 <div class="text-center mt-4">
                   <h2 class="text-lg sm:text-xl font-bold text-gray-900">{{ userData.name }}</h2>
                   <div class="flex items-center justify-center gap-2 mt-2">
-                    <span
-                      :class="[
-                        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                        getRoleBadgeClass(userData.role)
-                      ]"
-                    >
+                    <span :class="[
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                      getRoleBadgeClass(userData.role)
+                    ]">
                       <User class="w-3 h-3 mr-1" />
                       {{ getRoleLabel(userData.role) }}
                     </span>
@@ -71,17 +69,13 @@
 
           <!-- Action Buttons (Mobile & Desktop) -->
           <div class="mt-4 space-y-2">
-            <button
-              @click="showEditModal = true"
-              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
-            >
+            <button @click="showEditModal = true"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-all shadow-sm hover:shadow-md">
               <Edit class="w-4 h-4" />
               <span class="text-sm font-medium">Edit Profil</span>
             </button>
-            <button
-              @click="showPasswordModal = true"
-              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-            >
+            <button @click="showPasswordModal = true"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-sm hover:bg-gray-50 transition-all">
               <Lock class="w-4 h-4" />
               <span class="text-sm font-medium">Ubah Password</span>
             </button>
@@ -90,7 +84,7 @@
 
         <!-- Right Column: Details -->
         <div class="lg:col-span-2 space-y-4 sm:space-y-6">
-          <div class="bg-white rounded-lg border border-gray-200">
+          <div class="bg-white rounded-sm border border-gray-200">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <UserCircle class="w-5 h-5 text-blue-600" />
@@ -116,7 +110,7 @@
           </div>
 
           <!-- Account Information -->
-          <div class="bg-white rounded-lg border border-gray-200">
+          <div class="bg-white rounded-sm border border-gray-200">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <IdCard class="w-5 h-5 text-blue-600" />
@@ -161,7 +155,7 @@
           </div>
 
           <!-- Additional Info based on Role -->
-          <!-- <div v-if="userData.role === 'guru'" class="bg-white rounded-lg border border-gray-200">
+          <!-- <div v-if="userData.role === 'guru'" class="bg-white rounded-sm border border-gray-200">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <BookOpen class="w-5 h-5 text-blue-600" />
@@ -198,13 +192,13 @@
             </div>
           </div> -->
 
-          <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+          <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-sm p-4">
             <div class="flex items-start gap-3">
               <Info class="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
               <div class="flex-1">
                 <h4 class="text-sm font-semibold text-amber-900 mb-1">Informasi Keamanan</h4>
                 <p class="text-xs text-amber-800">
-                  Akun Anda dibuat oleh <span class="font-semibold">{{ userData.createdBy }}</span>. 
+                  Akun Anda dibuat oleh <span class="font-semibold">{{ userData.createdBy }}</span>.
                   Pastikan untuk mengubah password default dan menjaga kerahasiaan akun Anda.
                 </p>
               </div>
@@ -216,23 +210,14 @@
 
     <!-- Edit Profile Modal -->
     <Transition name="modal">
-      <div
-        v-if="showEditModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        @click.self="showEditModal = false"
-      >
-        <div
-          class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          @click.stop
-        >
+      <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        @click.self="showEditModal = false">
+        <div class="relative bg-white rounded-sm shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
           <!-- Modal Header -->
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <div class="flex items-center justify-between">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900">Edit Profil</h3>
-              <button
-                @click="showEditModal = false"
-                class="text-gray-400 hover:text-gray-500 transition"
-              >
+              <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-500 transition">
                 <X class="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
@@ -244,37 +229,28 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
-                  <input
-                    v-model="editForm.name"
-                    type="text"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <input v-model="editForm.name" type="text"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    v-model="editForm.email"
-                    type="email"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <input v-model="editForm.email" type="email"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
               </div>
             </form>
           </div>
 
           <!-- Modal Footer -->
-          <div class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-white">
-            <button
-              @click="showEditModal = false"
-              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
+          <div
+            class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-white">
+            <button @click="showEditModal = false"
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 transition">
               <X class="w-4 h-4" />
               Batal
             </button>
-            <button
-              @click="handleUpdateProfile"
-              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
-            >
+            <button @click="handleUpdateProfile"
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 transition">
               <Save class="w-4 h-4" />
               Simpan Perubahan
             </button>
@@ -285,23 +261,14 @@
 
     <!-- Change Password Modal -->
     <Transition name="modal">
-      <div
-        v-if="showPasswordModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        @click.self="showPasswordModal = false"
-      >
-        <div
-          class="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-          @click.stop
-        >
+      <div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        @click.self="showPasswordModal = false">
+        <div class="relative bg-white rounded-sm shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto" @click.stop>
           <!-- Modal Header -->
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <div class="flex items-center justify-between">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900">Ubah Password</h3>
-              <button
-                @click="showPasswordModal = false"
-                class="text-gray-400 hover:text-gray-500 transition"
-              >
+              <button @click="showPasswordModal = false" class="text-gray-400 hover:text-gray-500 transition">
                 <X class="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
@@ -313,16 +280,10 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password Lama</label>
                 <div class="relative">
-                  <input
-                    v-model="passwordForm.oldPassword"
-                    :type="showOldPassword ? 'text' : 'password'"
-                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    @click="showOldPassword = !showOldPassword"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
+                  <input v-model="passwordForm.oldPassword" :type="showOldPassword ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <button type="button" @click="showOldPassword = !showOldPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     <Eye v-if="!showOldPassword" class="w-4 h-4" />
                     <EyeOff v-else class="w-4 h-4" />
                   </button>
@@ -331,16 +292,10 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password Baru</label>
                 <div class="relative">
-                  <input
-                    v-model="passwordForm.newPassword"
-                    :type="showNewPassword ? 'text' : 'password'"
-                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    @click="showNewPassword = !showNewPassword"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
+                  <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <button type="button" @click="showNewPassword = !showNewPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     <Eye v-if="!showNewPassword" class="w-4 h-4" />
                     <EyeOff v-else class="w-4 h-4" />
                   </button>
@@ -349,16 +304,10 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password Baru</label>
                 <div class="relative">
-                  <input
-                    v-model="passwordForm.confirmPassword"
-                    :type="showConfirmPassword ? 'text' : 'password'"
-                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
+                  <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     <Eye v-if="!showConfirmPassword" class="w-4 h-4" />
                     <EyeOff v-else class="w-4 h-4" />
                   </button>
@@ -368,18 +317,15 @@
           </div>
 
           <!-- Modal Footer -->
-          <div class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-white">
-            <button
-              @click="showPasswordModal = false"
-              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
+          <div
+            class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-white">
+            <button @click="showPasswordModal = false"
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 transition">
               <X class="w-4 h-4" />
               Batal
             </button>
-            <button
-              @click="handleChangePassword"
-              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
-            >
+            <button @click="handleChangePassword"
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 transition">
               <Lock class="w-4 h-4" />
               Ubah Password
             </button>
@@ -392,7 +338,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { User, UserCircle, Edit, Lock, IdCard, Info, X, Save, Eye, EyeOff, BookOpen} from 'lucide-vue-next'
+import { User, UserCircle, Edit, Lock, IdCard, Info, X, Save, Eye, EyeOff, BookOpen } from 'lucide-vue-next'
 
 
 const userData = ref({
@@ -469,9 +415,9 @@ const getRoleBadgeClass = (role) => {
 }
 
 const formatDate = (dateString) => {
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
+  const options = {
+    year: 'numeric',
+    month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
@@ -484,12 +430,12 @@ const handleUpdateProfile = async () => {
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     userData.value.name = editForm.value.name
     userData.value.email = editForm.value.email
     userData.value.phone = editForm.value.phone
     userData.value.address = editForm.value.address
-    
+
     showEditModal.value = false
     alert('Profil berhasil diperbarui!')
   } catch (error) {
@@ -512,18 +458,18 @@ const handleChangePassword = async () => {
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     passwordForm.value = {
       oldPassword: '',
       newPassword: '',
       confirmPassword: ''
     }
-    
+
     // Reset visibility states
     showOldPassword.value = false
     showNewPassword.value = false
     showConfirmPassword.value = false
-    
+
     showPasswordModal.value = false
     alert('Password berhasil diubah!')
   } catch (error) {
