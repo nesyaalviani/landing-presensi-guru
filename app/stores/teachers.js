@@ -4,12 +4,10 @@ export const useTeachersStore = defineStore('teachers', {
     state: () => ({
         teachers: [],
         mapels: [],
-        pagination: {
-            page: 1,
-            perPage: 10,
-            totalItems: 0,
-            totalPages: 1
-        },
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 1,
         loading: false,
         error: null
     }),
@@ -45,7 +43,11 @@ export const useTeachersStore = defineStore('teachers', {
                 })
 
                 this.teachers = response.data || []
-                this.pagination = response.pagination || this.pagination
+                const p = response.pagination || {}
+                this.page = p.page ?? 1
+                this.perPage = p.perPage ?? 10
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
 
                 this.loading = false
                 return { success: true, data: response }
@@ -141,8 +143,6 @@ export const useTeachersStore = defineStore('teachers', {
                     body: teacherData
                 })
 
-                await this.getTeachers({ page: 1 })
-
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -187,8 +187,6 @@ export const useTeachersStore = defineStore('teachers', {
                     body: teacherData
                 })
 
-                await this.getTeachers({ page: this.pagination.page })
-
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -231,12 +229,6 @@ export const useTeachersStore = defineStore('teachers', {
                         ...(token && { Authorization: `Bearer ${token}` })
                     }
                 })
-
-                const newPage = this.teachers.length === 1 && this.pagination.page > 1
-                    ? this.pagination.page - 1
-                    : this.pagination.page
-
-                await this.getTeachers({ page: newPage })
 
                 this.loading = false
                 return { success: true }

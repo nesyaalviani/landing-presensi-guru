@@ -134,33 +134,30 @@
             <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
-                        <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1 || loading"
+                        <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
                             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Previous
                         </button>
-                        <button @click="goToPage(pagination.page + 1)"
-                            :disabled="pagination.page >= pagination.totalPages || loading"
+                        <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
                             class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
                         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1 || loading"
+                            <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
                                 class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronLeft class="h-5 w-5" />
                             </button>
-                            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :disabled="loading"
-                                :class="[
-                                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                                    page === pagination.page
-                                        ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
-                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                                ]">
-                                {{ page }}
+                            <button v-for="p in visiblePages" :key="p" @click="goToPage(p)" :disabled="loading" :class="[
+                                'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                                p === page
+                                    ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            ]">
+                                {{ p }}
                             </button>
-                            <button @click="goToPage(pagination.page + 1)"
-                                :disabled="pagination.page >= pagination.totalPages || loading"
+                            <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
                                 class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronRight class="h-5 w-5" />
                             </button>
@@ -213,25 +210,26 @@ const buttonRefs = ref({})
 
 const teachers = computed(() => teachersStore.teachers)
 const mapels = computed(() => teachersStore.mapels)
-const pagination = computed(() => teachersStore.pagination)
 const loading = computed(() => teachersStore.loading)
 const error = computed(() => teachersStore.error)
 
+const page = computed(() => teachersStore.page)
+const perPage = computed(() => teachersStore.perPage)
+const totalItems = computed(() => teachersStore.totalItems)
+const totalPages = computed(() => teachersStore.totalPages)
+
 const rangeStart = computed(() => {
-    if (pagination.value.totalItems === 0) return 0
-    return (pagination.value.page - 1) * pagination.value.perPage + 1
+    if (totalItems.value === 0) return 0
+    return (page.value - 1) * perPage.value + 1
 })
 
 const rangeEnd = computed(() => {
-    return Math.min(
-        pagination.value.page * pagination.value.perPage,
-        pagination.value.totalItems
-    )
+    return Math.min(page.value * perPage.value, totalItems.value)
 })
 
 const visiblePages = computed(() => {
-    const total = pagination.value.totalPages
-    const current = pagination.value.page
+    const total = totalPages.value
+    const current = page.value
     const maxVisible = 3
 
     let start = Math.max(1, current - 1)
@@ -266,7 +264,7 @@ const onFilterChange = () => {
 }
 
 const goToPage = (page) => {
-    if (page < 1 || page > pagination.value.totalPages) return
+    if (page < 1 || page > totalPages.value) return
     fetchTeachers(page)
 }
 
