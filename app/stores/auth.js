@@ -1,3 +1,4 @@
+// stores/auth.js
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
@@ -36,6 +37,114 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
+        async fetchProfile() {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch('/auth/me', {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                const userData = response.user ?? response
+
+                this.user = userData
+
+                if (process.client) {
+                    localStorage.setItem('user', JSON.stringify(userData))
+                }
+
+                return { success: true, user: userData }
+            } catch (error) {
+                if (error.status === 401 || error.status === 403) {
+                    this.logout()
+                    return { success: false, shouldLogout: true }
+                }
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data profil.'
+                }
+            }
+        },
+
+        async updateProfile(payload) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const body = { name: payload.name.trim() }
+                if (payload.password?.trim()) {
+                    body.password = payload.password.trim()
+                }
+
+                await $fetch('/auth/profile', {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body
+                })
+
+                const refreshResult = await this.fetchProfile()
+
+                if (!refreshResult.success) {
+                    return refreshResult
+                }
+
+                return { success: true, user: this.user }
+            } catch (error) {
+                if (error.status === 401 || error.status === 403) {
+                    this.logout()
+                    return { success: false, shouldLogout: true }
+                }
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal memperbarui profil.'
+                }
+            }
+        },
+
+        async fetchKelas(id_kelas) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/kelas/${id_kelas}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                this.user = { ...this.user, kelas: response }
+
+                return { success: true, data: response }
+            } catch (error) {
+                this.user = { ...this.user, kelas: null }
+                return { success: false, message: error.data?.message }
+            }
+        },
+
         async fetchMe() {
             if (!this.token) {
                 return { success: false, message: 'No token' }
@@ -52,13 +161,15 @@ export const useAuthStore = defineStore('auth', {
                     }
                 })
 
-                this.user = response.user
+                const userData = response.user ?? response
+
+                this.user = userData
 
                 if (process.client) {
-                    localStorage.setItem('user', JSON.stringify(response.user))
+                    localStorage.setItem('user', JSON.stringify(userData))
                 }
 
-                return { success: true, user: response.user }
+                return { success: true, user: userData }
             } catch (error) {
                 if (error.status === 401 || error.status === 403) {
                     this.logout()
@@ -91,6 +202,16 @@ export const useAuthStore = defineStore('auth', {
                     this.isAuthenticated = true
                 }
             }
+        }
+    },
+
+    getters: {
+        namaKelas: (state) => {
+            return state.user?.kelas?.name || null
+        },
+
+        hasKelas: (state) => {
+            return !!state.user?.kelas
         }
     }
 })
