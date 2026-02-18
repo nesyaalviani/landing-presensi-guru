@@ -2,7 +2,7 @@
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
 
-            <div class="mb-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
                     <div class="relative w-full sm:w-80">
