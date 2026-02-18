@@ -7,11 +7,11 @@
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Jumlah Guru</p>
               <p class="mt-2 text-3xl font-semibold text-gray-800">25</p>
-              <div class="mt-2 flex items-center gap-1">
+              <!-- <div class="mt-2 flex items-center gap-1">
                 <ArrowUp class="h-4 w-4 text-green-500" />
                 <span class="text-sm font-medium text-green-500">4.9%</span>
                 <span class="text-xs text-gray-400">vs last month</span>
-              </div>
+              </div> -->
             </div>
             <div
               class="h-12 w-12 rounded-xl bg-blue-50 p-2.5 text-blue-400 flex items-center justify-center flex-shrink-0">
@@ -25,11 +25,11 @@
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Presensi Masuk</p>
               <p class="mt-2 text-3xl font-semibold text-gray-800">35</p>
-              <div class="mt-2 flex items-center gap-1">
+              <!-- <div class="mt-2 flex items-center gap-1">
                 <ArrowUp class="h-4 w-4 text-green-500" />
                 <span class="text-sm font-medium text-green-500">4.9%</span>
                 <span class="text-xs text-gray-400">vs last month</span>
-              </div>
+              </div> -->
             </div>
             <div
               class="h-12 w-12 rounded-xl bg-green-50 p-2.5 text-green-400 flex items-center justify-center flex-shrink-0">
@@ -43,11 +43,11 @@
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-500">Belum Presensi</p>
               <p class="mt-2 text-3xl font-semibold text-gray-800">10</p>
-              <div class="mt-2 flex items-center gap-1">
+              <!-- <div class="mt-2 flex items-center gap-1">
                 <ArrowUp class="h-4 w-4 text-green-500" />
                 <span class="text-sm font-medium text-green-500">10</span>
                 <span class="text-xs text-gray-400">vs last month</span>
-              </div>
+              </div> -->
             </div>
             <div
               class="h-12 w-12 rounded-xl bg-rose-50 p-2.5 text-rose-400 flex items-center justify-center flex-shrink-0">
