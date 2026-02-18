@@ -12,8 +12,10 @@
   "dependencies": {
     "@pinia/nuxt": "^0.11.3",
     "@tailwindcss/vite": "^4.1.18",
+    "apexcharts": "^3.46.0",
     "clock-timepicker": "^1.0.7",
     "daisyui": "^5.5.14",
+    "flowbite": "^4.0.1",
     "lucide-vue-next": "^0.563.0",
     "nuxt": "^4.3.0",
     "pinia": "^3.0.4",
