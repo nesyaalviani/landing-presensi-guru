@@ -31,6 +31,10 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+
+                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label for="nama_guru"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -46,8 +50,10 @@
                             <label for="nip" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 NIP <span class="text-red-500">*</span>
                             </label>
-                            <input id="nip" v-model="formData.nip" type="text" placeholder="Contoh: 185273770" required
-                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400" />
+                            <input id="nip" v-model="formData.nip" type="text" inputmode="numeric" pattern="[0-9]*"
+                                placeholder="Contoh: 185273770" required class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-sm
+         focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+         outline-none transition-all hover:border-gray-400" />
                             <p class="mt-1.5 text-xs text-gray-500">Nomor Induk Pegawai harus unik</p>
                         </div>
 
@@ -89,17 +95,11 @@
                                     </button>
                                 </span>
                             </div>
-                            <p class="mt-1.5 text-xs text-gray-500">Pilih satu atau lebih mata pelajaran yang diampu</p>
+                            <p class="mt-1.5 text-xs text-gray-500">Pilih satu atau lebih mata pelajaran yang akan
+                                diampu</p>
                         </div>
 
                         <hr class="border-gray-200" />
-
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
 
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading"
@@ -150,9 +150,19 @@ const formData = ref({
 })
 
 const showMapelDropdown = ref(false)
-const errorMessage = ref('')
-
 const loading = ref(!!route.params.id)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const availableMapels = computed(() => teachersStore.mapels)
 
@@ -178,22 +188,22 @@ const loadTeacherData = async () => {
             mapel: teacher.mapel ? teacher.mapel.map(m => m.id_mapel) : []
         }
     } else {
-        errorMessage.value = 'Gagal memuat data guru'
+        showAlert('error', 'Gagal memuat data guru')
     }
 
     loading.value = false
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
+    clearAlert()
 
     if (!formData.value.nama_guru || !formData.value.nip) {
-        errorMessage.value = 'Semua field wajib diisi.'
+        showAlert('error', 'Semua field wajib diisi.')
         return
     }
 
     if (formData.value.mapel.length === 0) {
-        errorMessage.value = 'Pilih minimal satu mata pelajaran.'
+        showAlert('error', 'Pilih minimal satu mata pelajaran.')
         return
     }
 
@@ -212,9 +222,12 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/teacher')
+        showAlert('success', isEditMode.value ? 'Data guru berhasil diupdate!' : 'Guru berhasil ditambahkan!', {
+            redirectDelay: 1500,
+            redirectFn: () => router.push('/teacher')
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
 

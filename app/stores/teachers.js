@@ -230,6 +230,8 @@ export const useTeachersStore = defineStore('teachers', {
                     }
                 })
 
+                await this.getTeachers({ page: this.page })
+
                 this.loading = false
                 return { success: true }
             } catch (error) {

@@ -2,7 +2,7 @@
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
 
-            <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div class="mb-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
                     <div class="relative w-full sm:w-80">
@@ -33,6 +33,10 @@
                         Tambah
                     </NuxtLink>
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
             </div>
 
             <div class="bg-white shadow overflow-hidden">
@@ -78,7 +82,7 @@
                                     <td colspan="4" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="fetchTeachers"
+                                            <button @click="fetchTeachers()"
                                                 class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
                                                 Coba Lagi
                                             </button>
@@ -98,8 +102,7 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="teacher in teachers" :key="teacher.id_guru"
-                                    class="hover:bg-gray-50 transition-colors">
+                                <tr v-for="teacher in teachers" :key="teacher.id_guru" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ teacher.nama_guru }}
                                     </td>
@@ -119,7 +122,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         <button @click="toggleDropdown(teacher.id_guru)"
                                             :ref="el => setButtonRef(el, teacher.id_guru)"
-                                            class="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                                            class="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md"
                                             title="More actions">
                                             <MoreVertical class="h-4 w-4" />
                                         </button>
@@ -168,28 +171,25 @@
         </div>
 
         <Teleport to="body">
-            <Transition enter-active-class="transition ease-out duration-100"
-                enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95">
-                <div v-if="activeDropdown !== null" :style="dropdownStyle"
-                    class="fixed w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50">
-                    <div class="py-1">
-                        <NuxtLink :to="`/teacher/edit/${activeDropdown}`" @click="closeDropdown"
-                            class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                            <Pencil class="h-4 w-4 mr-3 text-gray-500" />
-                            Edit
-                        </NuxtLink>
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <button @click="handleDelete(getTeacherById(activeDropdown))"
-                            class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <Trash2 class="h-4 w-4 mr-3" />
-                            Hapus
-                        </button>
-                    </div>
+            <div v-if="activeDropdown !== null" :style="dropdownStyle"
+                class="fixed w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 z-50">
+                <div class="py-1">
+                    <NuxtLink :to="`/teacher/edit/${activeDropdown}`" @click="closeDropdown"
+                        class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                        <Pencil class="h-4 w-4 mr-3 text-gray-500" />
+                        Edit
+                    </NuxtLink>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button @click="handleDelete(getTeacherById(activeDropdown))"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
+                        <Trash2 class="h-4 w-4 mr-3" />
+                        Hapus
+                    </button>
                 </div>
-            </Transition>
+            </div>
         </Teleport>
+
+        <AppConfirm />
     </section>
 </template>
 
@@ -197,35 +197,27 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useTeachersStore } from '~/stores/teachers'
+import { useConfirm } from '~/composables/useConfirm'
 
 const teachersStore = useTeachersStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const searchQuery = ref('')
 const selectedMapel = ref(null)
-let searchTimer = null
-
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+
+let searchTimer = null
+let autoCloseTimer = null
 
 const teachers = computed(() => teachersStore.teachers)
 const mapels = computed(() => teachersStore.mapels)
 const loading = computed(() => teachersStore.loading)
 const error = computed(() => teachersStore.error)
-
 const page = computed(() => teachersStore.page)
-const perPage = computed(() => teachersStore.perPage)
-const totalItems = computed(() => teachersStore.totalItems)
 const totalPages = computed(() => teachersStore.totalPages)
-
-const rangeStart = computed(() => {
-    if (totalItems.value === 0) return 0
-    return (page.value - 1) * perPage.value + 1
-})
-
-const rangeEnd = computed(() => {
-    return Math.min(page.value * perPage.value, totalItems.value)
-})
 
 const visiblePages = computed(() => {
     const total = totalPages.value
@@ -234,38 +226,32 @@ const visiblePages = computed(() => {
 
     let start = Math.max(1, current - 1)
     let end = Math.min(total, start + maxVisible - 1)
-
-    if (end - start < maxVisible - 1) {
-        start = Math.max(1, end - maxVisible + 1)
-    }
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1)
 
     const pages = []
     for (let i = start; i <= end; i++) pages.push(i)
     return pages
 })
 
-const fetchTeachers = async (page = 1) => {
+const fetchTeachers = async (p = 1) => {
     await teachersStore.getTeachers({
         search: searchQuery.value || undefined,
         id_mapel: selectedMapel.value || undefined,
-        page
+        sort: 'desc',
+        page: p
     })
 }
 
 const onSearchInput = () => {
     clearTimeout(searchTimer)
-    searchTimer = setTimeout(() => {
-        fetchTeachers(1)
-    }, 400)
+    searchTimer = setTimeout(() => fetchTeachers(1), 400)
 }
 
-const onFilterChange = () => {
-    fetchTeachers(1)
-}
+const onFilterChange = () => fetchTeachers(1)
 
-const goToPage = (page) => {
-    if (page < 1 || page > totalPages.value) return
-    fetchTeachers(page)
+const goToPage = (p) => {
+    if (p < 1 || p > totalPages.value) return
+    fetchTeachers(p)
 }
 
 const getTeacherById = (id) => teachers.value.find(t => t.id_guru === id)
@@ -276,7 +262,6 @@ const setButtonRef = (el, id) => {
 
 const calculateDropdownPosition = (buttonEl) => {
     if (!buttonEl) return {}
-
     const rect = buttonEl.getBoundingClientRect()
     const dropdownWidth = 192
     const dropdownHeight = 120
@@ -304,17 +289,33 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (teacher) => {
     if (!teacher) return
-    if (!confirm(`Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}?`)) return
+
+    const confirmed = await confirm({
+        title: 'Hapus Guru',
+        message: `Apakah Anda yakin ingin menghapus guru ${teacher.nama_guru}? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
+
+    if (!confirmed) return
+
+    closeDropdown()
 
     const result = await teachersStore.deleteTeacher(teacher.id_guru)
 
     if (result.success) {
-        closeDropdown()
-        alert('Guru berhasil dihapus')
+        showAutoAlert('success', `Guru ${teacher.nama_guru} berhasil dihapus.`)
     } else {
-        alert(result.message || 'Gagal menghapus guru')
+        showAutoAlert('error', result.message || 'Gagal menghapus guru.')
     }
 }
 
@@ -331,11 +332,7 @@ const handleScroll = () => {
 }
 
 onMounted(async () => {
-    await Promise.all([
-        fetchTeachers(1),
-        teachersStore.getMapels()
-    ])
-
+    await Promise.all([fetchTeachers(1), teachersStore.getMapels()])
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
         window.addEventListener('scroll', handleScroll, true)
@@ -345,6 +342,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     clearTimeout(searchTimer)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
