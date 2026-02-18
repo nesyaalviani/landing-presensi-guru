@@ -139,7 +139,7 @@ const userRole = computed(() => authStore.user?.role)
 const userName = computed(() => authStore.user?.name || 'User')
 const userRoleLabel = computed(() => getRoleLabel(userRole.value))
 const menuItems = computed(() => getMenuByRole(userRole.value))
-const userAvatar = computed(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.value)}&background=fb7185&color=fff`)
+const userAvatar = computed(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.value)}&background=60a5fa&color=fff`)
 
 const pageTitle = computed(() => {
   const titles = {
