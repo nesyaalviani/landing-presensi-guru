@@ -30,6 +30,7 @@ export const useTeachersStore = defineStore('teachers', {
                 if (filters.id_mapel) params.set('id_mapel', filters.id_mapel)
                 if (filters.page) params.set('page', filters.page)
                 if (filters.limit) params.set('limit', filters.limit || 10)
+                if (filters.all) params.set('all', 'true')
 
                 const queryString = params.toString()
                 const url = queryString ? `/guru?${queryString}` : '/guru'
