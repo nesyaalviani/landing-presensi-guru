@@ -94,7 +94,7 @@ const handleLogin = async () => {
     isLoading.value = false
 
     if (result.success) {
-        showAlert('success', 'Login berhasil! Redirecting...', {
+        showAlert('success', 'Login berhasil!', {
             redirectDelay: 1000,
             redirectFn: () => router.push('/')
         })

@@ -254,8 +254,8 @@ const getRoleBadgeClass = (roleName) => {
 
 const getRoleLabel = (roleName) => {
     const roleLabels = {
-        'admin': 'Admin',
-        'km': 'KM',
+        'admin': 'Administrator',
+        'km': 'Ketua Murid',
         'piket': 'Petugas Piket',
         'ks': 'Kepala Sekolah'
     }
