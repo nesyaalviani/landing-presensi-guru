@@ -11,7 +11,7 @@
             </div>
           </template>
 
-          <template v-else>
+          <template v-else-if="schedules.length > 0">
             <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
             <div class="text-gray-600">
               <p class="text-base sm:text-lg">{{ formattedDate }}</p>
@@ -54,7 +54,7 @@
           </div>
         </div>
 
-        <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
+      <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -66,6 +66,7 @@
         <div v-else class="space-y-3 sm:space-y-4 mb-6">
           <div v-for="schedule in paginatedSchedules" :key="schedule.id"
             class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
+
             <div class="block sm:hidden space-y-4">
               <div class="flex items-start justify-between">
                 <div class="text-gray-700">
@@ -137,14 +138,18 @@
                   Presensi
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
-                  class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
+                  class="w-full bg-gray-100 text-gray-500 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed flex items-center justify-center gap-2"
                   disabled>
-                  Belum Waktunya
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
-                  class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
+                  class="w-full bg-gray-100 text-gray-400 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
                   disabled>
-                  Waktu Sudah Lewat
+                  Sesi Berakhir
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
@@ -227,12 +232,17 @@
                   Presensi
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
-                  class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
-                  Belum Waktunya
+                  class="bg-gray-100 text-gray-500 px-4 lg:px-5 py-2 text-sm rounded-sm cursor-not-allowed flex items-center gap-2"
+                  disabled>
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
-                  class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
-                  Waktu Sudah Lewat
+                  class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
+                  Sesi Berakhir
                 </button>
                 <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
                   disabled>
@@ -240,6 +250,7 @@
                 </button>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -305,13 +316,14 @@
             </div>
           </div>
         </div>
+
       </div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
 import { useAuthStore } from '~/stores/auth'
@@ -323,18 +335,18 @@ const router = useRouter()
 const currentPage = ref(1)
 const itemsPerPage = 10
 
+const now = ref(new Date())
+let clockInterval = null
+
 const schedules = computed(() => {
   return presensiStore.jadwalHariIni || []
 })
 
 const kelasName = computed(() => {
   const jadwalData = presensiStore.jadwalHariIniResponse
-
   if (jadwalData?.kelas) {
-    const { name } = jadwalData.kelas
-    return `${name}`
+    return jadwalData.kelas.name
   }
-
   return authStore.user?.kelas?.name || 'N/A'
 })
 
@@ -358,45 +370,48 @@ const visiblePages = computed(() => {
   const maxVisible = 3
   let start = Math.max(1, currentPage.value - 1)
   let end = Math.min(totalPages.value, start + maxVisible - 1)
-
   if (end - start < maxVisible - 1) {
     start = Math.max(1, end - maxVisible + 1)
   }
-
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-
   return pages
 })
+
+const getCountdown = (jamMulai) => {
+  if (!jamMulai) return null
+  const [h, m, s] = jamMulai.split(':').map(Number)
+  const nowTime = now.value
+  const target = new Date(nowTime)
+  target.setHours(h, m, s || 0, 0)
+  const diff = target - nowTime
+  if (diff <= 0) return null
+  const hh = Math.floor(diff / 3600000)
+  const mm = Math.floor((diff % 3600000) / 60000)
+  const ss = Math.floor((diff % 60000) / 1000)
+  const pad = n => String(n).padStart(2, '0')
+  return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
+}
 
 const fetchJadwal = async () => {
   await presensiStore.getJadwalHariIni()
 }
 
 const handlePresensi = (schedule) => {
-  if (schedule.timeStatus !== 'sedang_berlangsung') {
-    return
-  }
-
+  if (schedule.timeStatus !== 'sedang_berlangsung') return
   router.push({
     path: '/presensi/create',
-    query: {
-      jadwalId: schedule.id
-    }
+    query: { jadwalId: schedule.id }
   })
 }
 
 const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
+  if (currentPage.value > 1) currentPage.value--
 }
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
+  if (currentPage.value < totalPages.value) currentPage.value++
 }
 
 const goToPage = (page) => {
@@ -405,5 +420,23 @@ const goToPage = (page) => {
 
 onMounted(async () => {
   await fetchJadwal()
+
+  const serverTime = presensiStore.jadwalHariIniResponse?.serverTime
+  if (serverTime) {
+    const today = new Date()
+    const [h, m, s] = serverTime.split(':').map(Number)
+    today.setHours(h, m, s || 0, 0)
+    now.value = today
+  } else {
+    now.value = new Date()
+  }
+
+  clockInterval = setInterval(() => {
+    now.value = new Date(now.value.getTime() + 1000)
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (clockInterval) clearInterval(clockInterval)
 })
 </script>
