@@ -13,10 +13,10 @@
                         <select v-model="selectedRole"
                             class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
                             <option :value="null">Semua Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="km">KM</option>
-                            <option value="piket">Petugas Piket</option>
-                            <option value="ks">Kepala Sekolah</option>
+                            <option value="1">Admin</option>
+                            <option value="2">KM</option>
+                            <option value="3">Petugas Piket</option>
+                            <option value="4">Kepala Sekolah</option>
                         </select>
                         <ChevronDown
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -61,7 +61,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template v-if="loading">
-                                <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
+                                <tr v-for="i in perPage" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
@@ -85,7 +85,7 @@
                                     <td colspan="5" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="usersStore.getUsers()"
+                                            <button @click="fetchUsers()"
                                                 class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
                                                 Coba Lagi
                                             </button>
@@ -94,7 +94,7 @@
                                 </tr>
                             </template>
 
-                            <template v-else-if="filteredUsers.length === 0">
+                            <template v-else-if="users.length === 0">
                                 <tr>
                                     <td colspan="5" class="px-6 py-12">
                                         <div class="text-center">
@@ -105,7 +105,7 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="user in filteredUsers" :key="user.id"
+                                <tr v-for="user in users" :key="user.id"
                                     class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ user.name }}
@@ -142,27 +142,31 @@
             <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
-                        <button
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Previous
                         </button>
-                        <button
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
                         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronLeft class="h-5 w-5" />
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                1
+                            <button v-for="p in visiblePages" :key="p" @click="goToPage(p)" :disabled="loading" :class="[
+                                'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                                p === page
+                                    ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            ]">
+                                {{ p }}
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronRight class="h-5 w-5" />
                             </button>
                         </nav>
@@ -198,7 +202,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useUsersStore } from '~/stores/users'
 
@@ -210,32 +214,53 @@ const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
+// Debounce timer
+let searchTimeout = null
+
 const users = computed(() => usersStore.users)
 const loading = computed(() => usersStore.loading)
 const error = computed(() => usersStore.error)
+const page = computed(() => usersStore.page)
+const perPage = computed(() => usersStore.perPage)
+const totalPages = computed(() => usersStore.totalPages)
 
-const filteredUsers = computed(() => {
-    let filtered = users.value
+const visiblePages = computed(() => {
+    const pages = []
+    const range = 2
+    const start = Math.max(1, page.value - range)
+    const end = Math.min(totalPages.value, page.value + range)
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
+})
 
-    if (selectedRole.value) {
-        filtered = filtered.filter(user => user.role?.name === selectedRole.value)
+const fetchUsers = (newPage = 1) => {
+    const filters = {
+        page: newPage,
     }
+    if (searchQuery.value) filters.search = searchQuery.value
+    if (selectedRole.value) filters.id_role = selectedRole.value
 
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(user =>
-            user.name?.toLowerCase().includes(query) ||
-            user.username?.toLowerCase().includes(query)
-        )
-    }
+    usersStore.getUsers(filters)
+}
 
-    return filtered
+const goToPage = (newPage) => {
+    if (newPage < 1 || newPage > totalPages.value || loading.value) return
+    fetchUsers(newPage)
+}
+
+// Watch search dengan debounce 400ms — reset ke page 1
+watch(searchQuery, () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => fetchUsers(1), 400)
+})
+
+// Watch role langsung — reset ke page 1
+watch(selectedRole, () => {
+    fetchUsers(1)
 })
 
 const setButtonRef = (el, id) => {
-    if (el) {
-        buttonRefs.value[id] = el
-    }
+    if (el) buttonRefs.value[id] = el
 }
 
 const getUserById = (id) => {
@@ -272,22 +297,11 @@ const calculateDropdownPosition = (buttonEl) => {
     let top = rect.bottom + 8
     let left = rect.right - dropdownWidth
 
-    if (top + dropdownHeight > window.innerHeight) {
-        top = rect.top - dropdownHeight - 8
-    }
+    if (top + dropdownHeight > window.innerHeight) top = rect.top - dropdownHeight - 8
+    if (left < 8) left = 8
+    if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
 
-    if (left < 8) {
-        left = 8
-    }
-
-    if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-    }
-
-    return {
-        top: `${top}px`,
-        left: `${left}px`
-    }
+    return { top: `${top}px`, left: `${left}px` }
 }
 
 const toggleDropdown = (id) => {
@@ -328,9 +342,7 @@ const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
 
-    if (!isDropdown && !isButton) {
-        closeDropdown()
-    }
+    if (!isDropdown && !isButton) closeDropdown()
 }
 
 const handleScroll = () => {
@@ -341,7 +353,7 @@ const handleScroll = () => {
 }
 
 onMounted(async () => {
-    await usersStore.getUsers()
+    await fetchUsers(1)
 
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
@@ -351,6 +363,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    clearTimeout(searchTimeout)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)

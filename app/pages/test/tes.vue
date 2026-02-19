@@ -1,179 +1,200 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 py-8">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-semibold mb-4">Jadwal Hari Ini</h1>
-        <div class="text-gray-600">
-          <p class="text-lg">{{ formattedDate }}</p>
-          <p class="text-base">Kelas: {{ selectedClass }}</p>
-        </div>
+
+<div class="max-w-sm w-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
+  <div class="flex justify-between pb-4 mb-4 border-b border-light">
+    <div class="flex items-center">
+      <div class="w-12 h-12 bg-neutral-primary-medium border border-default-medium flex items-center justify-center rounded-full me-3">
+        <svg class="w-7 h-7 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/></svg>
       </div>
-
-      <!-- Schedule Cards -->
-      <div class="space-y-4">
-        <div v-for="schedule in schedules" :key="schedule.id"
-          class="bg-white rounded-sm shadow-sm border border-gray-200 p-6">
-          <div class="flex items-start justify-between">
-            <!-- Left Side: Time and Subject Info -->
-            <div class="flex gap-6">
-              <!-- Time Column -->
-              <div class="text-gray-700">
-                <p class="text-lg font-medium">{{ schedule.timeRange }}</p>
-                <p class="text-sm text-gray-500">{{ schedule.classTime }}</p>
-              </div>
-
-              <!-- Subject and Teacher Info -->
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="text-lg font-semibold">{{ schedule.subject }}</h3>
-                  <span v-if="schedule.duration" class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                    ({{ schedule.duration }})
-                  </span>
-                </div>
-                <div class="flex items-center gap-2 text-gray-600">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span class="text-sm">{{ schedule.teacher }}</span>
-                </div>
-
-                <!-- Status Badge -->
-                <div class="mt-3">
-                  <span v-if="schedule.status === 'belum'"
-                    class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
-                    Belum Presensi
-                  </span>
-                  <span v-else-if="schedule.status === 'hadir'"
-                    class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Hadir
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Side: Action Button -->
-            <div>
-              <button v-if="schedule.status === 'belum'"
-                class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
-                @click="handlePresensi(schedule.id)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Presensi
-              </button>
-              <button v-else class="bg-gray-200 text-gray-600 px-6 py-2 rounded-sm cursor-default" disabled>
-                Sudah Presensi
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Info Note -->
-      <div class="mt-6 flex items-start gap-3 text-gray-600 bg-blue-50 p-4 rounded-sm">
-        <svg class="w-5 h-5 mt-0.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd" />
-        </svg>
-        <p class="text-sm">
-          Klik tombol <strong>'Presensi'</strong> untuk mencatat kehadiran guru di setiap jam pelajaran.
-        </p>
-      </div>
-
-      <!-- Pagination -->
-      <div class="mt-8 flex justify-center items-center gap-2">
-        <button class="p-2 rounded hover:bg-gray-100 disabled:opacity-50" :disabled="currentPage === 1"
-          @click="currentPage--">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <button v-for="page in totalPages" :key="page" class="w-10 h-10 rounded hover:bg-gray-100" :class="{
-          'bg-blue-500 text-white hover:bg-blue-600': page === currentPage,
-          'text-gray-700': page !== currentPage,
-        }" @click="currentPage = page">
-          {{ page }}
-        </button>
-
-        <button class="p-2 rounded hover:bg-gray-100 disabled:opacity-50" :disabled="currentPage === totalPages"
-          @click="currentPage++">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+      <div>
+        <h5 class="text-2xl font-semibold text-heading">3.4k</h5>
+        <p class="text-sm text-body">Leads generated per week</p>
       </div>
     </div>
+    <div>
+      <span class="inline-flex items-center bg-success-soft border border-success-subtle text-fg-success-strong text-xs font-medium px-1.5 py-0.5 rounded">
+        <svg class="w-4 h-4 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4"/></svg>
+        42.5%
+      </span>
+    </div>
   </div>
+
+  <div class="grid grid-cols-2">
+    <dl class="flex items-center">
+        <dt class="text-body text-sm font-normal me-1">Money spent:</dt>
+        <dd class="text-heading text-sm font-semibold">$3,232</dd>
+    </dl>
+    <dl class="flex items-center justify-end">
+        <dt class="text-body text-sm font-normal me-1">Conversion:</dt>
+        <dd class="text-heading text-sm font-semibold">1.2%</dd>
+    </dl>
+  </div>
+  <div id="column-chart"></div>
+  <div class="grid grid-cols-1 items-center border-light border-t justify-between">
+    <div class="flex justify-between items-center pt-4 md:pt-6">
+      <!-- Button -->
+      <button id="dropdownLastDaysButton" data-dropdown-toggle="LastDaysdropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-body hover:text-heading text-center inline-flex items-center" type="button">
+          Last 7 days
+          <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/></svg>
+      </button>
+      <!-- Dropdown menu -->
+      <div id="LastDaysdropdown" class="z-10 hidden bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44">
+          <ul class="p-2 text-sm text-body font-medium" aria-labelledby="dropdownLastDaysButton">
+            <li>
+              <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Yesterday</a>
+            </li>
+            <li>
+              <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Today</a>
+            </li>
+            <li>
+              <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Last 7 days</a>
+            </li>
+            <li>
+              <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Last 30 days</a>
+            </li>
+            <li>
+              <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Last 90 days</a>
+            </li>
+          </ul>
+      </div>
+      <a href="#" class="inline-flex items-center text-fg-brand bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm px-3 py-2 focus:outline-none">
+        Leads Report
+        <svg class="w-4 h-4 ms-1.5 -me-0.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { onMounted } from 'vue'
+import ApexCharts from 'apexcharts'
 
-// Data
-const selectedClass = ref('XII RPL 1')
-const currentPage = ref(1)
-const totalPages = ref(5)
-
-// Dummy schedule data
-const schedules = ref([
-  {
-    id: 1,
-    timeRange: '07.10 – 09.10',
-    classTime: '08.10 – 09.10',
-    subject: 'PPB',
-    duration: '3 JP',
-    teacher: 'Pak Sandi',
-    status: 'belum', // belum, hadir
-  },
-  {
-    id: 2,
-    timeRange: '09.25 – 10.05',
-    classTime: '09.25 – 10.05',
-    subject: 'B. Indo',
-    duration: null,
-    teacher: 'Bu Ipik',
-    status: 'hadir',
-  },
-  {
-    id: 3,
-    timeRange: '10.20 – 11.40',
-    classTime: '10.20 – 11.40',
-    subject: 'Matematika',
-    duration: '2 JP',
-    teacher: 'Pak Budi',
-    status: 'belum',
-  },
-  {
-    id: 4,
-    timeRange: '12.30 – 14.10',
-    classTime: '12.30 – 14.10',
-    subject: 'Basis Data',
-    duration: '2 JP',
-    teacher: 'Bu Siti',
-    status: 'hadir',
-  },
-])
-
-// Computed
-const formattedDate = computed(() => {
-  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-  const date = new Date(2026, 1, 5) // February 5, 2026
-  return date.toLocaleDateString('id-ID', options)
-})
-
-// Methods
-const handlePresensi = (scheduleId) => {
-  const schedule = schedules.value.find((s) => s.id === scheduleId)
-  if (schedule) {
-    schedule.status = 'hadir'
-    alert(`Presensi untuk ${schedule.subject} berhasil dicatat!`)
+onMounted(() => {
+   const getBrandColor = () => {
+    const computedStyle = getComputedStyle(document.documentElement)
+    return computedStyle.getPropertyValue('--color-fg-brand').trim() || "#1447E6"
   }
-}
+
+  const getBrandSecondaryColor = () => {
+    const computedStyle = getComputedStyle(document.documentElement)
+    return computedStyle.getPropertyValue('--color-fg-brand-subtle').trim() || "#9CA3AF"
+  }
+
+  const brandColor = getBrandColor();
+  const brandSecondaryColor = getBrandSecondaryColor();
+
+  const options = {
+    colors: [brandColor, brandSecondaryColor],
+    series: [
+      {
+        name: "Organic",
+        color: brandColor,
+        data: [
+          { x: "Mon", y: 231 },
+          { x: "Tue", y: 122 },
+          { x: "Wed", y: 63 },
+          { x: "Thu", y: 421 },
+          { x: "Fri", y: 122 },
+          { x: "Sat", y: 323 },
+          { x: "Sun", y: 111 },
+        ],
+      },
+      {
+        name: "Social media",
+        color: brandSecondaryColor,
+        data: [
+          { x: "Mon", y: 232 },
+          { x: "Tue", y: 113 },
+          { x: "Wed", y: 341 },
+          { x: "Thu", y: 224 },
+          { x: "Fri", y: 522 },
+          { x: "Sat", y: 411 },
+          { x: "Sun", y: 243 },
+        ],
+      },
+    ],
+    chart: {
+      type: "bar",
+      height: "320px",
+      fontFamily: "Inter, sans-serif",
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "70%",
+        borderRadiusApplication: "end",
+        borderRadius: 8,
+      },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      style: {
+        fontFamily: "Inter, sans-serif",
+      },
+    },
+    states: {
+      hover: {
+        filter: {
+          type: "darken",
+          value: 1,
+        },
+      },
+    },
+    stroke: {
+      show: true,
+      width: 0,
+      colors: ["transparent"],
+    },
+    grid: {
+      show: false,
+      strokeDashArray: 4,
+      padding: {
+        left: 2,
+        right: 2,
+        top: -14
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    legend: {
+      show: false,
+    },
+    xaxis: {
+      floating: false,
+      labels: {
+        show: true,
+        style: {
+          fontFamily: "Inter, sans-serif",
+          cssClass: 'text-xs font-normal fill-body'
+        }
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+    },
+    yaxis: {
+      show: false,
+    },
+    fill: {
+      opacity: 1,
+    },
+  }
+
+  if(document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+    const chart = new ApexCharts(document.getElementById("column-chart"), options);
+    chart.render();
+  }
+})
 </script>
+

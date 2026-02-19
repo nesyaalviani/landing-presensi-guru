@@ -3,12 +3,16 @@ import { defineStore } from 'pinia'
 export const useSchedulesStore = defineStore('schedules', {
     state: () => ({
         schedules: [],
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 1,
         loading: false,
         error: null
     }),
 
     actions: {
-        async getSchedules() {
+        async getSchedules(filters = {}) {
             this.loading = true
             this.error = null
 
@@ -20,7 +24,16 @@ export const useSchedulesStore = defineStore('schedules', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/jadwal', {
+                const params = new URLSearchParams()
+                if (filters.hari) params.set('hari', filters.hari)
+                if (filters.id_kelas) params.set('id_kelas', filters.id_kelas)
+                if (filters.page) params.set('page', filters.page)
+                if (filters.limit) params.set('limit', filters.limit)
+
+                const queryString = params.toString()
+                const url = queryString ? `/jadwal?${queryString}` : '/jadwal'
+
+                const response = await $fetch(url, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -28,7 +41,13 @@ export const useSchedulesStore = defineStore('schedules', {
                     }
                 })
 
-                this.schedules = response.data || [] 
+                this.schedules = response.data || []
+                const p = response.pagination || {}
+                this.page = p.page ?? 1
+                this.perPage = p.perPage ?? 10
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -96,7 +115,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     body: scheduleData
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -152,7 +171,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     body: scheduleData
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -207,7 +226,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     }
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -245,8 +264,7 @@ export const useSchedulesStore = defineStore('schedules', {
             if (!classId) return state.schedules
             return state.schedules.filter(schedule => schedule.id_kelas === classId)
         },
-
-        searchSchedules: (state) => (searchQuery, dayFilter, classFilter) => {
+         searchSchedules: (state) => (searchQuery, dayFilter, classFilter) => {
             let filtered = state.schedules
 
             if (dayFilter) {
@@ -267,6 +285,6 @@ export const useSchedulesStore = defineStore('schedules', {
             }
 
             return filtered
-        }
+         }
     }
 })
