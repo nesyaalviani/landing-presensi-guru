@@ -14,7 +14,7 @@
           <template v-else-if="schedules.length > 0">
             <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
             <div class="text-gray-600">
-              <p class="text-base sm:text-lg">{{ formattedDate }}</p>
+              <p class="text-base sm:text-lg">{{ formattedDate }} - {{ formattedTime }}</p>
               <p class="text-sm sm:text-base">Kelas: {{ kelasName }}</p>
             </div>
           </template>
@@ -86,7 +86,7 @@
                 </div>
 
                 <div>
-                  <span v-if="schedule.status === 'belum'"
+                  <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
                     class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded">
                     Belum Presensi
                   </span>
@@ -191,7 +191,7 @@
                       Sudah Selesai
                     </span>
 
-                    <span v-if="schedule.status === 'belum'"
+                    <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
                       class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
                       Belum Presensi
                     </span>
@@ -353,6 +353,12 @@ const kelasName = computed(() => {
 const formattedDate = computed(() => {
   const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
   return new Date().toLocaleDateString('id-ID', options)
+})
+
+const formattedTime = computed(() => {
+  const h = String(now.value.getHours()).padStart(2, '0')
+  const m = String(now.value.getMinutes()).padStart(2, '0')
+  return `${h}:${m}`
 })
 
 const totalPages = computed(() => {
