@@ -394,7 +394,7 @@ onMounted(async () => {
     }
 
     const [classResult, teacherResult, subjectResult] = await Promise.all([
-        classroomsStore.getClassrooms(),
+        classroomsStore.getClassrooms({ all: true }),
         teachersStore.getTeachers({ all: true }),
         subjectsStore.getSubjects({ all: true })
     ])

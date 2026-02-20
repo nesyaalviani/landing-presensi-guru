@@ -65,13 +65,12 @@
                                 Jurusan <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <select id="jurusan" v-model="formData.jurusan" required
+                                <select id="jurusan" v-model="formData.id_jurusan" required
                                     class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
                                     <option value="" disabled>Pilih Jurusan</option>
-                                    <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                                    <option value="Perhotelan">Perhotelan</option>
-                                    <option value="Teknik Komputer & Jaringan">Teknik Komputer & Jaringan</option>
-                                    <option value="Multimedia">Multimedia</option>
+                                    <option v-for="j in jurusanList" :key="j.id" :value="j.id">
+                                        {{ j.nama_jurusan }}
+                                    </option>
                                 </select>
                                 <ChevronDown
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -118,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { X, Save, Info, ChevronDown, AlertCircle } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useRouter, useRoute } from 'vue-router'
@@ -130,10 +129,12 @@ const route = useRoute()
 const isEditMode = computed(() => !!route.params.id)
 const classroomId = computed(() => route.params.id)
 
+const jurusanList = computed(() => classroomsStore.jurusanList)
+
 const formData = ref({
     name: '',
     tingkat: '',
-    jurusan: ''
+    id_jurusan: ''
 })
 
 const errorMessage = ref('')
@@ -151,7 +152,7 @@ const loadClassroomData = async () => {
         formData.value = {
             name: classroom.name,
             tingkat: classroom.tingkat,
-            jurusan: classroom.jurusan
+            id_jurusan: classroom.id_jurusan
         }
     } else {
         errorMessage.value = 'Gagal memuat data kelas'
@@ -161,7 +162,7 @@ const loadClassroomData = async () => {
 const handleSubmit = async () => {
     errorMessage.value = ''
 
-    if (!formData.value.name || !formData.value.tingkat || !formData.value.jurusan) {
+    if (!formData.value.name || !formData.value.tingkat || !formData.value.id_jurusan) {
         errorMessage.value = 'Semua field wajib diisi.'
         return
     }
@@ -171,7 +172,7 @@ const handleSubmit = async () => {
     const payload = {
         name: formData.value.name,
         tingkat: formData.value.tingkat,
-        jurusan: formData.value.jurusan
+        id_jurusan: formData.value.id_jurusan
     }
 
     let result
@@ -191,6 +192,9 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
-    await loadClassroomData()
+    await Promise.all([
+        classroomsStore.getJurusanList(),
+        loadClassroomData()
+    ])
 })
 </script>
