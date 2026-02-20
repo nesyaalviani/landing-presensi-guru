@@ -389,6 +389,10 @@ const handleSubmit = async () => {
 
 
 onMounted(async () => {
+    if (process.client) {
+        await import('clock-timepicker') 
+    }
+
     if (isEditMode.value) {
         loadingData.value = true
     }
