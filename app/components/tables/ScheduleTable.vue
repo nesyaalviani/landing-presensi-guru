@@ -401,7 +401,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    clearTimeout(searchTimer)
+    // clearTimeout(searchTimeout)
     clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
