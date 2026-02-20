@@ -101,7 +101,7 @@ export const useTeachersStore = defineStore('teachers', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/mapel', {
+                const response = await $fetch('/mapel?all=true', {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -109,7 +109,7 @@ export const useTeachersStore = defineStore('teachers', {
                     }
                 })
 
-                this.mapels = response
+                this.mapels = response.data || [] 
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
