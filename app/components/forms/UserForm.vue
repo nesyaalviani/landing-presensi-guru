@@ -99,7 +99,7 @@
                                     class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
                                     <option value="" disabled>Pilih Kelas</option>
                                     <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
-                                        {{ kelas.name }} - {{ kelas.jurusan }}
+                                        {{ kelas.name }} - {{ kelas.nama_jurusan }}
                                     </option>
                                 </select>
                                 <ChevronDown
@@ -311,7 +311,7 @@ onMounted(async () => {
         loadingData.value = true
     }
 
-    const classroomResult = await classroomsStore.getClassrooms()
+    const classroomResult = await classroomsStore.getClassrooms({ all: true })
     if (classroomResult.success) {
         classrooms.value = classroomsStore.classrooms
     }

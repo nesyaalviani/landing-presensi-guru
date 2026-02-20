@@ -364,7 +364,7 @@ const handleScroll = () => {
 onMounted(async () => {
     await Promise.all([
         fetchSchedules(1),
-        classroomsStore.getClassrooms()
+        classroomsStore.getClassrooms({ all: true })
     ])
 
     if (process.client) {

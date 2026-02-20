@@ -3,12 +3,19 @@ import { defineStore } from 'pinia'
 export const useClassroomsStore = defineStore('classrooms', {
     state: () => ({
         classrooms: [],
+        jurusanList: [],
+        pagination: {
+            page: 1,
+            perPage: 10,
+            totalItems: 0,
+            totalPages: 1
+        },
         loading: false,
         error: null
     }),
 
     actions: {
-        async getClassrooms() {
+        async getClassrooms(params = {}) {
             this.loading = true
             this.error = null
 
@@ -16,29 +23,43 @@ export const useClassroomsStore = defineStore('classrooms', {
 
             try {
                 let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                if (process.client) token = localStorage.getItem('token')
 
                 const response = await $fetch('/kelas', {
                     method: 'GET',
                     baseURL: config.public.apiBase,
-                    headers: {
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    }
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+                    params
                 })
 
-                this.classrooms = response
+                this.classrooms = response.data
+                this.pagination = response.pagination
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
-                this.error = error.data?.message || 'Failed to fetch classrooms'
+                this.error = error.data?.message || 'Gagal mengambil data kelas'
                 this.loading = false
+                return { success: false, message: this.error }
+            }
+        },
 
-                return {
-                    success: false,
-                    message: error.data?.message || 'Gagal mengambil data kelas.'
-                }
+        async getJurusanList() {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) token = localStorage.getItem('token')
+
+                const response = await $fetch('/kelas/jurusan', {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+
+                this.jurusanList = response.data
+                return { success: true, data: response.data }
+            } catch (error) {
+                return { success: false, message: error.data?.message || 'Gagal mengambil data jurusan' }
             }
         },
 
@@ -47,24 +68,17 @@ export const useClassroomsStore = defineStore('classrooms', {
 
             try {
                 let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                if (process.client) token = localStorage.getItem('token')
 
                 const response = await $fetch(`/kelas/${id}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
-                    headers: {
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    }
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
 
                 return { success: true, data: response }
             } catch (error) {
-                return {
-                    success: false,
-                    message: error.data?.message || 'Gagal mengambil data kelas.'
-                }
+                return { success: false, message: error.data?.message || 'Gagal mengambil data kelas.' }
             }
         },
 
@@ -76,16 +90,12 @@ export const useClassroomsStore = defineStore('classrooms', {
 
             try {
                 let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                if (process.client) token = localStorage.getItem('token')
 
                 const response = await $fetch('/kelas', {
                     method: 'POST',
                     baseURL: config.public.apiBase,
-                    headers: {
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    },
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
                     body: classroomData
                 })
 
@@ -96,7 +106,6 @@ export const useClassroomsStore = defineStore('classrooms', {
                 this.loading = false
 
                 let errorMessage = 'Gagal menambahkan kelas. Silakan coba lagi.'
-
                 if (error.data?.message) {
                     if (error.data.message.includes('sudah dipakai')) {
                         errorMessage = 'Nama kelas sudah terdaftar. Gunakan nama yang berbeda.'
@@ -107,10 +116,7 @@ export const useClassroomsStore = defineStore('classrooms', {
                     }
                 }
 
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: errorMessage }
             }
         },
 
@@ -122,16 +128,12 @@ export const useClassroomsStore = defineStore('classrooms', {
 
             try {
                 let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                if (process.client) token = localStorage.getItem('token')
 
                 const response = await $fetch(`/kelas/${id}`, {
                     method: 'PUT',
                     baseURL: config.public.apiBase,
-                    headers: {
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    },
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
                     body: classroomData
                 })
 
@@ -142,7 +144,6 @@ export const useClassroomsStore = defineStore('classrooms', {
                 this.loading = false
 
                 let errorMessage = 'Gagal mengupdate kelas. Silakan coba lagi.'
-
                 if (error.data?.message) {
                     if (error.data.message.includes('sudah dipakai')) {
                         errorMessage = 'Nama kelas sudah terdaftar. Gunakan nama yang berbeda.'
@@ -153,10 +154,7 @@ export const useClassroomsStore = defineStore('classrooms', {
                     }
                 }
 
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: errorMessage }
             }
         },
 
@@ -168,16 +166,12 @@ export const useClassroomsStore = defineStore('classrooms', {
 
             try {
                 let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                if (process.client) token = localStorage.getItem('token')
 
                 const response = await $fetch(`/kelas/${id}`, {
                     method: 'DELETE',
                     baseURL: config.public.apiBase,
-                    headers: {
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    }
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
 
                 this.loading = false
@@ -185,43 +179,8 @@ export const useClassroomsStore = defineStore('classrooms', {
             } catch (error) {
                 this.error = error.data?.message || 'Failed to delete classroom'
                 this.loading = false
-
-                let errorMessage = 'Gagal menghapus kelas. Silakan coba lagi.'
-
-                if (error.data?.message) {
-                    if (error.data.message.includes('masih ada')) {
-                        errorMessage = error.data.message
-                    } else {
-                        errorMessage = error.data.message
-                    }
-                }
-
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: error.data?.message || 'Gagal menghapus kelas.' }
             }
-        },
-
-        searchClassrooms(searchQuery, tingkatFilter, jurusanFilter) {
-            let filtered = this.classrooms
-
-            if (tingkatFilter) {
-                filtered = filtered.filter(classroom => classroom.tingkat === tingkatFilter)
-            }
-
-            if (jurusanFilter) {
-                filtered = filtered.filter(classroom => classroom.jurusan === jurusanFilter)
-            }
-
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase()
-                filtered = filtered.filter(classroom =>
-                    classroom.name?.toLowerCase().includes(query)
-                )
-            }
-
-            return filtered
         }
     }
 })
