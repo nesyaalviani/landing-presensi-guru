@@ -52,6 +52,9 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Jam Pelajaran <span class="text-red-500">*</span>
@@ -183,18 +186,11 @@
 
                         <hr class="border-gray-200" />
 
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading || loadingData"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Update Jadwal' : 'Simpan') }}
+                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit Jadwal' : 'Simpan') }}
                             </button>
                             <NuxtLink to="/schedule"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -221,7 +217,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { ChevronDown, X, Save, Info, AlertCircle } from 'lucide-vue-next'
+import { ChevronDown, X, Save, Info } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useTeachersStore } from '~/stores/teachers'
@@ -255,9 +251,20 @@ const classrooms = ref([])
 const teachers = ref([])
 const subjects = ref([])
 const filteredTeachers = ref([])
-const errorMessage = ref('')
 const loading = ref(false)
 const loadingData = ref(false)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const activeSubjects = computed(() => {
     return subjects.value.filter(s => s.status === true)
@@ -305,38 +312,38 @@ const loadScheduleData = async () => {
             filterTeachers()
         }
     } else {
-        errorMessage.value = 'Gagal memuat data jadwal'
+        showAlert('error', 'Gagal memuat data jadwal')
     }
 }
 
 const validateForm = () => {
     if (!formData.value.jamMulai || !formData.value.jamSelesai) {
-        errorMessage.value = 'Jam mulai dan jam selesai wajib diisi'
+        showAlert('error', 'Jam mulai dan jam selesai wajib diisi')
         return false
     }
 
     if (!formData.value.kelas) {
-        errorMessage.value = 'Kelas wajib dipilih'
+        showAlert('error', 'Kelas wajib dipilih')
         return false
     }
 
     if (!formData.value.mapel) {
-        errorMessage.value = 'Mata pelajaran wajib dipilih'
+        showAlert('error', 'Mata pelajaran wajib dipilih')
         return false
     }
 
     if (!formData.value.guru) {
-        errorMessage.value = 'Guru wajib dipilih'
+        showAlert('error', 'Guru wajib dipilih')
         return false
     }
 
     if (!formData.value.hari) {
-        errorMessage.value = 'Hari wajib dipilih'
+        showAlert('error', 'Hari wajib dipilih')
         return false
     }
 
     if (formData.value.jamMulai >= formData.value.jamSelesai) {
-        errorMessage.value = 'Jam selesai harus lebih besar dari jam mulai'
+        showAlert('error', 'Jam selesai harus lebih besar dari jam mulai')
         return false
     }
 
@@ -344,7 +351,7 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
+    clearAlert()
 
     if (!validateForm()) {
         return
@@ -371,11 +378,15 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/schedule')
+        showAlert('success', isEditMode.value ? 'Jadwal berhasil diupdate!' : 'Jadwal berhasil ditambahkan!', {
+            redirectDelay: 1500,
+            redirectFn: () => router.push('/schedule')
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
+
 
 onMounted(async () => {
     if (isEditMode.value) {

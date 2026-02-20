@@ -39,6 +39,10 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+            </div>
+
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -210,6 +214,8 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <AppConfirm />
     </section>
 </template>
 
@@ -218,15 +224,20 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
 import { useClassroomsStore } from '~/stores/classrooms'
+import { useConfirm } from '~/composables/useConfirm'
 
 const schedulesStore = useSchedulesStore()
 const classroomsStore = useClassroomsStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const selectedDay = ref(null)
 const selectedClass = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+
+let autoCloseTimer = null
 
 const schedules = computed(() => schedulesStore.schedules)
 const classrooms = computed(() => classroomsStore.classrooms)
@@ -327,21 +338,36 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (schedule) => {
     if (!schedule) return
 
     const timeRange = `${formatTime(schedule.jam_mulai)} – ${formatTime(schedule.jam_selesai)}`
     const scheduleInfo = `${schedule.hari}, ${timeRange}, ${schedule.nama_kelas}`
 
-    if (confirm(`Apakah Anda yakin ingin menghapus jadwal "${scheduleInfo}"?`)) {
-        const result = await schedulesStore.deleteSchedule(schedule.id_jadwal)
+    const confirmed = await confirm({
+        title: 'Hapus Jadwal',
+        message: `Apakah Anda yakin ingin menghapus jadwal "${scheduleInfo}"? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
 
-        if (result.success) {
-            closeDropdown()
-            alert('Jadwal berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus jadwal')
-        }
+    if (!confirmed) return
+
+    closeDropdown()
+
+    const result = await schedulesStore.deleteSchedule(schedule.id_jadwal)
+
+    if (result.success) {
+        showAutoAlert('success', `Jadwal ${scheduleInfo} berhasil dihapus.`)
+    } else {
+        showAutoAlert('error', result.message || 'Gagal menghapus jadwal.')
     }
 }
 
@@ -375,6 +401,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    clearTimeout(searchTimer)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)

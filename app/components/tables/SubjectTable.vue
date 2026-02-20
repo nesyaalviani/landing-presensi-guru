@@ -30,6 +30,10 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+            </div>
+
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -188,6 +192,8 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <AppConfirm />
     </section>
 </template>
 
@@ -195,8 +201,11 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useSubjectsStore } from '~/stores/subjects'
+import { useConfirm } from '~/composables/useConfirm'
 
 const subjectsStore = useSubjectsStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const searchQuery = ref('')
 const selectedStatus = ref(null)
@@ -204,7 +213,7 @@ const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
-// Debounce timer
+let autoCloseTimer = null
 let searchTimeout = null
 
 const subjects = computed(() => subjectsStore.subjects)
@@ -238,13 +247,11 @@ const goToPage = (newPage) => {
     fetchSubjects(newPage)
 }
 
-// Watch search dengan debounce 400ms — reset ke page 1
 watch(searchQuery, () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => fetchSubjects(1), 400)
 })
 
-// Watch status langsung — reset ke page 1
 watch(selectedStatus, () => {
     fetchSubjects(1)
 })
@@ -293,18 +300,35 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (subject) => {
     if (!subject) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus mata pelajaran "${subject.nama_mapel}"?`)) {
-        const result = await subjectsStore.deleteSubject(subject.id_mapel)
+    const subjectInfo = subject.nama_mapel
 
-        if (result.success) {
-            closeDropdown()
-            alert('Mata pelajaran berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus mata pelajaran')
-        }
+    const confirmed = await confirm({
+        title: 'Hapus Mata Pelajaran',
+        message: `Apakah Anda yakin ingin menghapus mata pelajaran "${subjectInfo}"? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
+
+    if (!confirmed) return
+
+    closeDropdown()
+
+    const result = await subjectsStore.deleteSubject(subject.id_mapel)
+
+    if (result.success) {
+        showAutoAlert('success', `Mata Pelajaran ${subjectInfo} berhasil dihapus.`)
+    } else {
+        showAutoAlert('error', result.message || 'Gagal menghapus mata pelajaran.')
     }
 }
 
@@ -333,7 +357,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    clearTimeout(searchTimeout)
+    clearTimeout(searchTimer)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)

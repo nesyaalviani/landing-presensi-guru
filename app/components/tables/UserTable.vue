@@ -32,6 +32,10 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+            </div>
+
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -198,6 +202,8 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <AppConfirm />
     </section>
 </template>
 
@@ -205,8 +211,11 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useUsersStore } from '~/stores/users'
+import { useConfirm } from '~/composables/useConfirm'
 
 const usersStore = useUsersStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const searchQuery = ref('')
 const selectedRole = ref(null)
@@ -214,6 +223,7 @@ const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
+let autoCloseTimer = null
 // Debounce timer
 let searchTimeout = null
 
@@ -323,18 +333,31 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (user) => {
     if (!user) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus user ${user.name}?`)) {
-        const result = await usersStore.deleteUser(user.id)
+     const confirmed = await confirm({
+        title: 'Hapus User',
+        message: `Apakah Anda yakin ingin menghapus user "${user.name}"? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
 
-        if (result.success) {
-            closeDropdown()
-            alert('User berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus user')
-        }
+     if (!confirmed) return
+
+    const result = await usersStore.deleteUser(user.id)
+
+    if (result.success) {
+        showAutoAlert('success', `User ${user.name} berhasil dihapus.`)
+    } else {
+        showAutoAlert('error', result.message || 'Gagal menghapus user.')
     }
 }
 
@@ -363,7 +386,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    clearTimeout(searchTimeout)
+    clearTimeout(searchTimer)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
