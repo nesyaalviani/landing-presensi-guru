@@ -2,7 +2,8 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl space-y-2 sm:space-y-3">
       <!-- Summary Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <!-- Total Slot -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-blue-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -12,13 +13,14 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs sm:text-sm text-gray-600">Total Presensi</p>
+              <p class="text-xs sm:text-sm text-gray-600">Total Jadwal</p>
               <div v-if="isLoading" class="h-8 w-16 bg-gray-200 rounded animate-pulse mt-1"></div>
-              <p v-else class="text-xl sm:text-2xl font-bold text-gray-900">{{ totalPresensi }}</p>
+              <p v-else class="text-xl sm:text-2xl font-bold text-gray-900">{{ totalSlot }}</p>
             </div>
           </div>
         </div>
 
+        <!-- Hadir -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-green-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -35,6 +37,7 @@
           </div>
         </div>
 
+        <!-- Tidak Hadir -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-red-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -50,6 +53,23 @@
             </div>
           </div>
         </div>
+
+        <!-- Belum Dipresensi -->
+        <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
+          <div class="flex items-center gap-3">
+            <div class="bg-gray-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs sm:text-sm text-gray-600">Tdk Dipresensi</p>
+              <div v-if="isLoading" class="h-8 w-16 bg-gray-200 rounded animate-pulse mt-1"></div>
+              <p v-else class="text-xl sm:text-2xl font-bold text-gray-500">{{ totalBelum }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- History Cards -->
@@ -60,7 +80,6 @@
           <div v-for="i in perPage" :key="'skeleton-' + i"
             class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-4 sm:p-6">
-              <!-- Mobile Skeleton -->
               <div class="block sm:hidden space-y-3">
                 <div class="flex items-start justify-between">
                   <div class="space-y-2">
@@ -80,7 +99,6 @@
                   </div>
                 </div>
               </div>
-              <!-- Desktop Skeleton -->
               <div class="hidden sm:flex items-start justify-between">
                 <div class="flex gap-6 flex-1">
                   <div class="space-y-2 min-w-[140px]">
@@ -112,18 +130,18 @@
 
         <!-- Actual Data -->
         <template v-else>
-          <div v-for="history in historyData" :key="history.id"
-            class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition">
+          <div v-for="history in historyData" :key="`${history.id_jadwal}-${history.date}`"
+            class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
+            :class="{ 'opacity-70': history.status === 'belum' }">
             <div class="p-4 sm:p-6">
-              <!-- Mobile Layout (< 640px) -->
+
+              <!-- Mobile Layout -->
               <div class="block sm:hidden space-y-3">
-                <!-- Time & Date -->
                 <div class="flex items-start justify-between">
                   <div>
                     <p class="text-base font-medium text-gray-900">{{ history.timeRange }}</p>
                     <p class="text-sm text-gray-500">{{ history.date }}</p>
                   </div>
-                  <!-- Action Buttons Mobile -->
                   <div class="flex gap-2">
                     <button v-if="history.photo" @click="viewPhoto(history)"
                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Lihat Foto">
@@ -132,7 +150,7 @@
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </button>
-                    <button @click="viewDetail(history)"
+                    <button v-if="history.status !== 'belum'" @click="viewDetail(history)"
                       class="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition" title="Detail">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -142,16 +160,10 @@
                   </div>
                 </div>
 
-                <!-- Subject and Duration -->
                 <div>
                   <div class="flex items-center gap-2 mb-2">
                     <h3 class="text-base font-semibold text-gray-900">{{ history.subject }}</h3>
-                    <span v-if="history.duration" class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                      {{ history.duration }}
-                    </span>
                   </div>
-
-                  <!-- Teacher -->
                   <div class="flex items-center gap-2 text-gray-600 mb-3">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -160,8 +172,9 @@
                     <span class="text-sm">{{ history.teacher }}</span>
                   </div>
 
-                  <!-- Status Badges -->
+                  <!-- Status Badges Mobile -->
                   <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Status Kehadiran -->
                     <span v-if="history.status === 'hadir'"
                       class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,13 +182,22 @@
                       </svg>
                       Hadir
                     </span>
-                    <span v-else
+                    <span v-else-if="history.status === 'tidak-hadir'"
                       class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       Tidak Hadir
+                    </span>
+                    <!-- Belum dipresensi -->
+                    <span v-else
+                      class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs px-2.5 py-1 rounded-full">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Tdk Dipresensi
                     </span>
 
                     <span v-if="history.hasTugas"
@@ -187,57 +209,52 @@
                       Ada Tugas
                     </span>
 
-                    <!-- Status Approve Badge Mobile -->
-                    <span v-if="history.statusApprove === 'Pending'"
-                      class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-2.5 py-1 rounded-full">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Pending
-                    </span>
-                    <span v-else-if="history.statusApprove === 'Approved'"
-                      class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Disetujui
-                    </span>
-                    <span v-else-if="history.statusApprove === 'Rejected'"
-                      class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Ditolak
-                    </span>
+                    <!-- Status Approve (hanya kalau sudah dipresensi) -->
+                    <template v-if="history.status !== 'belum'">
+                      <span v-if="history.statusApprove === 'Pending'"
+                        class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-2.5 py-1 rounded-full">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pending
+                      </span>
+                      <span v-else-if="history.statusApprove === 'Approved'"
+                        class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Disetujui
+                      </span>
+                      <span v-else-if="history.statusApprove === 'Rejected'"
+                        class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Ditolak
+                      </span>
+                    </template>
                   </div>
                 </div>
 
-                <!-- Keterangan Mobile -->
                 <div v-if="history.keterangan" class="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
                   <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
                   <p>{{ history.keterangan }}</p>
                 </div>
               </div>
 
-              <!-- Desktop Layout (>= 640px) -->
+              <!-- Desktop Layout -->
               <div class="hidden sm:flex items-start justify-between">
-                <!-- Left Side: Info -->
                 <div class="flex gap-6 flex-1">
-                  <!-- Time & Date Column -->
                   <div class="text-gray-700 min-w-[140px]">
                     <p class="text-lg font-medium">{{ history.timeRange }}</p>
                     <p class="text-sm text-gray-500">{{ history.date }}</p>
                   </div>
 
-                  <!-- Subject and Teacher Info -->
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
                       <h3 class="text-lg font-semibold">{{ history.subject }}</h3>
-                      <span v-if="history.duration" class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                        {{ history.duration }}
-                      </span>
                     </div>
 
                     <div class="flex items-center gap-2 text-gray-600 mb-3">
@@ -248,7 +265,7 @@
                       <span class="text-sm">{{ history.teacher }}</span>
                     </div>
 
-                    <!-- Status Badges -->
+                    <!-- Status Badges Desktop -->
                     <div class="flex items-center gap-2 flex-wrap">
                       <span v-if="history.status === 'hadir'"
                         class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
@@ -257,13 +274,21 @@
                         </svg>
                         Hadir
                       </span>
-                      <span v-else
+                      <span v-else-if="history.status === 'tidak-hadir'"
                         class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Tidak Hadir
+                      </span>
+                      <span v-else
+                        class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-sm px-3 py-1 rounded-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Tidak Dipresensi
                       </span>
 
                       <span v-if="history.hasTugas"
@@ -275,33 +300,33 @@
                         Ada Tugas
                       </span>
 
-                      <!-- Status Approve Badge Desktop -->
-                      <span v-if="history.statusApprove === 'Pending'"
-                        class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Pending
-                      </span>
-                      <span v-else-if="history.statusApprove === 'Approved'"
-                        class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Disetujui
-                      </span>
-                      <span v-else-if="history.statusApprove === 'Rejected'"
-                        class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Ditolak
-                      </span>
+                      <template v-if="history.status !== 'belum'">
+                        <span v-if="history.statusApprove === 'Pending'"
+                          class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Pending
+                        </span>
+                        <span v-else-if="history.statusApprove === 'Approved'"
+                          class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Disetujui
+                        </span>
+                        <span v-else-if="history.statusApprove === 'Rejected'"
+                          class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Ditolak
+                        </span>
+                      </template>
                     </div>
 
-                    <!-- Keterangan Desktop -->
                     <div v-if="history.keterangan" class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
                       <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
                       <p>{{ history.keterangan }}</p>
@@ -309,7 +334,7 @@
                   </div>
                 </div>
 
-                <!-- Right Side: Actions Desktop -->
+                <!-- Actions Desktop (hanya kalau sudah dipresensi) -->
                 <div class="flex gap-2">
                   <button v-if="history.photo" @click="viewPhoto(history)"
                     class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition" title="Lihat Foto">
@@ -318,9 +343,8 @@
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </button>
-
-                  <button @click="viewDetail(history)" class="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition"
-                    title="Detail">
+                  <button v-if="history.status !== 'belum'" @click="viewDetail(history)"
+                    class="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition" title="Detail">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -330,7 +354,7 @@
               </div>
             </div>
 
-            <!-- Timestamp Footer -->
+            <!-- Footer -->
             <div class="bg-gray-50 px-4 sm:px-6 py-2.5 sm:py-3 border-t border-gray-200">
               <div class="flex items-center gap-2 text-xs text-gray-500">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor"
@@ -338,12 +362,17 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span class="truncate">Diinput pada: {{ history.createdAt }}</span>
+                <!-- Kalau belum dipresensi, tampilkan info berbeda -->
+                <span v-if="history.status === 'belum'" class="truncate text-gray-400 italic">
+                  Presensi tidak dilakukan
+                </span>
+                <span v-else class="truncate">
+                  Diinput pada: {{ history.createdAt }}
+                </span>
               </div>
             </div>
           </div>
         </template>
-
       </div>
 
       <!-- Empty State -->
@@ -362,7 +391,6 @@
       <!-- Pagination -->
       <div class="bg-white px-3 sm:px-6 py-3 border-t border-gray-200 rounded-sm mt-4 sm:mt-6">
         <div class="flex items-center justify-between">
-          <!-- Mobile Pagination -->
           <div class="flex flex-1 justify-between sm:hidden">
             <button @click="previousPage" :disabled="currentPage === 1"
               class="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -377,13 +405,12 @@
             </button>
           </div>
 
-          <!-- Desktop Pagination -->
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700">
                 Menampilkan <span class="font-medium">{{ (currentPage - 1) * perPage + 1 }}</span> sampai
-                <span class="font-medium">{{ Math.min(currentPage * perPage, totalPresensi) }}</span> dari
-                <span class="font-medium">{{ totalPresensi }}</span> hasil
+                <span class="font-medium">{{ Math.min(currentPage * perPage, totalSlot) }}</span> dari
+                <span class="font-medium">{{ totalSlot }}</span> hasil
               </p>
             </div>
             <div>
@@ -440,9 +467,10 @@ const perPage = ref(10)
 const showPhotoModal = ref(false)
 const selectedPhoto = ref(null)
 const historyData = ref([])
-const totalPresensi = ref(0)
+const totalSlot = ref(0)   // semua slot jadwal (hadir + tidak hadir + belum)
 const totalHadir = ref(0)
 const totalTidakHadir = ref(0)
+const totalBelum = ref(0)   // slot yang tidak dipresensi
 const totalPages = ref(1)
 
 // Format tanggal dari ISO string ke "5 Feb 2026"
@@ -450,9 +478,7 @@ const formatDate = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
   return date.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
+    day: 'numeric', month: 'short', year: 'numeric'
   })
 }
 
@@ -461,28 +487,35 @@ const formatDateTime = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
   const dateStr = date.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
+    day: 'numeric', month: 'short', year: 'numeric'
   })
   const timeStr = date.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit'
+    hour: '2-digit', minute: '2-digit'
   })
   return `${dateStr}, ${timeStr}`
 }
 
 // Map response BE ke format yang dipakai template
+// presensi: null  → status 'belum'
+// presensi.status === 'Hadir'      → 'hadir'
+// presensi.status === 'Tidak Hadir' → 'tidak-hadir'
 const mapToHistory = (item) => {
   const jamMulai = item.jadwal?.jam_mulai?.substring(0, 5) || ''
   const jamSelesai = item.jadwal?.jam_selesai?.substring(0, 5) || ''
+
+  const isBelum = item.presensi === null
+
   return {
-    id: item.id_presensi,
+    id_jadwal: item.jadwal?.id_jadwal,
+    id_presensi: item.id_presensi,
     date: formatDate(item.tanggal),
-    timeRange: `${jamMulai} \u2013 ${jamSelesai}`,
+    timeRange: `${jamMulai} – ${jamSelesai}`,
     subject: item.jadwal?.mapel || 'N/A',
     teacher: item.jadwal?.guru || 'N/A',
-    status: item.presensi?.status === 'Hadir' ? 'hadir' : 'tidak-hadir',
+    // 'belum' | 'hadir' | 'tidak-hadir'
+    status: isBelum
+      ? 'belum'
+      : item.presensi?.status === 'Hadir' ? 'hadir' : 'tidak-hadir',
     statusApprove: item.presensi?.status_approve || null,
     hasTugas: item.presensi?.memberikan_tugas || false,
     keterangan: item.presensi?.catatan || '',
@@ -503,15 +536,17 @@ const fetchRiwayat = async () => {
 
   if (result.success) {
     historyData.value = (result.data.data || []).map(mapToHistory)
-    totalPresensi.value = result.data.summary?.totalPresensi || 0
+    totalSlot.value = result.data.summary?.totalSlot || 0
     totalHadir.value = result.data.summary?.totalHadir || 0
     totalTidakHadir.value = result.data.summary?.totalTidakHadir || 0
+    totalBelum.value = result.data.summary?.totalBelum || 0
     totalPages.value = result.data.pagination?.totalPages || 1
   } else {
     historyData.value = []
-    totalPresensi.value = 0
+    totalSlot.value = 0
     totalHadir.value = 0
     totalTidakHadir.value = 0
+    totalBelum.value = 0
     totalPages.value = 1
   }
 
@@ -527,9 +562,7 @@ const displayPages = computed(() => {
   if (endPage - startPage < maxDisplay - 1) {
     startPage = Math.max(1, endPage - maxDisplay + 1)
   }
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
+  for (let i = startPage; i <= endPage; i++) pages.push(i)
   return pages
 })
 
@@ -548,23 +581,10 @@ const viewDetail = (history) => {
   console.log('View detail:', history)
 }
 
-const previousPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
+const previousPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const goToPage = (page) => { currentPage.value = page }
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const goToPage = (page) => {
-  currentPage.value = page
-}
-
-watch(currentPage, () => {
-  fetchRiwayat()
-})
-
-onMounted(() => {
-  fetchRiwayat()
-})
+watch(currentPage, () => { fetchRiwayat() })
+onMounted(() => { fetchRiwayat() })
 </script>
