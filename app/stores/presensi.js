@@ -245,6 +245,48 @@ export const usePresensiStore = defineStore('presensi', {
                     message: error.data?.message || 'Gagal memproses presensi.'
                 }
             }
+        },
+
+        async getRiwayatPresensiKM(filters = {}) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const queryParams = new URLSearchParams()
+                if (filters.page) queryParams.set('page', filters.page)
+                if (filters.limit) queryParams.set('limit', filters.limit)
+                if (filters.status) queryParams.set('status', filters.status)
+                if (filters.tanggal) queryParams.set('tanggal', filters.tanggal)
+
+                const queryString = queryParams.toString()
+                const url = queryString ? `/km/riwayat?${queryString}` : '/km/riwayat'
+
+                const response = await $fetch(url, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch riwayat'
+                this.loading = false
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil riwayat presensi.'
+                }
+            }
         }
     },
 
