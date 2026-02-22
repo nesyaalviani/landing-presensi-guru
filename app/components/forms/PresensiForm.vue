@@ -61,6 +61,17 @@
       <div v-else class="bg-white rounded-sm border border-gray-200">
         <div class="p-4 sm:p-6 lg:p-8">
           <div class="space-y-4 sm:space-y-6">
+
+            <div ref="alertRef" v-if="alertMessage">
+              <AppAlert
+                :type="alertType"
+                :message="alertMessage"
+                :redirect-delay="alertRedirectDelay"
+                :on-close="clearAlert"
+                :on-redirect="alertRedirectFn"
+              />
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-2">
@@ -278,19 +289,19 @@
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
-              <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
               Batal
             </button>
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-              <svg v-if="!isSubmitting" class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
+              <svg v-if="!isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              <svg v-else class="animate-spin h-3 h-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+              <svg v-else class="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor"
@@ -317,14 +328,12 @@
           </div>
         </div>
       </div>
-
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { usePresensiStore } from '~/stores/presensi'
 
 const route = useRoute()
@@ -345,6 +354,27 @@ const presensiData = ref({
 
 const previewImage = ref(null)
 const isSubmitting = ref(false)
+const alertRef = ref(null)
+
+const {
+  alertType,
+  alertMessage,
+  alertRedirectDelay,
+  alertRedirectFn,
+  showAlert,
+  clearAlert
+} = useAlert()
+
+const scrollToAlert = async () => {
+  await nextTick()
+  if (alertRef.value) {
+    const navbar = document.querySelector('nav, header, [data-navbar]')
+    const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
+
+    const elementTop = alertRef.value.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: elementTop - navbarHeight - 16, behavior: 'smooth' })
+  }
+}
 
 onMounted(async () => {
   const jadwalId = route.query.jadwalId
@@ -408,13 +438,15 @@ const handleFileUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
     if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar! Maksimal 5MB')
+      showAlert('error', 'Ukuran file terlalu besar! Maksimal 5MB')
+      scrollToAlert()
       event.target.value = ''
       return
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('File harus berupa gambar!')
+      showAlert('error', 'File harus berupa gambar!')
+      scrollToAlert()
       event.target.value = ''
       return
     }
@@ -446,11 +478,13 @@ const formatFileSize = (bytes) => {
 
 const handleSubmit = async () => {
   if (!canSubmit.value) {
-    alert('Mohon lengkapi semua data yang diperlukan!')
+    showAlert('error', 'Mohon lengkapi semua data yang diperlukan!')
+    scrollToAlert()
     return
   }
 
   isSubmitting.value = true
+  clearAlert()
 
   try {
     const formData = new FormData()
@@ -469,13 +503,19 @@ const handleSubmit = async () => {
     const result = await presensiStore.createPresensi(formData)
 
     if (result.success) {
-      router.push('/presensi')
+      showAlert('success', 'Presensi berhasil disimpan!', {
+        redirectDelay: 1500,
+        redirectFn: () => router.push('/presensi')
+      })
+      scrollToAlert()
     } else {
-      alert(result.message)
+      showAlert('error', result.message)
+      scrollToAlert()
     }
   } catch (error) {
     console.error('Error:', error)
-    alert('Terjadi kesalahan saat mengirim data. Silakan coba lagi.')
+    showAlert('error', 'Terjadi kesalahan saat mengirim data. Silakan coba lagi.')
+    scrollToAlert()
   } finally {
     isSubmitting.value = false
   }

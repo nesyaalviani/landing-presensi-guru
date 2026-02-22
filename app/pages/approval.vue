@@ -104,6 +104,16 @@
                 </div>
             </section>
 
+            <div ref="alertRef" v-if="alertMessage">
+                <AppAlert
+                    :type="alertType"
+                    :message="alertMessage"
+                    :redirect-delay="alertRedirectDelay"
+                    :on-close="clearAlert"
+                    :on-redirect="alertRedirectFn"
+                />
+            </div>
+
             <section class="table-section py-2">
                 <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
                     <div class="overflow-x-auto">
@@ -319,20 +329,24 @@
                 <X class="h-8 w-8" />
             </button>
         </div>
+
+        <AppConfirm />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { usePresensiStore } from '~/stores/presensi'
 import { useClassroomsStore } from '~/stores/classrooms'
 import {
     Clock, CheckCircle, XCircle, Search, Eye, X,
     FileText, Loader2, ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-vue-next'
+import { useConfirm } from '~/composables/useConfirm'
 
 const presensiStore = usePresensiStore()
 const classroomsStore = useClassroomsStore()
+const { confirm } = useConfirm()
 
 const loading = ref(false)
 const processing = ref(false)
@@ -348,8 +362,28 @@ const showDetailModal = ref(false)
 const showImageModal = ref(false)
 const selectedPresensi = ref(null)
 const selectedImage = ref('')
+const alertRef = ref(null)
 
 const totalJadwal = computed(() => presensiStore.presensiList.length)
+
+const {
+  alertType,
+  alertMessage,
+  alertRedirectDelay,
+  alertRedirectFn,
+  showAlert,
+  clearAlert
+} = useAlert()
+
+const scrollToAlert = async () => {
+  await nextTick()
+  if (alertRef.value) {
+    const navbar = document.querySelector('nav, header, [data-navbar]')
+    const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
+    const elementTop = alertRef.value.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: elementTop - navbarHeight - 16, behavior: 'smooth' })
+  }
+}
 
 const filteredPresensi = computed(() => {
     let result = presensiStore.presensiList
@@ -416,34 +450,56 @@ const closeImageModal = () => {
 
 const handleApprove = async () => {
     if (!selectedPresensi.value) return
-    if (!confirm('Apakah Anda yakin ingin menyetujui presensi ini?')) return
+
+    const confirmed = await confirm({
+        title: 'Setujui Presensi',
+        message: 'Apakah Anda yakin ingin menyetujui presensi ini?',
+        confirmText: 'Setujui',
+        cancelText: 'Batal',
+        type: 'success',
+    })
+
+    if (!confirmed) return
 
     processing.value = true
     const result = await presensiStore.approvePresensi(selectedPresensi.value.id_presensi, 'Approved')
 
     if (result.success) {
-        alert('Presensi berhasil disetujui!')
         closeDetailModal()
         await fetchWithFilters()
+        showAlert('success', 'Presensi berhasil disetujui!')
+        scrollToAlert()
     } else {
-        alert(result.message || 'Gagal menyetujui presensi')
+        showAlert('error', result.message || 'Gagal menyetujui presensi')
+        scrollToAlert()
     }
     processing.value = false
 }
 
 const handleReject = async () => {
     if (!selectedPresensi.value) return
-    if (!confirm('Apakah Anda yakin ingin menolak presensi ini?')) return
+
+    const confirmed = await confirm({
+        title: 'Tolak Presensi',
+        message: 'Apakah Anda yakin ingin menolak presensi ini?',
+        confirmText: 'Tolak',
+        cancelText: 'Batal',
+        type: 'reject',
+    })
+
+    if (!confirmed) return
 
     processing.value = true
     const result = await presensiStore.approvePresensi(selectedPresensi.value.id_presensi, 'Rejected')
 
     if (result.success) {
-        alert('Presensi berhasil ditolak!')
         closeDetailModal()
         await fetchWithFilters()
+        showAlert('success', 'Presensi berhasil ditolak!')
+        scrollToAlert()
     } else {
-        alert(result.message || 'Gagal menolak presensi')
+        showAlert('error', result.message || 'Gagal menolak presensi')
+        scrollToAlert()
     }
     processing.value = false
 }

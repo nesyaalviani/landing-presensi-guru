@@ -46,6 +46,10 @@
                 </div>
             </div>
 
+             <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+            </div>
+
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -207,6 +211,8 @@
                 </div>
             </Transition>
         </Teleport>
+        
+        <AppConfirm />
     </section>
 </template>
 
@@ -214,8 +220,11 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
+import { useConfirm } from '~/composables/useConfirm'
 
 const classroomsStore = useClassroomsStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const searchQuery = ref('')
 const jurusanFilter = ref(null)
@@ -226,6 +235,7 @@ const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
 let searchTimer = null
+let autoCloseTimer = null
 
 const classrooms = computed(() => classroomsStore.classrooms)
 const jurusanList = computed(() => classroomsStore.jurusanList)
@@ -315,22 +325,33 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (classroom) => {
     if (!classroom) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus kelas ${classroom.name}?`)) {
-        const result = await classroomsStore.deleteClassroom(classroom.id)
+    const confirmed = await confirm({
+        title: 'Hapus Kelas',
+        message: `Apakah Anda yakin ingin menghapus kelas ${classroom.name}? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
 
-        if (result.success) {
-            closeDropdown()
-            alert('Kelas berhasil dihapus')
-            if (classrooms.value.length === 1 && currentPage.value > 1) {
-                currentPage.value -= 1
-            }
-            fetchClassrooms()
-        } else {
-            alert(result.message || 'Gagal menghapus kelas')
-        }
+    if (!confirmed) return
+
+    closeDropdown()
+    
+    const result = await classroomsStore.deleteClassroom(classroom.id)
+
+    if (result.success) {
+        showAutoAlert('success', `Kelas ${classroom.name} berhasil dihapus.`)
+    } else {
+        showAutoAlert('error', result.message || 'Gagal menghapus kelas.')
     }
 }
 
@@ -361,6 +382,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     clearTimeout(searchTimer)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
