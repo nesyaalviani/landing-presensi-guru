@@ -55,10 +55,7 @@
         </div>
 
         <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
+          <ClipboardList class="mx-auto h-12 w-12 text-gray-400" />
           <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada jadwal</h3>
           <p class="mt-1 text-sm text-gray-500">Tidak ada jadwal untuk hari ini.</p>
         </div>
@@ -66,7 +63,8 @@
         <div v-else class="space-y-3 sm:space-y-4 mb-6">
           <div v-for="schedule in paginatedSchedules" :key="schedule.id"
             class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
-        
+
+            <!-- Mobile -->
             <div class="block sm:hidden space-y-4">
               <div class="flex items-start justify-between">
                 <div class="text-gray-700">
@@ -92,25 +90,17 @@
                   </span>
                   <span v-else-if="schedule.status === 'Pending'"
                     class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <Clock class="w-3 h-3" />
                     Pending
                   </span>
                   <span v-else-if="schedule.status === 'Approved'"
                     class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-3 py-1 rounded">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <Check class="w-3 h-3" />
                     Disetujui
                   </span>
-
                   <span v-else-if="schedule.status === 'Rejected'"
                     class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-3 py-1 rounded">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X class="w-3 h-3" />
                     Ditolak
                   </span>
                 </div>
@@ -121,10 +111,7 @@
                   <h3 class="text-lg font-semibold">{{ schedule.subject }}</h3>
                 </div>
                 <div class="flex items-center gap-2 text-gray-600">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                  <User class="w-4 h-4" />
                   <span class="text-sm">{{ schedule.teacher }}</span>
                 </div>
               </div>
@@ -139,18 +126,13 @@
                 <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm"
                   @click="handlePresensi(schedule)">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus class="w-4 h-4" />
                   Presensi
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
                   class="w-full bg-gray-100 text-gray-500 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed flex items-center justify-center gap-2"
                   disabled>
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <Clock class="w-4 h-4 text-gray-400" />
                   {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
@@ -158,14 +140,10 @@
                   disabled>
                   Sesi Berakhir
                 </button>
-                <!-- [TAMBAHAN] Tombol Kirim Ulang untuk status Rejected -->
                 <button v-else-if="schedule.status === 'Rejected'"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm"
                   @click="handleResubmit(schedule)">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
+                  <RotateCcw class="w-4 h-4" />
                   Kirim Ulang
                 </button>
                 <button v-else
@@ -176,6 +154,7 @@
               </div>
             </div>
 
+            <!-- Desktop -->
             <div class="hidden sm:flex items-start justify-between">
               <div class="flex gap-4 lg:gap-6">
                 <div class="text-gray-700 min-w-[120px]">
@@ -187,10 +166,7 @@
                     <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
                   </div>
                   <div class="flex items-center gap-2 text-gray-600 mb-3">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    <User class="w-4 h-4" />
                     <span class="text-sm">{{ schedule.teacher }}</span>
                   </div>
 
@@ -214,26 +190,17 @@
                     </span>
                     <span v-else-if="schedule.status === 'Pending'"
                       class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-4 py-1 rounded">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <Clock class="w-4 h-4" />
                       Pending
                     </span>
                     <span v-else-if="schedule.status === 'Approved'"
                       class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <Check class="w-4 h-4" />
                       Disetujui
                     </span>
-                  
                     <span v-else-if="schedule.status === 'Rejected'"
                       class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <X class="w-4 h-4" />
                       Ditolak
                     </span>
                   </div>
@@ -250,32 +217,23 @@
                 <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
                   class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md"
                   @click="handlePresensi(schedule)">
-                  <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus class="w-4 lg:w-5 h-4 lg:h-5" />
                   Presensi
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
                   class="bg-gray-100 text-gray-500 px-4 lg:px-5 py-2 text-sm rounded-sm cursor-not-allowed flex items-center gap-2"
                   disabled>
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <Clock class="w-4 h-4 text-gray-400" />
                   {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
                   class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
                   Sesi Berakhir
                 </button>
-                
                 <button v-else-if="schedule.status === 'Rejected'"
                   class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm hover:shadow-md"
                   @click="handleResubmit(schedule)">
-                  <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
+                  <RotateCcw class="w-4 lg:w-5 h-4 lg:h-5" />
                   Kirim Ulang
                 </button>
                 <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
@@ -293,11 +251,7 @@
         </template>
         <div v-else-if="schedules.length > 0"
           class="mb-6 flex items-start gap-2 sm:gap-3 text-gray-600 bg-blue-50 p-3 sm:p-4 rounded-sm">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clip-rule="evenodd" />
-          </svg>
+          <Info class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-blue-600 flex-shrink-0" />
           <p class="text-xs sm:text-sm">
             Tombol <strong>'Presensi'</strong> hanya aktif saat jam pelajaran sedang berlangsung.
           </p>
@@ -358,7 +312,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { ChevronRight, ChevronLeft, Clock, Check, X, User, Plus, RotateCcw, Info, ClipboardList } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
 import { useAuthStore } from '~/stores/auth'
 
@@ -447,7 +401,6 @@ const handlePresensi = (schedule) => {
 }
 
 const handleResubmit = (schedule) => {
-
   const pid = schedule.presensi?.id ?? schedule.presensi?.id_presensi ?? null
 
   if (!pid) {

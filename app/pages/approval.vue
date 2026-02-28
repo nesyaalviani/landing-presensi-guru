@@ -318,29 +318,28 @@
                                 placeholder="Tuliskan alasan penolakan presensi ini..."
                                 class="w-full px-3 py-2 text-sm border border-red-300 rounded-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none transition"
                             ></textarea>
-                           
                             <p v-if="alasanRejectError" class="text-xs text-red-600 mt-1">{{ alasanRejectError }}</p>
                         </div>
                     </div>
 
-                    <div v-if="selectedPresensi?.status_approve === 'Pending'" class="flex gap-3 mt-6 pt-6 border-t">
+                    <div v-if="selectedPresensi?.status_approve === 'Pending'" class="flex gap-3 justify-end mt-6 pt-6 border-t">
                         <button @click="toggleRejectForm" :disabled="processing"
-                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-colors rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-colors rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
                             :class="showRejectForm
-                                ? 'text-red-700 bg-red-100 hover:bg-red-200 border border-red-300'
-                                : 'text-white bg-red-600 hover:bg-red-700'">
+                                ? 'w-44 text-red-700 bg-red-100 hover:bg-red-200 border border-red-300'
+                                : 'flex-1 text-white bg-red-600 hover:bg-red-700'">
                             <XCircle class="h-4 w-4" />
                             {{ showRejectForm ? 'Batalkan' : 'Tolak' }}
                         </button>
 
                         <button v-if="showRejectForm" @click="handleReject" :disabled="processing"
-                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-red-700 rounded-sm hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            class="w-44 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-red-700 rounded-sm hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             <Loader2 v-if="processing" class="h-4 w-4 animate-spin" />
                             <XCircle v-else class="h-4 w-4" />
                             {{ processing ? 'Memproses...' : 'Konfirmasi Tolak' }}
                         </button>
 
-                        <button @click="handleApprove" :disabled="processing"
+                        <button v-if="!showRejectForm" @click="handleApprove" :disabled="processing"
                             class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-green-600 rounded-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             <CheckCircle v-if="!processing" class="h-4 w-4" />
                             <Loader2 v-else class="h-4 w-4 animate-spin" />

@@ -43,7 +43,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Trash2, AlertTriangle, HelpCircle, XCircle } from 'lucide-vue-next'
+import { Trash2, AlertTriangle, HelpCircle, XCircle, RotateCcw } from 'lucide-vue-next'
 import { useConfirm } from '~/composables/useConfirm'
 
 const { isOpen, confirmOptions, onConfirm, onCancel } = useConfirm()
@@ -53,26 +53,30 @@ const iconComponent = computed(() => ({
     warning: AlertTriangle,
     info: HelpCircle,
     reject: XCircle,
+    resubmit: RotateCcw
 }[confirmOptions.value.type] ?? HelpCircle))
 
 const iconBg = computed(() => ({
     danger: 'bg-red-100',
     warning: 'bg-yellow-100',
     info: 'bg-blue-100',
-    reject: 'bg-red-100'
+    reject: 'bg-red-100',
+    resubmit: 'bg-orange-500'
 }[confirmOptions.value.type] ?? 'bg-blue-100'))
 
 const iconColor = computed(() => ({
     danger: 'text-red-600',
     warning: 'text-yellow-600',
     info: 'text-blue-600',
-    reject: 'text-red-600'
+    reject: 'text-red-600',
+    resubmit: 'text-white'
 }[confirmOptions.value.type] ?? 'text-blue-600'))
 
 const confirmBtnClass = computed(() => ({
     danger: 'bg-red-600 hover:bg-red-700',
     warning: 'bg-yellow-500 hover:bg-yellow-600',
     info: 'bg-blue-600 hover:bg-blue-700',
-    reject: 'bg-red-600 hover:bg-red-700'
+    reject: 'bg-red-600 hover:bg-red-700',
+    resubmit: 'bg-orange-500 hover:bg-orange-600'
 }[confirmOptions.value.type] ?? 'bg-blue-600 hover:bg-blue-700'))
 </script>

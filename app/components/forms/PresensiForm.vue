@@ -64,11 +64,7 @@
 
             <div v-if="getIsResubmitMode()"
               class="bg-orange-50 border border-orange-200 rounded-sm p-3 sm:p-4 flex items-start gap-3">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+              <RotateCcw class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 shrink-0 mt-0.5" />
               <div class="flex-1">
                 <p class="text-xs sm:text-sm font-semibold text-orange-700 mb-1">Kirim Ulang Presensi</p>
                 <p class="text-xs sm:text-sm text-orange-600">
@@ -134,12 +130,7 @@
                         ? 'border-green-500 bg-green-500'
                         : 'border-gray-300'
                     ]">
-                      <svg v-if="presensiData.statusKehadiran === 'Hadir'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white"
-                        fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
+                      <Check v-if="presensiData.statusKehadiran === 'Hadir'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Hadir</div>
@@ -162,12 +153,7 @@
                         ? 'border-red-500 bg-red-500'
                         : 'border-gray-300'
                     ]">
-                      <svg v-if="presensiData.statusKehadiran === 'Tidak Hadir'"
-                        class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
+                      <Check v-if="presensiData.statusKehadiran === 'Tidak Hadir'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Tidak Hadir</div>
@@ -197,12 +183,7 @@
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
                     ]">
-                      <svg v-if="presensiData.memberikanTugas === 'ya'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white"
-                        fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
+                      <Check v-if="presensiData.memberikanTugas === 'ya'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Ya, Ada Tugas</div>
@@ -225,12 +206,7 @@
                         ? 'border-gray-500 bg-gray-500'
                         : 'border-gray-300'
                     ]">
-                      <svg v-if="presensiData.memberikanTugas === 'tidak'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white"
-                        fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
+                      <Check v-if="presensiData.memberikanTugas === 'tidak'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Tidak Ada Tugas</div>
@@ -245,7 +221,6 @@
               <label class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Bukti Foto <span class="text-red-500">*</span>
               </label>
-
               <CameraCapture :existing-photo-url="previewImage" @captured="onPhotoCaptured" @removed="onPhotoRemoved"
                 @error="onPhotoError" />
             </div>
@@ -265,30 +240,16 @@
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-gray-500 transition-all">
-              <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X class="h-3 w-3 sm:h-4 sm:w-4" />
               Batal
             </button>
 
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white rounded-sm focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               :class="getIsResubmitMode() ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'">
-              <svg v-if="isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4 animate-spin" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-              </svg>
-              <svg v-else-if="getIsResubmitMode()" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <svg v-else class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
+              <Loader2 v-if="isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+              <RotateCcw v-else-if="getIsResubmitMode()" class="h-3 w-3 sm:h-4 sm:w-4" />
+              <Check v-else class="h-3 w-3 sm:h-4 sm:w-4" />
               {{ isSubmitting
                 ? (getIsResubmitMode() ? 'Mengirim Ulang...' : 'Menyimpan...')
                 : (getIsResubmitMode() ? 'Kirim Ulang Presensi' : 'Simpan Presensi') }}
@@ -298,12 +259,7 @@
 
         <div class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gray-50 border-t border-gray-200 rounded-b-sm">
           <div class="flex items-start sm:items-center gap-2 text-[10px] sm:text-xs text-gray-600">
-            <svg class="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 shrink-0 mt-0.5 sm:mt-0" fill="currentColor"
-              viewBox="0 0 20 20">
-              <path fill-rule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clip-rule="evenodd" />
-            </svg>
+            <Info class="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 shrink-0 mt-0.5 sm:mt-0" />
             <p>
               <span class="font-medium">Catatan:</span>
               <template v-if="getIsResubmitMode()">
@@ -320,15 +276,21 @@
       </div>
     </div>
   </div>
+
+  <AppConfirm />
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { Check, X, RotateCcw, Loader2, Info } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
+import { useConfirm } from '~/composables/useConfirm'
+
 
 const route = useRoute()
 const router = useRouter()
 const presensiStore = usePresensiStore()
+const { confirm } = useConfirm()
 
 const loading = ref(true)
 
@@ -383,7 +345,6 @@ onMounted(async () => {
   const scheduleToday = presensiStore.jadwalHariIni.find(s => s.id == jadwalId)
 
   if (getIsResubmitMode()) {
-    // ── RESUBMIT MODE ──────────────────────────────────────────
     if (!scheduleToday || scheduleToday.status !== 'Rejected') {
       router.push('/presensi')
       return
@@ -391,7 +352,6 @@ onMounted(async () => {
 
     alasanReject.value = scheduleToday.alasan_reject || ''
 
-    // 1. Ambil data jadwal (nama mapel, guru, jam)
     const jadwalResult = await presensiStore.getJadwalById(jadwalId)
     if (!jadwalResult.success) {
       router.push('/presensi')
@@ -403,7 +363,6 @@ onMounted(async () => {
     presensiData.value.namaGuru = jadwalResult.data.namaGuru
     presensiData.value.jamPelajaran = jadwalResult.data.jamPelajaran
 
-    // 2. Ambil data presensi sebelumnya untuk pre-fill field
     const presensiId = getPresensiId()
     if (presensiId) {
       const presensiResult = await presensiStore.getPresensiByIdKM(presensiId)
@@ -422,8 +381,6 @@ onMounted(async () => {
           presensiData.value.keterangan = d.catatan
         }
 
-        // Tampilkan foto lama sebagai preview (tanpa set ke presensiData.foto
-        // agar tidak dikirim ulang jika user tidak ganti foto)
         if (d.foto_bukti) {
           previewImage.value = d.foto_bukti
         }
@@ -431,7 +388,6 @@ onMounted(async () => {
     }
 
   } else {
-    // ── CREATE MODE ────────────────────────────────────────────
     if (scheduleToday && scheduleToday.status !== 'belum') {
       router.push('/presensi')
       return
@@ -458,7 +414,6 @@ onMounted(async () => {
 })
 
 watch(() => presensiData.value.statusKehadiran, (newValue, oldValue) => {
-  // Saat resubmit, skip reset saat pertama kali nilai di-set dari pre-fill
   if (!oldValue && getIsResubmitMode()) return
 
   if (newValue === 'Hadir') {
@@ -472,7 +427,6 @@ const canSubmit = computed(() => {
   if (!presensiData.value.statusKehadiran) return false
 
   if (presensiData.value.statusKehadiran === 'Hadir') {
-    // Saat resubmit: foto boleh kosong kalau ada foto lama (previewImage)
     if (!getIsResubmitMode() && !presensiData.value.foto) return false
     if (getIsResubmitMode() && !presensiData.value.foto && !previewImage.value) return false
   }
@@ -506,6 +460,18 @@ const handleSubmit = async () => {
     return
   }
 
+  if (getIsResubmitMode()) {
+  const confirmed = await confirm({
+    title: 'Kirim Ulang Presensi',
+    message: `Apakah Anda yakin ingin mengirim ulang presensi untuk mata pelajaran "${presensiData.value.namaMapel}"? Presensi akan kembali ke status Pending.`,
+    confirmText: 'Kirim Ulang',
+    cancelText: 'Batal',
+    type: 'resubmit',
+  })
+
+  if (!confirmed) return
+}
+
   isSubmitting.value = true
   clearAlert()
 
@@ -523,7 +489,6 @@ const handleSubmit = async () => {
       formData.append('keterangan', presensiData.value.keterangan)
     }
 
-    // ✅ result dideklarasikan di sini, sebelum digunakan
     let result
 
     if (getIsResubmitMode() && getPresensiId()) {
