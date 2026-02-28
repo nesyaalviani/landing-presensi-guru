@@ -179,7 +179,7 @@
                   Nama Lengkap <span class="text-red-500">*</span>
                 </label>
                 <input v-model="editForm.name" type="text" placeholder="Masukkan nama lengkap"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400" />
               </div>
 
               <div class="border-t border-gray-100 pt-4">
@@ -192,7 +192,7 @@
                     <div class="relative">
                       <input v-model="editForm.password" :type="showPassword ? 'text' : 'password'"
                         placeholder="Masukkan password baru"
-                        class="w-full px-3 py-2 pr-10 text-sm border rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        class="w-full px-3 py-2 pr-10 text-sm border rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400"
                         :class="passwordFieldClass" />
                       <button type="button" @click="showPassword = !showPassword"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -211,7 +211,7 @@
                       <div class="relative">
                         <input v-model="editForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
                           placeholder="Ulangi password baru"
-                          class="w-full px-3 py-2 pr-10 text-sm border rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          class="w-full px-3 py-2 pr-10 text-sm border rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400"
                           :class="confirmPasswordFieldClass" />
                         <button type="button" @click="showConfirmPassword = !showConfirmPassword"
                           class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">

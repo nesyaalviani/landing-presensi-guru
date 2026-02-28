@@ -224,7 +224,7 @@
 
               <div class="flex-shrink-0">
                 <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
-                  class="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md"
+                  class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md"
                   @click="handlePresensi(schedule)">
                   <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

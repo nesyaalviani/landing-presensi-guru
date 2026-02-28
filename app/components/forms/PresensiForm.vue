@@ -96,7 +96,7 @@
               </label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label :class="[
-                  'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
+                  'relative flex items-center p-3 border rounded-sm cursor-pointer transition-all',
                   presensiData.statusKehadiran === 'Hadir'
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-300 bg-white hover:border-gray-400 active:border-green-400'
@@ -104,7 +104,7 @@
                   <input type="radio" v-model="presensiData.statusKehadiran" value="Hadir" class="sr-only" />
                   <div class="flex items-center gap-2 sm:gap-3 w-full">
                     <div :class="[
-                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border flex items-center justify-center transition-all shrink-0',
                       presensiData.statusKehadiran === 'Hadir'
                         ? 'border-green-500 bg-green-500'
                         : 'border-gray-300'
@@ -124,7 +124,7 @@
                 </label>
 
                 <label :class="[
-                  'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
+                  'relative flex items-center p-3 border rounded-sm cursor-pointer transition-all',
                   presensiData.statusKehadiran === 'Tidak Hadir'
                     ? 'border-red-500 bg-red-50'
                     : 'border-gray-300 bg-white hover:border-gray-400 active:border-red-400'
@@ -132,7 +132,7 @@
                   <input type="radio" v-model="presensiData.statusKehadiran" value="Tidak Hadir" class="sr-only" />
                   <div class="flex items-center gap-2 sm:gap-3 w-full">
                     <div :class="[
-                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border flex items-center justify-center transition-all shrink-0',
                       presensiData.statusKehadiran === 'Tidak Hadir'
                         ? 'border-red-500 bg-red-500'
                         : 'border-gray-300'
@@ -159,7 +159,7 @@
               </label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label :class="[
-                  'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
+                  'relative flex items-center p-3 border rounded-sm cursor-pointer transition-all',
                   presensiData.memberikanTugas === 'ya'
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-300 bg-white hover:border-gray-400 active:border-blue-400'
@@ -167,7 +167,7 @@
                   <input type="radio" v-model="presensiData.memberikanTugas" value="ya" class="sr-only" />
                   <div class="flex items-center gap-2 sm:gap-3 w-full">
                     <div :class="[
-                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border flex items-center justify-center transition-all shrink-0',
                       presensiData.memberikanTugas === 'ya'
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
@@ -187,7 +187,7 @@
                 </label>
 
                 <label :class="[
-                  'relative flex items-center p-3 border-2 rounded-sm cursor-pointer transition-all',
+                  'relative flex items-center p-3 border rounded-sm cursor-pointer transition-all',
                   presensiData.memberikanTugas === 'tidak'
                     ? 'border-gray-500 bg-gray-50'
                     : 'border-gray-300 bg-white hover:border-gray-400 active:border-gray-400'
@@ -195,7 +195,7 @@
                   <input type="radio" v-model="presensiData.memberikanTugas" value="tidak" class="sr-only" />
                   <div class="flex items-center gap-2 sm:gap-3 w-full">
                     <div :class="[
-                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                      'h-4 w-4 sm:h-5 sm:w-5 rounded-full border flex items-center justify-center transition-all shrink-0',
                       presensiData.memberikanTugas === 'tidak'
                         ? 'border-gray-500 bg-gray-500'
                         : 'border-gray-300'
@@ -225,7 +225,7 @@
                 <input id="foto" type="file" accept="image/*" capture="environment" @change="handleFileUpload"
                   class="hidden" />
                 <label for="foto"
-                  class="flex flex-col items-center justify-center w-full h-32 sm:h-40 border-2 border-dashed border-gray-300 rounded-sm cursor-pointer hover:border-blue-500 hover:bg-blue-50 active:bg-blue-100 transition-all">
+                  class="flex flex-col items-center justify-center w-full h-32 sm:h-40 border border-dashed border-gray-300 rounded-sm cursor-pointer hover:border-blue-500 hover:bg-blue-50 active:bg-blue-100 transition-all">
                   <svg class="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -268,7 +268,7 @@
                 Keterangan Tambahan
               </label>
               <textarea v-model="presensiData.keterangan" rows="4"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400 resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400"
                 placeholder="Tambahkan catatan atau keterangan jika diperlukan..."></textarea>
             </div>
           </div>
@@ -277,14 +277,14 @@
 
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-gray-500 transition-all">
               <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
               Batal
             </button>
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
               <svg v-if="!isSubmitting" class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

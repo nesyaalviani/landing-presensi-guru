@@ -55,7 +55,7 @@
                             </label>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div @click="formData.id_role = 1" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 1
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -64,7 +64,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 2" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 2
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -73,7 +73,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 3" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 3
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -82,7 +82,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 4" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 4
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'

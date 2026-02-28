@@ -177,6 +177,7 @@
                                     <option value="Rabu">Rabu</option>
                                     <option value="Kamis">Kamis</option>
                                     <option value="Jumat">Jumat</option>
+                                    <option value="Sabtu">Sabtu</option>
                                 </select>
                                 <ChevronDown
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -442,9 +443,8 @@ onMounted(async () => {
 
 :deep(.timepicker-simple input:focus) {
     border-color: rgb(59 130 246) !important;
-    ring: 2px !important;
-    ring-color: rgb(59 130 246) !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 0 0 1px rgb(59 130 246) !important;
+    outline: none !important;
 }
 
 :deep(.timepicker-simple input::placeholder) {
