@@ -12,15 +12,15 @@
   "dependencies": {
     "@pinia/nuxt": "^0.11.3",
     "@tailwindcss/vite": "^4.1.18",
-    "apexcharts": "^3.46.0",
+    "chart.js": "^4.5.1",
     "clock-timepicker": "^1.0.7",
     "daisyui": "^5.5.14",
-    "flowbite": "^4.0.1",
     "lucide-vue-next": "^0.563.0",
     "nuxt": "^4.3.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.27",
+    "vue-chartjs": "^5.3.3",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
