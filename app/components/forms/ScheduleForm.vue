@@ -52,8 +52,11 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
-                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
-                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
+                        <div ref="alertRef" v-if="alertMessage">
+                            <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                                :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+                        </div>
 
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -217,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { ChevronDown, X, Save, Info } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
 import { useClassroomsStore } from '~/stores/classrooms'
@@ -255,6 +258,8 @@ const filteredTeachers = ref([])
 const loading = ref(false)
 const loadingData = ref(false)
 
+const alertRef = ref(null)
+
 const {
     alertType,
     alertMessage,
@@ -266,6 +271,16 @@ const {
 } = useAlert()
 
 watchInputClearError(formData)
+
+const scrollToAlert = async () => {
+    await nextTick()
+    if (alertRef.value) {
+        const navbar = document.querySelector('nav, header, [data-navbar]')
+        const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
+        const elementTop = alertRef.value.getBoundingClientRect().top + window.scrollY
+        window.scrollTo({ top: elementTop - navbarHeight - 16, behavior: 'smooth' })
+    }
+}
 
 const activeSubjects = computed(() => {
     return subjects.value.filter(s => s.status === true)
@@ -314,37 +329,44 @@ const loadScheduleData = async () => {
         }
     } else {
         showAlert('error', 'Gagal memuat data jadwal')
+        scrollToAlert() 
     }
 }
 
 const validateForm = () => {
     if (!formData.value.jamMulai || !formData.value.jamSelesai) {
         showAlert('error', 'Jam mulai dan jam selesai wajib diisi')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.kelas) {
         showAlert('error', 'Kelas wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.mapel) {
         showAlert('error', 'Mata pelajaran wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.guru) {
         showAlert('error', 'Guru wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.hari) {
         showAlert('error', 'Hari wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (formData.value.jamMulai >= formData.value.jamSelesai) {
         showAlert('error', 'Jam selesai harus lebih besar dari jam mulai')
+        scrollToAlert() 
         return false
     }
 
@@ -383,11 +405,12 @@ const handleSubmit = async () => {
             redirectDelay: 1500,
             redirectFn: () => router.push('/schedule')
         })
+        scrollToAlert() 
     } else {
         showAlert('error', result.message)
+        scrollToAlert() 
     }
 }
-
 
 onMounted(async () => {
     if (process.client) {

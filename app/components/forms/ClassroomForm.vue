@@ -31,6 +31,9 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label for="nama_kelas"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -79,14 +82,7 @@
                         </div>
 
                         <hr class="border-gray-200" />
-
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
+                        
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
@@ -118,7 +114,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { X, Save, Info, ChevronDown, AlertCircle } from 'lucide-vue-next'
+import { X, Save, Info, ChevronDown } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -137,8 +133,19 @@ const formData = ref({
     id_jurusan: ''
 })
 
-const errorMessage = ref('')
 const loading = ref(false)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const loadClassroomData = async () => {
     if (!isEditMode.value) return
@@ -155,15 +162,15 @@ const loadClassroomData = async () => {
             id_jurusan: classroom.id_jurusan
         }
     } else {
-        errorMessage.value = 'Gagal memuat data kelas'
+       showAlert('error', 'Gagal memuat data kelas')
     }
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
-
+    clearAlert()
+    
     if (!formData.value.name || !formData.value.tingkat || !formData.value.id_jurusan) {
-        errorMessage.value = 'Semua field wajib diisi.'
+        showAlert('error', 'Semua field wajib diisi.')
         return
     }
 
@@ -185,9 +192,12 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/classroom')
+        showAlert('success', isEditMode.value ? 'Kelas berhasil diupdate!' : 'Kelas berhasil ditambahkan!', 
+        { redirectDelay: 1500, 
+        redirectFn: () => router.push('/classroom') 
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
 
