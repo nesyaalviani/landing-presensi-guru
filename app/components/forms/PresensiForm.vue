@@ -62,6 +62,25 @@
         <div class="p-4 sm:p-6 lg:p-8">
           <div class="space-y-4 sm:space-y-6">
 
+            <div v-if="getIsResubmitMode()"
+              class="bg-orange-50 border border-orange-200 rounded-sm p-3 sm:p-4 flex items-start gap-3">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <div class="flex-1">
+                <p class="text-xs sm:text-sm font-semibold text-orange-700 mb-1">Kirim Ulang Presensi</p>
+                <p class="text-xs sm:text-sm text-orange-600">
+                  Presensi Anda sebelumnya ditolak. Silakan perbaiki data di bawah lalu kirim ulang.
+                </p>
+                <div v-if="alasanReject" class="mt-2 bg-red-50 border border-red-200 rounded-sm px-3 py-2">
+                  <p class="text-xs font-medium text-red-700 mb-0.5">Alasan Penolakan:</p>
+                  <p class="text-xs text-red-600">{{ alasanReject }}</p>
+                </div>
+              </div>
+            </div>
+
             <div ref="alertRef" v-if="alertMessage">
               <AppAlert
                 :type="alertType"
@@ -289,22 +308,34 @@
           <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" @click="goBack"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-gray-500 transition-all">
-              <svg class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
               Batal
             </button>
+           
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
-              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-blue-500 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-              <svg v-if="!isSubmitting" class="h-3 h-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                viewBox="0 0 24 24">
+              class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white rounded-sm focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="getIsResubmitMode() ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'">
+              <svg v-if="isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4 animate-spin" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                 </path>
               </svg>
-              {{ isSubmitting ? 'Menyimpan...' : 'Simpan Presensi' }}
+              <svg v-else-if="getIsResubmitMode()" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <svg v-else class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 13l4 4L19 7" />
+              </svg>
+              {{ isSubmitting
+                ? (getIsResubmitMode() ? 'Mengirim Ulang...' : 'Menyimpan...')
+                : (getIsResubmitMode() ? 'Kirim Ulang Presensi' : 'Simpan Presensi') }}
             </button>
           </div>
         </div>
@@ -318,8 +349,14 @@
                 clip-rule="evenodd" />
             </svg>
             <p>
-              <span class="font-medium">Catatan:</span> Pastikan semua informasi yang dimasukkan sudah benar sebelum
-              menyimpan. Data yang sudah disimpan dapat diubah melalui menu edit.
+              
+              <span class="font-medium">Catatan:</span>
+              <template v-if="getIsResubmitMode()">
+                Perbaiki data yang diperlukan lalu kirim ulang. Presensi akan kembali ke status Pending dan menunggu persetujuan petugas.
+              </template>
+              <template v-else>
+                Pastikan semua informasi yang dimasukkan sudah benar sebelum menyimpan. Data yang sudah disimpan dapat diubah melalui menu edit.
+              </template>
             </p>
           </div>
         </div>
@@ -337,6 +374,11 @@ const router = useRouter()
 const presensiStore = usePresensiStore()
 
 const loading = ref(true)
+
+const getIsResubmitMode = () => route.query.mode === 'resubmit'
+const getPresensiId = () => route.query.presensiId ?? null
+
+const alasanReject = ref('')
 const presensiData = ref({
   id_jadwal: null,
   namaMapel: '',
@@ -384,31 +426,63 @@ onMounted(async () => {
 
   const scheduleToday = presensiStore.jadwalHariIni.find(s => s.id == jadwalId)
 
-  if (scheduleToday && scheduleToday.status !== 'belum') {
-    router.push('/presensi')
-    return
-  }
+  if (getIsResubmitMode()) {
+    if (!scheduleToday || scheduleToday.status !== 'Rejected') {
+      router.push('/presensi')
+      return
+    }
 
-  if (scheduleToday && scheduleToday.timeStatus !== 'sedang_berlangsung') {
-    router.push('/presensi')
-    return
-  }
+    alasanReject.value = scheduleToday.alasan_reject || ''
 
-  const result = await presensiStore.getJadwalById(jadwalId)
+    const result = await presensiStore.getJadwalById(jadwalId)
+    if (result.success) {
+      presensiData.value.id_jadwal = result.data.id_jadwal
+      presensiData.value.namaMapel = result.data.namaMapel
+      presensiData.value.namaGuru = result.data.namaGuru
+      presensiData.value.jamPelajaran = result.data.jamPelajaran
 
-  if (result.success) {
-    presensiData.value.id_jadwal = result.data.id_jadwal
-    presensiData.value.namaMapel = result.data.namaMapel
-    presensiData.value.namaGuru = result.data.namaGuru
-    presensiData.value.jamPelajaran = result.data.jamPelajaran
+      if (result.data.statusKehadiran) {
+        presensiData.value.statusKehadiran = result.data.statusKehadiran
+      }
+      if (result.data.memberikanTugas) {
+        presensiData.value.memberikanTugas = result.data.memberikanTugas
+      }
+      if (result.data.keterangan) {
+        presensiData.value.keterangan = result.data.keterangan
+      }
+    } else {
+      router.push('/presensi')
+      return
+    }
   } else {
-    router.push('/presensi')
+    if (scheduleToday && scheduleToday.status !== 'belum') {
+      router.push('/presensi')
+      return
+    }
+
+    if (scheduleToday && scheduleToday.timeStatus !== 'sedang_berlangsung') {
+      router.push('/presensi')
+      return
+    }
+
+    const result = await presensiStore.getJadwalById(jadwalId)
+
+    if (result.success) {
+      presensiData.value.id_jadwal = result.data.id_jadwal
+      presensiData.value.namaMapel = result.data.namaMapel
+      presensiData.value.namaGuru = result.data.namaGuru
+      presensiData.value.jamPelajaran = result.data.jamPelajaran
+    } else {
+      router.push('/presensi')
+    }
   }
 
   loading.value = false
 })
 
-watch(() => presensiData.value.statusKehadiran, (newValue) => {
+watch(() => presensiData.value.statusKehadiran, (newValue, oldValue) => {
+  if (!oldValue && getIsResubmitMode()) return
+
   if (newValue === 'Hadir') {
     presensiData.value.memberikanTugas = 'ya'
   } else {
@@ -420,7 +494,7 @@ const canSubmit = computed(() => {
   if (!presensiData.value.statusKehadiran) return false
 
   if (presensiData.value.statusKehadiran === 'Hadir') {
-    if (!presensiData.value.foto) return false
+    if (!getIsResubmitMode() && !presensiData.value.foto) return false
   }
 
   if (presensiData.value.statusKehadiran === 'Tidak Hadir') {
@@ -496,10 +570,25 @@ const handleSubmit = async () => {
       formData.append('keterangan', presensiData.value.keterangan)
     }
 
-    const result = await presensiStore.createPresensi(formData)
+    if (result.data.foto_url) {
+    previewImage.value = result.data.foto_url
+  }
+
+    let result
+
+    if (getIsResubmitMode() && getPresensiId()) {
+      result = await presensiStore.resubmitPresensi(getPresensiId(), formData)
+    } else {
+      console.warn('[handleSubmit] → memanggil createPresensi. Jika ini resubmit, cek presensiId atau mode query param!')
+      result = await presensiStore.createPresensi(formData)
+    }
 
     if (result.success) {
-      showAlert('success', 'Presensi berhasil disimpan!', {
+      const successMsg = getIsResubmitMode()
+        ? 'Presensi berhasil dikirim ulang! Menunggu persetujuan petugas.'
+        : 'Presensi berhasil disimpan!'
+
+      showAlert('success', successMsg, {
         redirectDelay: 1500,
         redirectFn: () => router.push('/presensi')
       })

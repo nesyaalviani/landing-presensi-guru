@@ -129,6 +129,57 @@ export const usePresensiStore = defineStore('presensi', {
                 return { success: false, message: errorMessage }
             }
         },
+        
+        async resubmitPresensi(presensiId, presensiData) {
+            this.loading = true
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/km/presensi/${presensiId}/resubmit`, {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: presensiData
+                })
+
+                await this.getJadwalHariIni()
+
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to resubmit presensi'
+                this.loading = false
+
+                let errorMessage = 'Gagal mengirim ulang presensi. Silakan coba lagi.'
+
+                if (error.data?.message) {
+                    const message = error.data.message.toLowerCase()
+
+                    if (message.includes('tidak ditemukan')) {
+                        errorMessage = 'Data presensi tidak ditemukan.'
+                    } else if (message.includes('foto bukti wajib')) {
+                        errorMessage = 'Foto bukti wajib diupload untuk status Hadir.'
+                    } else if (message.includes('status tugas wajib')) {
+                        errorMessage = 'Status tugas wajib diisi untuk Tidak Hadir.'
+                    } else if (message.includes('bukan rejected')) {
+                        errorMessage = 'Hanya presensi dengan status Ditolak yang dapat dikirim ulang.'
+                    } else {
+                        errorMessage = error.data.message
+                    }
+                }
+
+                return { success: false, message: errorMessage }
+            }
+        },
 
         async getAllPresensi(filters = {}) {
             this.loading = true
@@ -208,7 +259,7 @@ export const usePresensiStore = defineStore('presensi', {
             }
         },
 
-        async approvePresensi(presensiId, statusApprove) {
+        async approvePresensi(presensiId, statusApprove, alasanReject = null) {
             this.loading = true
             this.error = null
 
@@ -220,6 +271,11 @@ export const usePresensiStore = defineStore('presensi', {
                     token = localStorage.getItem('token')
                 }
 
+                const body = { status_approve: statusApprove }
+                if (alasanReject) {
+                    body.alasan_reject = alasanReject
+                }
+
                 const response = await $fetch(`/presensi/${presensiId}/approve`, {
                     method: 'PUT',
                     baseURL: config.public.apiBase,
@@ -227,7 +283,7 @@ export const usePresensiStore = defineStore('presensi', {
                         'Content-Type': 'application/json',
                         ...(token && { Authorization: `Bearer ${token}` })
                     },
-                    body: { status_approve: statusApprove }
+                    body
                 })
 
                 this.loading = false

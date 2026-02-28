@@ -283,6 +283,13 @@
                                         selectedPresensi?.memberikan_tugas === false ? 'Tidak' : '-' }}
                                 </p>
                             </div>
+
+                            <div v-if="selectedPresensi?.status_approve === 'Rejected' && selectedPresensi?.alasan_reject" class="col-span-2">
+                                <label class="text-xs font-semibold text-gray-500 uppercase block mb-2">Alasan Penolakan</label>
+                                <p class="text-sm text-red-700 p-4 bg-red-50 rounded-sm border border-red-200">
+                                    {{ selectedPresensi.alasan_reject }}
+                                </p>
+                            </div>
                         </div>
 
                         <div v-if="selectedPresensi?.foto_bukti">
@@ -300,15 +307,39 @@
                                 {{ selectedPresensi.catatan }}
                             </p>
                         </div>
+
+                        <div v-if="showRejectForm" class="p-4 bg-red-50 border border-red-200 rounded-sm">
+                            <label class="text-xs font-semibold text-red-700 uppercase block mb-2">
+                                Alasan Penolakan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                v-model="alasanReject"
+                                rows="3"
+                                placeholder="Tuliskan alasan penolakan presensi ini..."
+                                class="w-full px-3 py-2 text-sm border border-red-300 rounded-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none transition"
+                            ></textarea>
+                           
+                            <p v-if="alasanRejectError" class="text-xs text-red-600 mt-1">{{ alasanRejectError }}</p>
+                        </div>
                     </div>
 
                     <div v-if="selectedPresensi?.status_approve === 'Pending'" class="flex gap-3 mt-6 pt-6 border-t">
-                        <button @click="handleReject" :disabled="processing"
-                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-red-600 rounded-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                            <XCircle v-if="!processing" class="h-4 w-4" />
-                            <Loader2 v-else class="h-4 w-4 animate-spin" />
-                            {{ processing ? 'Memproses...' : 'Tolak' }}
+                        <button @click="toggleRejectForm" :disabled="processing"
+                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-colors rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            :class="showRejectForm
+                                ? 'text-red-700 bg-red-100 hover:bg-red-200 border border-red-300'
+                                : 'text-white bg-red-600 hover:bg-red-700'">
+                            <XCircle class="h-4 w-4" />
+                            {{ showRejectForm ? 'Batalkan' : 'Tolak' }}
                         </button>
+
+                        <button v-if="showRejectForm" @click="handleReject" :disabled="processing"
+                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-red-700 rounded-sm hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            <Loader2 v-if="processing" class="h-4 w-4 animate-spin" />
+                            <XCircle v-else class="h-4 w-4" />
+                            {{ processing ? 'Memproses...' : 'Konfirmasi Tolak' }}
+                        </button>
+
                         <button @click="handleApprove" :disabled="processing"
                             class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-green-600 rounded-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             <CheckCircle v-if="!processing" class="h-4 w-4" />
@@ -363,6 +394,9 @@ const showImageModal = ref(false)
 const selectedPresensi = ref(null)
 const selectedImage = ref('')
 const alertRef = ref(null)
+const showRejectForm = ref(false)
+const alasanReject = ref('')
+const alasanRejectError = ref('')
 
 const totalJadwal = computed(() => presensiStore.presensiList.length)
 
@@ -436,6 +470,9 @@ const openDetailModal = (row) => {
 const closeDetailModal = () => {
     showDetailModal.value = false
     selectedPresensi.value = null
+    showRejectForm.value = false
+    alasanReject.value = ''
+    alasanRejectError.value = ''
 }
 
 const openImageModal = (url) => {
@@ -446,6 +483,12 @@ const openImageModal = (url) => {
 const closeImageModal = () => {
     showImageModal.value = false
     selectedImage.value = ''
+}
+
+const toggleRejectForm = () => {
+    showRejectForm.value = !showRejectForm.value
+    alasanReject.value = ''
+    alasanRejectError.value = ''
 }
 
 const handleApprove = async () => {
@@ -479,9 +522,15 @@ const handleApprove = async () => {
 const handleReject = async () => {
     if (!selectedPresensi.value) return
 
+    if (!alasanReject.value.trim()) {
+        alasanRejectError.value = 'Alasan penolakan wajib diisi.'
+        return
+    }
+    alasanRejectError.value = ''
+
     const confirmed = await confirm({
         title: 'Tolak Presensi',
-        message: 'Apakah Anda yakin ingin menolak presensi ini?',
+        message: `Tolak presensi ini dengan alasan: "${alasanReject.value}"?`,
         confirmText: 'Tolak',
         cancelText: 'Batal',
         type: 'reject',
@@ -490,7 +539,11 @@ const handleReject = async () => {
     if (!confirmed) return
 
     processing.value = true
-    const result = await presensiStore.approvePresensi(selectedPresensi.value.id_presensi, 'Rejected')
+    const result = await presensiStore.approvePresensi(
+        selectedPresensi.value.id_presensi,
+        'Rejected',
+        alasanReject.value
+    )
 
     if (result.success) {
         closeDetailModal()

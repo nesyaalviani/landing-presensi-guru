@@ -54,7 +54,7 @@
           </div>
         </div>
 
-      <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
+        <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -66,7 +66,7 @@
         <div v-else class="space-y-3 sm:space-y-4 mb-6">
           <div v-for="schedule in paginatedSchedules" :key="schedule.id"
             class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
-
+        
             <div class="block sm:hidden space-y-4">
               <div class="flex items-start justify-between">
                 <div class="text-gray-700">
@@ -105,6 +105,7 @@
                     </svg>
                     Disetujui
                   </span>
+
                   <span v-else-if="schedule.status === 'Rejected'"
                     class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-3 py-1 rounded">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,6 +127,12 @@
                   </svg>
                   <span class="text-sm">{{ schedule.teacher }}</span>
                 </div>
+              </div>
+
+              <div v-if="schedule.status === 'Rejected' && schedule.alasan_reject"
+                class="bg-red-50 border border-red-200 rounded-sm px-3 py-2">
+                <p class="text-xs font-medium text-red-700 mb-0.5">Alasan Penolakan:</p>
+                <p class="text-xs text-red-600">{{ schedule.alasan_reject }}</p>
               </div>
 
               <div class="w-full">
@@ -150,6 +157,16 @@
                   class="w-full bg-gray-100 text-gray-400 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
                   disabled>
                   Sesi Berakhir
+                </button>
+                <!-- [TAMBAHAN] Tombol Kirim Ulang untuk status Rejected -->
+                <button v-else-if="schedule.status === 'Rejected'"
+                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm"
+                  @click="handleResubmit(schedule)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Kirim Ulang
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
@@ -177,7 +194,7 @@
                     <span class="text-sm">{{ schedule.teacher }}</span>
                   </div>
 
-                  <div class="mt-3 flex items-center gap-2">
+                  <div class="mt-3 flex items-center gap-2 flex-wrap">
                     <span v-if="schedule.timeStatus === 'belum_dimulai'"
                       class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
                       Belum Dimulai
@@ -210,6 +227,7 @@
                       </svg>
                       Disetujui
                     </span>
+                  
                     <span v-else-if="schedule.status === 'Rejected'"
                       class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,6 +236,12 @@
                       </svg>
                       Ditolak
                     </span>
+                  </div>
+
+                  <div v-if="schedule.status === 'Rejected' && schedule.alasan_reject"
+                    class="mt-2 bg-red-50 border border-red-200 rounded-sm px-3 py-2 max-w-md">
+                    <p class="text-xs font-medium text-red-700 mb-0.5">Alasan Penolakan:</p>
+                    <p class="text-xs text-red-600">{{ schedule.alasan_reject }}</p>
                   </div>
                 </div>
               </div>
@@ -243,6 +267,16 @@
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
                   class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
                   Sesi Berakhir
+                </button>
+                
+                <button v-else-if="schedule.status === 'Rejected'"
+                  class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm hover:shadow-md"
+                  @click="handleResubmit(schedule)">
+                  <svg class="w-4 lg:w-5 h-4 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Kirim Ulang
                 </button>
                 <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
                   disabled>
@@ -409,6 +443,25 @@ const handlePresensi = (schedule) => {
   router.push({
     path: '/presensi/create',
     query: { jadwalId: schedule.id }
+  })
+}
+
+const handleResubmit = (schedule) => {
+
+  const pid = schedule.presensi?.id ?? schedule.presensi?.id_presensi ?? null
+
+  if (!pid) {
+    console.warn('[handleResubmit] presensiId tidak ditemukan di schedule.presensi:', schedule.presensi)
+    return
+  }
+
+  router.push({
+    path: '/presensi/create',
+    query: {
+      jadwalId: schedule.id,
+      presensiId: pid,
+      mode: 'resubmit'
+    }
   })
 }
 
