@@ -82,13 +82,8 @@
             </div>
 
             <div ref="alertRef" v-if="alertMessage">
-              <AppAlert
-                :type="alertType"
-                :message="alertMessage"
-                :redirect-delay="alertRedirectDelay"
-                :on-close="clearAlert"
-                :on-redirect="alertRedirectFn"
-              />
+              <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                :on-close="clearAlert" :on-redirect="alertRedirectFn" />
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -251,7 +246,8 @@
                 Bukti Foto <span class="text-red-500">*</span>
               </label>
 
-              <CameraCapture @captured="onPhotoCaptured" @removed="onPhotoRemoved" @error="onPhotoError" />
+              <CameraCapture :existing-photo-url="previewImage" @captured="onPhotoCaptured" @removed="onPhotoRemoved"
+                @error="onPhotoError" />
             </div>
 
             <div>
@@ -274,12 +270,12 @@
               </svg>
               Batal
             </button>
-           
+
             <button type="button" @click="handleSubmit" :disabled="!canSubmit || isSubmitting"
               class="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-white rounded-sm focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               :class="getIsResubmitMode() ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'">
-              <svg v-if="isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4 animate-spin" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="isSubmitting" class="h-3 w-3 sm:h-4 sm:w-4 animate-spin" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
@@ -291,8 +287,7 @@
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <svg v-else class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5 13l4 4L19 7" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
               {{ isSubmitting
                 ? (getIsResubmitMode() ? 'Mengirim Ulang...' : 'Menyimpan...')
@@ -310,13 +305,14 @@
                 clip-rule="evenodd" />
             </svg>
             <p>
-              
               <span class="font-medium">Catatan:</span>
               <template v-if="getIsResubmitMode()">
-                Perbaiki data yang diperlukan lalu kirim ulang. Presensi akan kembali ke status Pending dan menunggu persetujuan petugas.
+                Perbaiki data yang diperlukan lalu kirim ulang. Presensi akan kembali ke status Pending dan menunggu
+                persetujuan petugas.
               </template>
               <template v-else>
-                Pastikan semua informasi yang dimasukkan sudah benar sebelum menyimpan. Data yang sudah disimpan dapat diubah melalui menu edit.
+                Pastikan semua informasi yang dimasukkan sudah benar sebelum menyimpan. Data yang sudah disimpan dapat
+                diubah melalui menu edit.
               </template>
             </p>
           </div>
@@ -369,7 +365,6 @@ const scrollToAlert = async () => {
   if (alertRef.value) {
     const navbar = document.querySelector('nav, header, [data-navbar]')
     const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
-
     const elementTop = alertRef.value.getBoundingClientRect().top + window.scrollY
     window.scrollTo({ top: elementTop - navbarHeight - 16, behavior: 'smooth' })
   }
@@ -388,6 +383,7 @@ onMounted(async () => {
   const scheduleToday = presensiStore.jadwalHariIni.find(s => s.id == jadwalId)
 
   if (getIsResubmitMode()) {
+    // ── RESUBMIT MODE ──────────────────────────────────────────
     if (!scheduleToday || scheduleToday.status !== 'Rejected') {
       router.push('/presensi')
       return
@@ -395,27 +391,47 @@ onMounted(async () => {
 
     alasanReject.value = scheduleToday.alasan_reject || ''
 
-    const result = await presensiStore.getJadwalById(jadwalId)
-    if (result.success) {
-      presensiData.value.id_jadwal = result.data.id_jadwal
-      presensiData.value.namaMapel = result.data.namaMapel
-      presensiData.value.namaGuru = result.data.namaGuru
-      presensiData.value.jamPelajaran = result.data.jamPelajaran
-
-      if (result.data.statusKehadiran) {
-        presensiData.value.statusKehadiran = result.data.statusKehadiran
-      }
-      if (result.data.memberikanTugas) {
-        presensiData.value.memberikanTugas = result.data.memberikanTugas
-      }
-      if (result.data.keterangan) {
-        presensiData.value.keterangan = result.data.keterangan
-      }
-    } else {
+    // 1. Ambil data jadwal (nama mapel, guru, jam)
+    const jadwalResult = await presensiStore.getJadwalById(jadwalId)
+    if (!jadwalResult.success) {
       router.push('/presensi')
       return
     }
+
+    presensiData.value.id_jadwal = jadwalResult.data.id_jadwal
+    presensiData.value.namaMapel = jadwalResult.data.namaMapel
+    presensiData.value.namaGuru = jadwalResult.data.namaGuru
+    presensiData.value.jamPelajaran = jadwalResult.data.jamPelajaran
+
+    // 2. Ambil data presensi sebelumnya untuk pre-fill field
+    const presensiId = getPresensiId()
+    if (presensiId) {
+      const presensiResult = await presensiStore.getPresensiByIdKM(presensiId)
+      if (presensiResult.success) {
+        const d = presensiResult.data
+
+        if (d.status) {
+          presensiData.value.statusKehadiran = d.status
+        }
+
+        if (d.memberikan_tugas !== null && d.memberikan_tugas !== undefined) {
+          presensiData.value.memberikanTugas = d.memberikan_tugas ? 'ya' : 'tidak'
+        }
+
+        if (d.catatan) {
+          presensiData.value.keterangan = d.catatan
+        }
+
+        // Tampilkan foto lama sebagai preview (tanpa set ke presensiData.foto
+        // agar tidak dikirim ulang jika user tidak ganti foto)
+        if (d.foto_bukti) {
+          previewImage.value = d.foto_bukti
+        }
+      }
+    }
+
   } else {
+    // ── CREATE MODE ────────────────────────────────────────────
     if (scheduleToday && scheduleToday.status !== 'belum') {
       router.push('/presensi')
       return
@@ -442,6 +458,7 @@ onMounted(async () => {
 })
 
 watch(() => presensiData.value.statusKehadiran, (newValue, oldValue) => {
+  // Saat resubmit, skip reset saat pertama kali nilai di-set dari pre-fill
   if (!oldValue && getIsResubmitMode()) return
 
   if (newValue === 'Hadir') {
@@ -455,7 +472,9 @@ const canSubmit = computed(() => {
   if (!presensiData.value.statusKehadiran) return false
 
   if (presensiData.value.statusKehadiran === 'Hadir') {
+    // Saat resubmit: foto boleh kosong kalau ada foto lama (previewImage)
     if (!getIsResubmitMode() && !presensiData.value.foto) return false
+    if (getIsResubmitMode() && !presensiData.value.foto && !previewImage.value) return false
   }
 
   if (presensiData.value.statusKehadiran === 'Tidak Hadir') {
@@ -464,33 +483,6 @@ const canSubmit = computed(() => {
 
   return true
 })
-
-const handleFileUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      showAlert('error', 'Ukuran file terlalu besar! Maksimal 5MB')
-      scrollToAlert()
-      event.target.value = ''
-      return
-    }
-
-    if (!file.type.startsWith('image/')) {
-      showAlert('error', 'File harus berupa gambar!')
-      scrollToAlert()
-      event.target.value = ''
-      return
-    }
-
-    presensiData.value.foto = file
-
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      previewImage.value = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
 const onPhotoCaptured = (file, previewUrl) => {
   presensiData.value.foto = file
@@ -505,21 +497,6 @@ const onPhotoRemoved = () => {
 const onPhotoError = (message) => {
   showAlert('error', message)
   scrollToAlert()
-}
-
-const removeImage = () => {
-  presensiData.value.foto = null
-  previewImage.value = null
-  const fileInput = document.getElementById('foto')
-  if (fileInput) fileInput.value = ''
-}
-
-const formatFileSize = (bytes) => {
-  if (!bytes) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 }
 
 const handleSubmit = async () => {
@@ -546,16 +523,12 @@ const handleSubmit = async () => {
       formData.append('keterangan', presensiData.value.keterangan)
     }
 
-    if (result.data.foto_url) {
-    previewImage.value = result.data.foto_url
-  }
-
+    // ✅ result dideklarasikan di sini, sebelum digunakan
     let result
 
     if (getIsResubmitMode() && getPresensiId()) {
       result = await presensiStore.resubmitPresensi(getPresensiId(), formData)
     } else {
-      console.warn('[handleSubmit] → memanggil createPresensi. Jika ini resubmit, cek presensiId atau mode query param!')
       result = await presensiStore.createPresensi(formData)
     }
 

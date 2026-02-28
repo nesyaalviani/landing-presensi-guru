@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <!-- Preview captured image -->
+            <!-- Preview captured/existing image -->
             <div v-else class="relative">
                 <div class="relative border border-gray-300 rounded-sm overflow-hidden">
                     <img :src="capturedImage" alt="Preview" class="w-full h-48 sm:h-56 object-cover cursor-zoom-in"
@@ -52,8 +52,11 @@
                         </button>
                     </div>
                 </div>
-                <p class="mt-1.5 text-[10px] sm:text-xs text-gray-600">
+                <p v-if="!isExistingPhoto" class="mt-1.5 text-[10px] sm:text-xs text-gray-600">
                     <span class="font-medium">{{ capturedFileName }}</span> • {{ capturedFileSize }}
+                </p>
+                <p v-else class="mt-1.5 text-[10px] sm:text-xs text-gray-500">
+                    Klik ikon kamera untuk ganti foto
                 </p>
             </div>
         </div>
@@ -216,15 +219,29 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+const props = defineProps({
+    // URL foto yang sudah ada (dari Cloudinary) untuk ditampilkan saat resubmit
+    existingPhotoUrl: {
+        type: String,
+        default: null
+    }
+})
 
 const emit = defineEmits(['captured', 'removed', 'error'])
 
+// ─── State ────────────────────────────────────────────────────────────────────
 const isOpen = ref(false)
 const showPreview = ref(false)
 const videoRef = ref(null)
 const canvasRef = ref(null)
-const capturedImage = ref(null)
+
+// Inisialisasi dari prop jika ada (untuk mode resubmit)
+const capturedImage = ref(props.existingPhotoUrl || null)
+const isExistingPhoto = ref(!!props.existingPhotoUrl)  // true = foto dari URL, bukan file baru
+
 const capturedFileName = ref('')
 const capturedFileSize = ref('')
 const cameraError = ref('')
@@ -234,6 +251,16 @@ const showGrid = ref(false)
 const facingMode = ref('environment')
 let stream = null
 
+// Watch prop supaya kalau parent set existingPhotoUrl setelah mount (async),
+// component tetap update (misalnya data dari API baru datang setelah onMounted)
+watch(() => props.existingPhotoUrl, (newUrl) => {
+    if (newUrl && !capturedImage.value) {
+        capturedImage.value = newUrl
+        isExistingPhoto.value = true
+    }
+})
+
+// ─── Camera Methods ───────────────────────────────────────────────────────────
 const openCamera = async () => {
     isOpen.value = true
     cameraError.value = ''
@@ -314,6 +341,7 @@ const capturePhoto = () => {
         capturedImage.value = canvas.toDataURL('image/jpeg', 0.85)
         capturedFileName.value = fileName
         capturedFileSize.value = formatFileSize(file.size)
+        isExistingPhoto.value = false  // sekarang foto baru, bukan dari URL
 
         emit('captured', file, capturedImage.value)
         closeCamera()
@@ -343,6 +371,7 @@ const handleFileUpload = (event) => {
         capturedImage.value = e.target.result
         capturedFileName.value = file.name
         capturedFileSize.value = formatFileSize(file.size)
+        isExistingPhoto.value = false  // foto dari upload, bukan URL lama
         emit('captured', file, capturedImage.value)
     }
     reader.readAsDataURL(file)
@@ -352,6 +381,7 @@ const retake = () => {
     capturedImage.value = null
     capturedFileName.value = ''
     capturedFileSize.value = ''
+    isExistingPhoto.value = false
     emit('removed')
     openCamera()
 }
@@ -360,6 +390,7 @@ const removeCapture = () => {
     capturedImage.value = null
     capturedFileName.value = ''
     capturedFileSize.value = ''
+    isExistingPhoto.value = false
     emit('removed')
 }
 

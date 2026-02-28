@@ -79,6 +79,36 @@ export const usePresensiStore = defineStore('presensi', {
             }
         },
 
+        async getPresensiByIdKM(presensiId) {
+            this.error = null
+
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const response = await $fetch(`/km/presensi/${presensiId}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                })
+
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch presensi'
+
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data presensi.'
+                }
+            }
+        },
+
         async createPresensi(presensiData) {
             this.loading = true
             this.error = null
@@ -129,7 +159,7 @@ export const usePresensiStore = defineStore('presensi', {
                 return { success: false, message: errorMessage }
             }
         },
-        
+
         async resubmitPresensi(presensiId, presensiData) {
             this.loading = true
             this.error = null
