@@ -145,17 +145,39 @@ const pageTitle = computed(() => {
   const titles = {
     '/': 'Dashboard',
     '/classroom': 'Data Kelas',
+    '/classroom/create': 'Tambah Kelas',
+    '/classroom/edit': 'Edit Kelas',
     '/subjects': 'Mata Pelajaran',
+    '/subjects/create': 'Tambah Mata Pelajaran',
+    '/subjects/edit': 'Edit Mata Pelajaran',
     '/schedule': 'Jadwal Pelajaran',
+    '/schedule/create': 'Tambah Jadwal Pelajaran',
+    '/schedule/edit': 'Edit Jadwal Pelajaran',
     '/users': 'User Management',
-    '/profile': 'Profil Saya',
+    '/users/create': 'Tambah User',
+    '/users/edit': 'Edit User',
     '/teacher': 'Data Guru',
+    '/teacher/create': 'Tambah Guru',
+    '/teacher/edit': 'Edit Guru',
     '/approval': 'Absensi',
     '/reports': 'Laporan',
     '/presensi': 'Presensi',
-    '/riwayat-presensi': 'Riwayat Presensi'
+    '/presensi/create': 'Buat Presensi',
+    '/riwayat-presensi': 'Riwayat Presensi',
+    '/profile': 'Profil Saya',
   }
-  return titles[route.path] || 'Dashboard'
+
+  if (route.path === '/presensi/create' && route.query.mode === 'resubmit') {
+    return 'Resubmit Presensi'
+  }
+
+  if (titles[route.path]) return titles[route.path]
+
+  const matched = Object.keys(titles)
+    .filter(key => key !== '/' && route.path.startsWith(key))
+    .sort((a, b) => b.length - a.length)
+
+  return matched.length ? titles[matched[0]] : 'Dashboard'
 })
 
 const isActive = (path) => {
