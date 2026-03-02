@@ -206,12 +206,8 @@ export const useAuthStore = defineStore('auth', {
     },
 
     getters: {
-        namaKelas: (state) => {
-            return state.user?.kelas?.name || null
-        },
-
-        hasKelas: (state) => {
-            return !!state.user?.kelas
-        }
+        namaKelas: (state) => state.user?.kelas?.name || null,
+        hasKelas: (state) => !!state.user?.kelas,
+        isProfileComplete: (state) => state.user?.is_profile_complete ?? true
     }
 })

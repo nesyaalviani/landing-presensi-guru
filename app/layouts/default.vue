@@ -107,6 +107,7 @@
         <slot />
       </div>
     </div>
+    <CompleteProfileModal :show="showCompleteProfileModal" />
   </div>
 </template>
 
@@ -249,6 +250,10 @@ const handleEscapeKey = (e) => {
     }
   }
 }
+
+const showCompleteProfileModal = computed(() => {
+  return authStore.user?.role === 'km' && !authStore.user?.is_profile_complete
+})
 
 onMounted(() => {
   if (process.client) {
