@@ -8,6 +8,7 @@ export const ROLES = {
 export const ROLE_MENUS = {
   [ROLES.ADMIN]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
+    { path: '/statistics', label: 'Statistik', icon: 'ChartLine' },
     { type: 'divider', label: 'Classroom Management' },
     { path: '/classroom', label: 'Data Kelas', icon: 'School' },
     { path: '/subjects', label: 'Mata Pelajaran', icon: 'BookOpen' },
@@ -36,7 +37,7 @@ export const ROLE_MENUS = {
 }
 
 export const ROLE_PERMISSIONS = {
-  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile'],
+  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
   [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']

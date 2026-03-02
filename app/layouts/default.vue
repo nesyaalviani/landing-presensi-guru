@@ -113,7 +113,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText, History, ClipboardList } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText, History, ClipboardList, ChartLine } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
 import { getMenuByRole, getRoleLabel } from '~/utils/roles'
 
@@ -133,7 +133,8 @@ const iconComponents = {
   ClipboardCheck,
   FileText,
   History,
-  ClipboardList
+  ClipboardList,
+  ChartLine,
 }
 
 const userRole = computed(() => authStore.user?.role)
