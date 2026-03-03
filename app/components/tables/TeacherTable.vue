@@ -26,7 +26,12 @@
                     </div>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="showImportModal = true"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/teacher/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
@@ -189,13 +194,27 @@
             </div>
         </Teleport>
 
+        <AppImportModal v-model="showImportModal" title="Import Data Guru" :required-columns="['nama_guru', 'mapel']"
+            :preview-columns="['nama_guru', 'nip', 'mapel']" :import-fn="teachersStore.importTeacher"
+            @download-template="downloadTemplate" @imported="onImported">
+            <template #format-info>
+                Kolom yang diperlukan: <span class="font-semibold">nama_guru</span>,
+                <span class="font-semibold">nip</span> (opsional),
+                <span class="font-semibold">mapel</span>
+                (id_mapel dipisah koma, contoh: <code class="bg-blue-100 px-1 rounded">1,3</code>)
+            </template>
+        </AppImportModal>
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
+import {
+    Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2,
+    ChevronDown, MoreVertical, Upload
+} from 'lucide-vue-next'
 import { useTeachersStore } from '~/stores/teachers'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -208,6 +227,7 @@ const selectedMapel = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+const showImportModal = ref(false)
 
 let searchTimer = null
 let autoCloseTimer = null
@@ -256,6 +276,7 @@ const goToPage = (p) => {
 
 const getTeacherById = (id) => teachers.value.find(t => t.id_guru === id)
 
+// ===================== Dropdown =====================
 const setButtonRef = (el, id) => {
     if (el) buttonRefs.value[id] = el
 }
@@ -292,7 +313,7 @@ const closeDropdown = () => {
 const showAutoAlert = (type, message) => {
     clearTimeout(autoCloseTimer)
     showAlert(type, message)
-    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+    autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
 const handleDelete = async (teacher) => {
@@ -316,6 +337,26 @@ const handleDelete = async (teacher) => {
         showAutoAlert('success', `Guru ${teacher.nama_guru} berhasil dihapus.`)
     } else {
         showAutoAlert('error', result.message || 'Gagal menghapus guru.')
+    }
+}
+
+const onImported = (result) => {
+    showAutoAlert('success', `Berhasil mengimport ${result.total} data guru.`)
+}
+
+const downloadTemplate = async () => {
+    try {
+        const XLSX = await import('xlsx')
+        const templateData = [
+            { nama_guru: 'Contoh Guru', nip: '198001012010011001', mapel: '1,2' },
+            { nama_guru: 'Guru Lainnya', nip: '', mapel: '3' }
+        ]
+        const worksheet = XLSX.utils.json_to_sheet(templateData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Guru')
+        XLSX.writeFile(workbook, 'template_import_guru.xlsx')
+    } catch (e) {
+        console.error('Gagal membuat template:', e)
     }
 }
 

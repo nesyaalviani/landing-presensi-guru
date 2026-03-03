@@ -109,7 +109,7 @@ export const useTeachersStore = defineStore('teachers', {
                     }
                 })
 
-                this.mapels = response.data || [] 
+                this.mapels = response.data || []
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -242,6 +242,38 @@ export const useTeachersStore = defineStore('teachers', {
                 return {
                     success: false,
                     message: error.data?.message || 'Gagal menghapus guru.'
+                }
+            }
+        },
+
+        async importTeacher(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/guru/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: formData
+                })
+
+                await this.getTeachers({ page: 1 })
+
+                return { success: true, data: response }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data guru.'
                 }
             }
         }
