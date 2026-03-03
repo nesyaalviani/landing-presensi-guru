@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-7xl">
         <section>
-            <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-sm border border-gray-200 overflow-hidden">
 
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <div>
@@ -33,7 +33,7 @@
         <section class="mt-4 sm:mt-5">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 items-start">
 
-                <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-white rounded-sm border border-gray-200 overflow-hidden">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                         <div>
                             <h2 class="text-base font-semibold text-gray-900">Peringkat Teratas Minggu Ini</h2>
@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+                <div class="bg-white rounded-sm border border-gray-200 overflow-hidden lg:col-span-2">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                         <div>
                             <h2 class="text-base font-semibold text-gray-900">Tren Presensi</h2>
