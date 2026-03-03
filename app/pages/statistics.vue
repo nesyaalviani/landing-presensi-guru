@@ -1,16 +1,79 @@
 <template>
-        <div class="max-w-7xl">
-            <section>
-                <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
+    <div class="max-w-7xl">
+        <section>
+            <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
 
-                    <!-- Header -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-900">Tren Kehadiran Guru</h2>
+                    </div>
+
+                    <div class="relative">
+                        <select v-model="selectedPeriode" @change="onPeriodeChange"
+                            class="appearance-none pl-4 pr-9 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 cursor-pointer transition">
+                            <option value="minggu">Minggu Ini</option>
+                            <option value="bulan">Bulan Ini</option>
+                            <option value="tahun">Tahun Ini</option>
+                        </select>
+                        <ChevronDown
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+
+                <div class="px-6 py-6">
+                    <Line v-if="!loading" :data="chartData" :options="chartOptions" class="max-h-80" />
+                    <div v-else class="h-80 flex items-center justify-center">
+                        <Loader2 class="h-6 w-6 animate-spin text-gray-300" />
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="mt-4 sm:mt-5">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 items-start">
+
+                <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                         <div>
-                            <h2 class="text-base font-semibold text-gray-900">Tren Kehadiran Guru</h2>
+                            <h2 class="text-base font-semibold text-gray-900">Peringkat Teratas Minggu Ini</h2>
                         </div>
+                    </div>
+                    <div class="overflow-y-auto"
+                        style="max-height: 340px; scrollbar-width: none; -ms-overflow-style: none;">
+                        <div v-for="(guru, index) in peringkatList" :key="guru.nama"
+                            class="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0">
+                            <div :class="[
+                                'flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
+                                index === 0 ? 'bg-yellow-100 text-yellow-600' :
+                                    index === 1 ? 'bg-gray-100 text-gray-500' :
+                                        index === 2 ? 'bg-orange-100 text-orange-500' :
+                                            'bg-gray-50 text-gray-400'
+                            ]">{{ index + 1 }}</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ guru.nama }}</p>
+                                <p class="text-xs text-gray-400">{{ guru.jabatan }}</p>
+                            </div>
+                            <div class="w-24 hidden sm:block">
+                                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all"
+                                        :style="{ width: guru.persen + '%', backgroundColor: guru.color }"></div>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 text-sm font-semibold" :style="{ color: guru.color }">
+                                {{ guru.persen }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-900">Tren Presensi</h2>
+                        </div>
                         <div class="relative">
-                            <select v-model="selectedPeriode" @change="onPeriodeChange"
+                            <select v-model="selectedPeriodeBar" @change="onPeriodeBarChange"
                                 class="appearance-none pl-4 pr-9 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 cursor-pointer transition">
                                 <option value="minggu">Minggu Ini</option>
                                 <option value="bulan">Bulan Ini</option>
@@ -20,41 +83,51 @@
                                 class="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
-
-                    <!-- Chart -->
                     <div class="px-6 py-6">
-                        <Line v-if="!loading" :data="chartData" :options="chartOptions" class="max-h-80" />
-                        <div v-else class="h-80 flex items-center justify-center">
+                        <Bar v-if="!loadingBar" :data="barChartData" :options="barOptions" class="max-h-80" />
+                        <div v-else class="flex items-center justify-center" style="height: 220px;">
                             <Loader2 class="h-6 w-6 animate-spin text-gray-300" />
                         </div>
                     </div>
-
                 </div>
-            </section>
-        </div>
+
+            </div>
+        </section>
+    </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Line } from 'vue-chartjs'
+import { Line, Doughnut, Bar } from 'vue-chartjs'
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
+    ArcElement,
     Tooltip,
     Legend,
     Filler
 } from 'chart.js'
 import { ChevronDown, Loader2 } from 'lucide-vue-next'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Tooltip,
+    Legend,
+    Filler
+)
 
 const selectedPeriode = ref('bulan')
 const loading = ref(false)
 
-// ── Dummy Data ────────────────────────────────────────────
 const DUMMY = {
     minggu: {
         labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
@@ -157,4 +230,92 @@ const chartOptions = computed(() => ({
         }
     }
 }))
+
+const peringkatList = [
+    { nama: 'Siti Rahayu', jabatan: 'Guru Senior', persen: 100, color: '#4ade80' },
+    { nama: 'Eko Prasetyo', jabatan: 'Guru Madya', persen: 96, color: '#34d399' },
+    { nama: 'Nina Pratiwi', jabatan: 'Guru Muda', persen: 92, color: '#34d399' },
+    { nama: 'Budi Santoso', jabatan: 'Guru Madya', persen: 88, color: '#60a5fa' },
+    { nama: 'Dewi Lestari', jabatan: 'Guru Senior', persen: 84, color: '#60a5fa' },
+    { nama: 'Hendra Wijaya', jabatan: 'Guru Muda', persen: 80, color: '#a78bfa' },
+    { nama: 'Rina Marlina', jabatan: 'Guru Muda', persen: 76, color: '#a78bfa' },
+    { nama: 'Ahmad Fauzi', jabatan: 'Guru Senior', persen: 72, color: '#fbbf24' },
+    { nama: 'Dian Safitri', jabatan: 'Guru Madya', persen: 68, color: '#fbbf24' },
+    { nama: 'Agus Widodo', jabatan: 'Guru Muda', persen: 60, color: '#fb7185' },
+]
+
+const BAR_DUMMY = {
+    minggu: {
+        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+        hadir: [38, 35, 40, 37, 35],
+        tidakHadir: [7, 10, 5, 8, 10],
+    },
+    bulan: {
+        labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+        hadir: [185, 178, 192, 180],
+        tidakHadir: [40, 47, 33, 45],
+    },
+    tahun: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+        hadir: [180, 165, 190, 175, 185, 178, 192, 188, 170, 195, 182, 178],
+        tidakHadir: [45, 60, 35, 50, 40, 47, 33, 37, 55, 30, 43, 47],
+    }
+}
+
+const selectedPeriodeBar = ref('minggu')
+const loadingBar = ref(false)
+const activeBarData = ref(BAR_DUMMY['minggu'])
+
+const onPeriodeBarChange = () => {
+    loadingBar.value = true
+    setTimeout(() => {
+        activeBarData.value = BAR_DUMMY[selectedPeriodeBar.value]
+        loadingBar.value = false
+    }, 300)
+}
+
+const barChartData = computed(() => ({
+    labels: activeBarData.value.labels,
+    datasets: [
+        {
+            label: 'Hadir',
+            data: activeBarData.value.hadir,
+            backgroundColor: '#60a5fa',
+            borderRadius: 0,
+            borderSkipped: false
+        },
+        {
+            label: 'Tidak Hadir',
+            data: activeBarData.value.tidakHadir,
+            backgroundColor: '#fca5a5',
+            borderRadius: 0,
+            borderSkipped: false
+        }
+    ]
+}))
+
+const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: { font: { size: 11 }, usePointStyle: false, boxWidth: 16, boxHeight: 10, borderRadius: 0, useBorderRadius: false }
+        }
+    },
+    scales: {
+        x: { grid: { display: false } },
+        y: {
+            beginAtZero: true,
+            grid: { color: '#f3f4f6' },
+            ticks: { stepSize: 10 }
+        }
+    }
+}
 </script>
+
+<style scoped>
+.overflow-y-auto::-webkit-scrollbar {
+    display: none;
+}
+</style>
