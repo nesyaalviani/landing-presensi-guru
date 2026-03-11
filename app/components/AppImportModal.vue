@@ -81,17 +81,33 @@
                             <p class="text-xs text-red-700">{{ previewError }}</p>
                         </div>
 
+                        <!-- Validating indicator -->
+                        <div v-if="validating"
+                            class="flex items-center gap-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-sm">
+                            <Loader2 class="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+                            <p class="text-xs text-gray-600">Memvalidasi data...</p>
+                        </div>
+
                         <!-- Preview Table -->
-                        <div v-if="previewRows.length > 0">
+                        <div v-if="previewRows.length > 0 && !validating">
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-xs font-medium text-gray-700">
                                     Preview Data
                                     <span class="ml-1.5 text-xs text-gray-500">({{ previewRows.length }} baris
                                         ditemukan)</span>
                                 </p>
-                                <span v-if="previewRows.length > 5" class="text-xs text-gray-400">
-                                    Menampilkan 5 dari {{ previewRows.length }} baris
-                                </span>
+                                <div class="flex items-center gap-3">
+                                    <!-- Summary valid/error -->
+                                    <span v-if="errorCount > 0" class="text-xs text-red-500">
+                                        {{ errorCount }} baris bermasalah
+                                    </span>
+                                    <span v-if="validCount > 0" class="text-xs text-green-600">
+                                        {{ validCount }} baris valid
+                                    </span>
+                                    <span v-if="previewRows.length > 5" class="text-xs text-gray-400">
+                                        Menampilkan 5 dari {{ previewRows.length }} baris
+                                    </span>
+                                </div>
                             </div>
                             <div class="border border-gray-200 rounded-sm overflow-hidden">
                                 <div class="overflow-x-auto max-h-52">
@@ -122,7 +138,7 @@
                                                 <td class="px-3 py-2">
                                                     <span v-if="row._error"
                                                         class="inline-flex items-center gap-1 text-red-600">
-                                                        <AlertCircle class="h-3 w-3" />
+                                                        <AlertCircle class="h-3 w-3 flex-shrink-0" />
                                                         {{ row._error }}
                                                     </span>
                                                     <span v-else class="inline-flex items-center gap-1 text-green-600">
@@ -135,23 +151,69 @@
                                     </table>
                                 </div>
                             </div>
+
+                            <!-- Warning jika ada error tapi masih bisa import baris valid -->
+                            <p v-if="hasPreviewErrors && validCount > 0" class="mt-2 text-xs text-amber-600">
+                                Baris yang bermasalah akan dilewati saat import.
+                            </p>
+                            <p v-else-if="hasPreviewErrors && validCount === 0" class="mt-2 text-xs text-red-600">
+                                Semua baris bermasalah. Perbaiki file sebelum import.
+                            </p>
                         </div>
 
                         <!-- Import Result -->
-                        <div v-if="importResult">
-                            <div v-if="importResult.success"
-                                class="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-sm">
-                                <CheckCircle class="h-4 w-4 text-green-600 flex-shrink-0" />
-                                <p class="text-xs text-green-700 font-medium">
-                                    Berhasil mengimport {{ importResult.total }} data.
-                                </p>
+                       <div v-if="importResult">
+                            <!-- Success -->
+                            <div v-if="importResult.success" class="space-y-3">
+                                <div
+                                    class="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-sm">
+                                    <CheckCircle class="h-4 w-4 text-green-600 flex-shrink-0" />
+                                    <p class="text-xs text-green-700 font-medium">
+                                        Berhasil mengimport {{ importResult.total }} data.
+                                        <span v-if="importResult.skipped > 0" class="font-normal">
+                                            ({{ importResult.skipped }} dilewati karena duplikat)
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <!-- Tampilkan errors jika ada baris yang gagal -->
+                                <div v-if="importResult.errors?.length > 0"
+                                    class="px-4 py-3 bg-amber-50 border border-amber-200 rounded-sm">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <AlertCircle class="h-4 w-4 text-amber-600 flex-shrink-0" />
+                                        <p class="text-xs font-medium text-amber-700">
+                                            {{ importResult.errors.length }} baris dilewati karena ada masalah:
+                                        </p>
+                                    </div>
+                                    <ul class="space-y-1 max-h-32 overflow-y-auto">
+                                        <li v-for="(err, i) in importResult.errors" :key="i"
+                                            class="text-xs text-amber-700 pl-2 border-l-2 border-amber-300">
+                                            {{ err }}
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div v-else
-                                class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-sm">
-                                <AlertCircle class="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p class="text-xs font-medium text-red-700 mb-0.5">Import gagal</p>
-                                    <p class="text-xs text-red-600">{{ importResult.message }}</p>
+
+                            <!-- Failed -->
+                            <div v-else class="space-y-3">
+                                <div
+                                    class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-sm">
+                                    <AlertCircle class="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p class="text-xs font-medium text-red-700 mb-0.5">Import gagal</p>
+                                        <p class="text-xs text-red-600">{{ importResult.message }}</p>
+                                    </div>
+                                </div>
+                                <!-- Daftar error per baris -->
+                                <div v-if="importResult.errors?.length > 0"
+                                    class="px-4 py-3 bg-red-50 border border-red-200 rounded-sm">
+                                    <p class="text-xs font-medium text-red-700 mb-2">Detail error:</p>
+                                    <ul class="space-y-1 max-h-32 overflow-y-auto">
+                                        <li v-for="(err, i) in importResult.errors" :key="i"
+                                            class="text-xs text-red-700 pl-2 border-l-2 border-red-300">
+                                            {{ err }}
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -165,7 +227,7 @@
                             {{ importResult?.success ? 'Tutup' : 'Batal' }}
                         </button>
                         <button v-if="!importResult?.success" @click="handleImport"
-                            :disabled="!importFile || previewRows.length === 0 || hasPreviewErrors || importing"
+                            :disabled="!importFile || previewRows.length === 0 || validCount === 0 || importing || validating"
                             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             <Loader2 v-if="importing" class="h-4 w-4 animate-spin" />
                             <Upload v-else class="h-4 w-4" />
@@ -195,7 +257,7 @@ const props = defineProps({
         type: String,
         default: 'Import Data'
     },
-    // Kolom yang wajib ada (untuk validasi preview)
+    // Kolom yang wajib ada & tidak boleh kosong
     requiredColumns: {
         type: Array,
         default: () => []
@@ -209,6 +271,13 @@ const props = defineProps({
     importFn: {
         type: Function,
         required: true
+    },
+    // Fungsi validasi per baris (opsional).
+    // Menerima raw row object, return string pesan error atau null jika valid.
+    // Bisa async (misal fetch ke API) atau sync (validasi data lokal).
+    validateRow: {
+        type: Function,
+        default: null
     }
 })
 
@@ -219,12 +288,15 @@ const importFile = ref(null)
 const previewRows = ref([])
 const previewError = ref(null)
 const importing = ref(false)
+const validating = ref(false)
 const importResult = ref(null)
 const isDragging = ref(false)
 const fileInputRef = ref(null)
 
 // ===================== Computed =====================
 const hasPreviewErrors = computed(() => previewRows.value.some(r => r._error))
+const errorCount = computed(() => previewRows.value.filter(r => r._error).length)
+const validCount = computed(() => previewRows.value.filter(r => !r._error).length)
 
 // ===================== Body Scroll Lock =====================
 watch(() => props.modelValue, (val) => {
@@ -278,6 +350,7 @@ const processFile = async (file) => {
     importFile.value = file
     previewError.value = null
     importResult.value = null
+    previewRows.value = []
 
     try {
         const XLSX = await import('xlsx')
@@ -288,28 +361,45 @@ const processFile = async (file) => {
 
         if (data.length === 0) {
             previewError.value = 'File tidak memiliki data.'
-            previewRows.value = []
             return
         }
 
-        // Validasi kolom wajib per baris
-        previewRows.value = data.map(row => {
-            let _error = null
-            for (const col of props.requiredColumns) {
-                const val = row[col] !== undefined ? String(row[col]).trim() : ''
-                if (!val) { _error = `${col} kosong`; break }
-            }
-            // Ambil nilai sesuai previewColumns
+        validating.value = true
+
+        // Proses tiap baris: cek kosong dulu, lalu jalankan validateRow jika ada
+        const rows = []
+        for (const row of data) {
+            // Petakan ke previewColumns
             const mapped = {}
             for (const col of props.previewColumns) {
                 mapped[col] = row[col] !== undefined ? String(row[col]) : ''
             }
-            return { ...mapped, _error }
-        })
+
+            // 1. Cek kolom wajib tidak kosong
+            let error = null
+            for (const col of props.requiredColumns) {
+                const val = row[col] !== undefined ? String(row[col]).trim() : ''
+                if (!val) {
+                    error = `${col} kosong`
+                    break
+                }
+            }
+
+            // 2. Jalankan validateRow dari parent jika lolos cek kosong
+            if (!error && props.validateRow) {
+                error = await props.validateRow(row) ?? null
+            }
+
+            rows.push({ ...mapped, _error: error })
+        }
+
+        previewRows.value = rows
+        validating.value = false
 
     } catch (e) {
         previewError.value = 'Gagal membaca file. Pastikan format file benar.'
         previewRows.value = []
+        validating.value = false
     }
 }
 
@@ -321,14 +411,30 @@ const handleImport = async () => {
 
     const result = await props.importFn(importFile.value)
 
-    importResult.value = result.success
-        ? { success: true, total: result.data?.total ?? previewRows.value.length }
-        : { success: false, message: result.message }
-
     importing.value = false
 
     if (result.success) {
+        const inserted = result.inserted ?? result.data?.inserted ?? 0
+        const skipped = result.skipped ?? result.data?.skipped ?? 0
+        const errors = result.errors ?? result.data?.errors ?? []
+
+        // ← Kalau tidak ada yang berhasil diinsert, anggap gagal
+        if (inserted === 0) {
+            importResult.value = {
+                success: false,
+                message: errors.length > 0
+                    ? `Semua baris gagal diimport. Periksa detail error di bawah.`
+                    : 'Tidak ada data yang berhasil diimport.'
+            }
+            // Simpan errors supaya tetap tampil
+            importResult.value.errors = errors
+            return
+        }
+
+        importResult.value = { success: true, total: inserted, skipped, errors }
         emit('imported', importResult.value)
+    } else {
+        importResult.value = { success: false, message: result.message }
     }
 }
 

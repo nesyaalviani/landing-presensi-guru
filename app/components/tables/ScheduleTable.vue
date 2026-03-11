@@ -30,7 +30,12 @@
                     </div>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="openImportModal"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/schedule/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
@@ -215,19 +220,40 @@
             </Transition>
         </Teleport>
 
+        <AppImportModal v-model="showImportModal" title="Import Data Jadwal"
+            :required-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :preview-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :import-fn="schedulesStore.importSchedule" :validate-row="validateImportRow"
+            @download-template="downloadTemplate" @imported="onImported">
+            <template #format-info>
+                Kolom yang diperlukan:
+                <span class="font-semibold">hari</span>,
+                <span class="font-semibold">kelas</span> (nama kelas, contoh: <code
+                    class="bg-blue-100 px-1 rounded">10A</code>),
+                <span class="font-semibold">mapel</span> (nama mata pelajaran),
+                <span class="font-semibold">guru</span> (nama guru),
+                <span class="font-semibold">jam_mulai</span> (contoh: <code
+                    class="bg-blue-100 px-1 rounded">07:00</code>),
+                <span class="font-semibold">jam_selesai</span> (contoh: <code
+                    class="bg-blue-100 px-1 rounded">08:30</code>)
+            </template>
+        </AppImportModal>
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
+import { ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical, Upload } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
 import { useClassroomsStore } from '~/stores/classrooms'
+import { useTeachersStore } from '~/stores/teachers'
 import { useConfirm } from '~/composables/useConfirm'
 
 const schedulesStore = useSchedulesStore()
 const classroomsStore = useClassroomsStore()
+const teachersStore = useTeachersStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
@@ -236,6 +262,10 @@ const selectedClass = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+const showImportModal = ref(false)
+
+// Data untuk validasi preview import (diload saat buka modal)
+const importTeachers = ref([])
 
 let autoCloseTimer = null
 
@@ -251,14 +281,95 @@ const visiblePages = computed(() => {
     const total = totalPages.value
     const current = page.value
     const delta = 2
-
     for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
         pages.push(i)
     }
-
     return pages
 })
 
+// ===================== Import Modal =====================
+const openImportModal = async () => {
+    // Load semua guru (dengan info mapel) untuk keperluan validasi preview
+    if (importTeachers.value.length === 0) {
+        const result = await teachersStore.getTeachers({ all: true })
+        if (result.success) {
+            importTeachers.value = teachersStore.teachers
+        }
+    }
+    showImportModal.value = true
+}
+
+/**
+ * Validasi satu baris Excel secara client-side.
+ * Dipanggil oleh AppImportModal untuk setiap baris setelah cek kosong.
+ * Return string error atau null jika valid.
+ */
+const validateImportRow = (row) => {
+    // 1. Validasi hari
+    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
+    if (!validDays.includes(String(row.hari).trim())) {
+        return `Hari "${row.hari}" tidak valid`
+    }
+
+    // 2. Validasi format jam
+    const jamMulai = parseTimeString(row.jam_mulai)
+    const jamSelesai = parseTimeString(row.jam_selesai)
+    if (!jamMulai) return `Format jam_mulai tidak valid (gunakan HH:MM)`
+    if (!jamSelesai) return `Format jam_selesai tidak valid (gunakan HH:MM)`
+    if (jamMulai >= jamSelesai) return `Jam mulai harus lebih kecil dari jam selesai`
+
+    // 3. Validasi kelas
+    const kelasNama = String(row.kelas).trim().toLowerCase()
+    const kelasFound = classrooms.value.find(k => k.name.toLowerCase() === kelasNama)
+    if (!kelasFound) return `Kelas "${row.kelas}" tidak ditemukan`
+
+    // 4. Validasi guru
+    const guruNama = String(row.guru).trim().toLowerCase()
+    const guruFound = importTeachers.value.find(g => g.nama_guru.toLowerCase() === guruNama)
+    if (!guruFound) return `Guru "${row.guru}" tidak ditemukan`
+
+    // 5. Validasi mapel & guru mengajar mapel tersebut
+    const mapelNama = String(row.mapel).trim().toLowerCase()
+    const mapelFound = guruFound.mapel?.find(m => m.nama_mapel.toLowerCase() === mapelNama)
+    if (!mapelFound) {
+        // Cek apakah mapelnya ada tapi gurunya tidak mengajar
+        const mapelExistsOnOtherGuru = importTeachers.value.some(g =>
+            g.mapel?.some(m => m.nama_mapel.toLowerCase() === mapelNama)
+        )
+        if (!mapelExistsOnOtherGuru) return `Mapel "${row.mapel}" tidak ditemukan`
+        return `Guru "${row.guru}" tidak mengajar mapel "${row.mapel}"`
+    }
+
+    return null
+}
+
+/**
+ * Parse string waktu "HH:MM" atau desimal Excel ke string "HH:MM".
+ * Return null jika format tidak dikenali.
+ */
+const parseTimeString = (value) => {
+    if (value === null || value === undefined || value === '') return null
+
+    // Desimal Excel (0.2916... = 07:00)
+    const num = typeof value === 'number' ? value : parseFloat(value)
+    if (!isNaN(num) && num >= 0 && num < 1) {
+        const totalMinutes = Math.round(num * 24 * 60)
+        const h = Math.floor(totalMinutes / 60)
+        const m = totalMinutes % 60
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
+
+    // String "07:00" atau "07:00:00"
+    const str = String(value).trim()
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) {
+        const parts = str.split(':')
+        return `${String(parts[0]).padStart(2, '0')}:${parts[1]}`
+    }
+
+    return null
+}
+
+// ===================== Schedule CRUD =====================
 const fetchSchedules = (pageNum = 1) => {
     schedulesStore.getSchedules({
         hari: selectedDay.value || undefined,
@@ -267,9 +378,7 @@ const fetchSchedules = (pageNum = 1) => {
     })
 }
 
-const onFilterChange = () => {
-    fetchSchedules(1)
-}
+const onFilterChange = () => fetchSchedules(1)
 
 const goToPage = (pageNum) => {
     if (pageNum < 1 || pageNum > totalPages.value || pageNum === page.value) return
@@ -282,54 +391,29 @@ const formatTime = (time) => {
 }
 
 const setButtonRef = (el, id) => {
-    if (el) {
-        buttonRefs.value[id] = el
-    }
+    if (el) buttonRefs.value[id] = el
 }
 
-const getScheduleById = (id) => {
-    return schedules.value.find(s => s.id_jadwal === id)
-}
+const getScheduleById = (id) => schedules.value.find(s => s.id_jadwal === id)
 
 const calculateDropdownPosition = (buttonEl) => {
     if (!buttonEl) return {}
-
     const rect = buttonEl.getBoundingClientRect()
     const dropdownWidth = 192
     const dropdownHeight = 120
-
     let top = rect.bottom + 8
     let left = rect.right - dropdownWidth
-
-    if (top + dropdownHeight > window.innerHeight) {
-        top = rect.top - dropdownHeight - 8
-    }
-
-    if (left < 8) {
-        left = 8
-    }
-
-    if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-    }
-
-    return {
-        top: `${top}px`,
-        left: `${left}px`
-    }
+    if (top + dropdownHeight > window.innerHeight) top = rect.top - dropdownHeight - 8
+    if (left < 8) left = 8
+    if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
+    return { top: `${top}px`, left: `${left}px` }
 }
 
 const toggleDropdown = (id) => {
-    if (activeDropdown.value === id) {
-        closeDropdown()
-        return
-    }
-
+    if (activeDropdown.value === id) { closeDropdown(); return }
     activeDropdown.value = id
-
     nextTick(() => {
-        const buttonEl = buttonRefs.value[id]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
+        dropdownStyle.value = calculateDropdownPosition(buttonRefs.value[id])
     })
 }
 
@@ -346,10 +430,8 @@ const showAutoAlert = (type, message) => {
 
 const handleDelete = async (schedule) => {
     if (!schedule) return
-
     const timeRange = `${formatTime(schedule.jam_mulai)} – ${formatTime(schedule.jam_selesai)}`
     const scheduleInfo = `${schedule.hari}, ${timeRange}, ${schedule.nama_kelas}`
-
     const confirmed = await confirm({
         title: 'Hapus Jadwal',
         message: `Apakah Anda yakin ingin menghapus jadwal "${scheduleInfo}"? Tindakan ini tidak dapat dibatalkan.`,
@@ -357,13 +439,9 @@ const handleDelete = async (schedule) => {
         cancelText: 'Batal',
         type: 'danger',
     })
-
     if (!confirmed) return
-
     closeDropdown()
-
     const result = await schedulesStore.deleteSchedule(schedule.id_jadwal)
-
     if (result.success) {
         showAutoAlert('success', `Jadwal ${scheduleInfo} berhasil dihapus.`)
     } else {
@@ -371,19 +449,48 @@ const handleDelete = async (schedule) => {
     }
 }
 
+const onImported = (result) => {
+    if (result.total > 0) {
+        showAutoAlert('success', `Berhasil mengimport ${result.total} data jadwal.`)
+    } else {
+        showAutoAlert('error', 'Tidak ada data yang berhasil diimport. Periksa kembali file Anda.')
+    }
+    fetchSchedules(1)
+}
+
+const downloadTemplate = async () => {
+    try {
+        const XLSX = await import('xlsx')
+        const templateData = [
+            { hari: 'Senin', kelas: '10A', mapel: 'Matematika', guru: 'Budi Santoso', jam_mulai: '07:00', jam_selesai: '08:30' },
+            { hari: 'Selasa', kelas: '10B', mapel: 'Bahasa Indonesia', guru: 'Siti Rahayu', jam_mulai: '08:30', jam_selesai: '10:00' },
+        ]
+        const worksheet = XLSX.utils.json_to_sheet(templateData)
+        // Force kolom jam sebagai text supaya Excel tidak auto-convert
+        const range = XLSX.utils.decode_range(worksheet['!ref'])
+        for (let R = range.s.r; R <= range.e.r; R++) {
+            ;['E', 'F'].forEach(col => {
+                const addr = `${col}${R + 1}`
+                if (worksheet[addr]) { worksheet[addr].t = 's'; worksheet[addr].z = '@' }
+            })
+        }
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Jadwal')
+        XLSX.writeFile(workbook, 'template_import_jadwal.xlsx')
+    } catch (e) {
+        console.error('Gagal membuat template:', e)
+    }
+}
+
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
-
-    if (!isDropdown && !isButton) {
-        closeDropdown()
-    }
+    if (!isDropdown && !isButton) closeDropdown()
 }
 
 const handleScroll = () => {
     if (activeDropdown.value !== null) {
-        const buttonEl = buttonRefs.value[activeDropdown.value]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
+        dropdownStyle.value = calculateDropdownPosition(buttonRefs.value[activeDropdown.value])
     }
 }
 
@@ -392,7 +499,6 @@ onMounted(async () => {
         fetchSchedules(1),
         classroomsStore.getClassrooms({ all: true })
     ])
-
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
         window.addEventListener('scroll', handleScroll, true)
@@ -401,7 +507,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    // clearTimeout(searchTimeout)
     clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)

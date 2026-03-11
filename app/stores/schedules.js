@@ -251,6 +251,38 @@ export const useSchedulesStore = defineStore('schedules', {
                     message: errorMessage
                 }
             }
+        },
+
+        async importSchedule(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/jadwal/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: formData
+                })
+
+                await this.getSchedules({ page: 1 })
+
+                return { success: true, data: response, inserted: response.inserted, errors: response.errors ?? [], total: response.inserted }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data jadwal.'
+                }
+            }
         }
     },
 
@@ -264,7 +296,8 @@ export const useSchedulesStore = defineStore('schedules', {
             if (!classId) return state.schedules
             return state.schedules.filter(schedule => schedule.id_kelas === classId)
         },
-         searchSchedules: (state) => (searchQuery, dayFilter, classFilter) => {
+
+        searchSchedules: (state) => (searchQuery, dayFilter, classFilter) => {
             let filtered = state.schedules
 
             if (dayFilter) {
@@ -285,6 +318,6 @@ export const useSchedulesStore = defineStore('schedules', {
             }
 
             return filtered
-         }
+        }
     }
 })
