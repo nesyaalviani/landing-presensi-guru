@@ -116,10 +116,15 @@
                 </div>
               </div>
 
-              <div v-if="schedule.status === 'Rejected' && schedule.alasan_reject"
-                class="bg-red-50 border border-red-200 rounded-sm px-3 py-2">
-                <p class="text-xs font-medium text-red-700 mb-0.5">Alasan Penolakan:</p>
-                <p class="text-xs text-red-600">{{ schedule.alasan_reject }}</p>
+              <div v-if="schedule.presensi?.catatan" class="text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
+                <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
+                <p>{{ schedule.presensi.catatan }}</p>
+              </div>
+
+              <div v-if="schedule.status === 'Rejected' && schedule.presensi?.alasan_reject"
+                class="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-sm">
+                <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
+                <p>{{ schedule.presensi.alasan_reject }}</p>
               </div>
 
               <div class="w-full">
@@ -140,11 +145,14 @@
                   disabled>
                   Sesi Berakhir
                 </button>
-                <button v-else-if="schedule.status === 'Rejected'"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm"
-                  @click="handleResubmit(schedule)">
+                <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
+                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                  isBandingExpired(schedule)
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
                   <RotateCcw class="w-4 h-4" />
-                  Kirim Ulang
+                  {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
@@ -155,91 +163,101 @@
             </div>
 
             <!-- Desktop -->
-            <div class="hidden sm:flex items-start justify-between">
-              <div class="flex gap-4 lg:gap-6">
-                <div class="text-gray-700 min-w-[120px]">
-                  <p class="text-base lg:text-lg font-medium">{{ schedule.timeRange }}</p>
+            <div class="hidden sm:block">
+              <div class="flex items-start justify-between">
+                <div class="flex gap-4 lg:gap-6 flex-1">
+                  <div class="text-gray-700 min-w-[120px]">
+                    <p class="text-base lg:text-lg font-medium">{{ schedule.timeRange }}</p>
+                  </div>
+
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600 mb-3">
+                      <User class="w-4 h-4" />
+                      <span class="text-sm">{{ schedule.teacher }}</span>
+                    </div>
+
+                    <div class="mt-3 flex items-center gap-2 flex-wrap">
+                      <span v-if="schedule.timeStatus === 'belum_dimulai'"
+                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
+                        Belum Dimulai
+                      </span>
+                      <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
+                        class="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">
+                        Sedang Berlangsung
+                      </span>
+                      <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
+                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
+                        Sudah Selesai
+                      </span>
+
+                      <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
+                        class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
+                        Belum Presensi
+                      </span>
+                      <span v-else-if="schedule.status === 'Pending'"
+                        class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-4 py-1 rounded">
+                        <Clock class="w-4 h-4" />
+                        Pending
+                      </span>
+                      <span v-else-if="schedule.status === 'Approved'"
+                        class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
+                        <Check class="w-4 h-4" />
+                        Disetujui
+                      </span>
+                      <span v-else-if="schedule.status === 'Rejected'"
+                        class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
+                        <X class="w-4 h-4" />
+                        Ditolak
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
-                  </div>
-                  <div class="flex items-center gap-2 text-gray-600 mb-3">
-                    <User class="w-4 h-4" />
-                    <span class="text-sm">{{ schedule.teacher }}</span>
-                  </div>
-
-                  <div class="mt-3 flex items-center gap-2 flex-wrap">
-                    <span v-if="schedule.timeStatus === 'belum_dimulai'"
-                      class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
-                      Belum Dimulai
-                    </span>
-                    <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
-                      class="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">
-                      Sedang Berlangsung
-                    </span>
-                    <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
-                      class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
-                      Sudah Selesai
-                    </span>
-
-                    <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
-                      class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
-                      Belum Presensi
-                    </span>
-                    <span v-else-if="schedule.status === 'Pending'"
-                      class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-4 py-1 rounded">
-                      <Clock class="w-4 h-4" />
-                      Pending
-                    </span>
-                    <span v-else-if="schedule.status === 'Approved'"
-                      class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
-                      <Check class="w-4 h-4" />
-                      Disetujui
-                    </span>
-                    <span v-else-if="schedule.status === 'Rejected'"
-                      class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
-                      <X class="w-4 h-4" />
-                      Ditolak
-                    </span>
-                  </div>
-
-                  <div v-if="schedule.status === 'Rejected' && schedule.alasan_reject"
-                    class="mt-2 bg-red-50 border border-red-200 rounded-sm px-3 py-2 max-w-md">
-                    <p class="text-xs font-medium text-red-700 mb-0.5">Alasan Penolakan:</p>
-                    <p class="text-xs text-red-600">{{ schedule.alasan_reject }}</p>
-                  </div>
+                <div class="flex-shrink-0">
+                  <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
+                    class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md"
+                    @click="handlePresensi(schedule)">
+                    <Plus class="w-4 lg:w-5 h-4 lg:h-5" />
+                    Presensi
+                  </button>
+                  <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
+                    class="bg-gray-100 text-gray-500 px-4 lg:px-5 py-2 text-sm rounded-sm cursor-not-allowed flex items-center gap-2"
+                    disabled>
+                    <Clock class="w-4 h-4 text-gray-400" />
+                    {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
+                  </button>
+                  <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
+                    class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
+                    Sesi Berakhir
+                  </button>
+                  <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
+                    'flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                    isBandingExpired(schedule)
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                  ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
+                    <RotateCcw class="w-4 h-4" />
+                    {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
+                  </button>
+                  <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
+                    disabled>
+                    Sudah Presensi
+                  </button>
                 </div>
               </div>
 
-              <div class="flex-shrink-0">
-                <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
-                  class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md"
-                  @click="handlePresensi(schedule)">
-                  <Plus class="w-4 lg:w-5 h-4 lg:h-5" />
-                  Presensi
-                </button>
-                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
-                  class="bg-gray-100 text-gray-500 px-4 lg:px-5 py-2 text-sm rounded-sm cursor-not-allowed flex items-center gap-2"
-                  disabled>
-                  <Clock class="w-4 h-4 text-gray-400" />
-                  {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
-                </button>
-                <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
-                  class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
-                  Sesi Berakhir
-                </button>
-                <button v-else-if="schedule.status === 'Rejected'"
-                  class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm hover:shadow-md"
-                  @click="handleResubmit(schedule)">
-                  <RotateCcw class="w-4 lg:w-5 h-4 lg:h-5" />
-                  Kirim Ulang
-                </button>
-                <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
-                  disabled>
-                  Sudah Presensi
-                </button>
+              <div v-if="schedule.presensi?.catatan"
+                class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm ml-[144px]">
+                <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
+                <p>{{ schedule.presensi.catatan }}</p>
+              </div>
+              <div v-if="schedule.status === 'Rejected' && schedule.presensi?.alasan_reject"
+                class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-sm ml-[144px]">
+                <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
+                <p>{{ schedule.presensi.alasan_reject }}</p>
               </div>
             </div>
 
@@ -428,6 +446,14 @@ const nextPage = () => {
 
 const goToPage = (page) => {
   currentPage.value = page
+}
+
+const isBandingExpired = (schedule) => {
+  if (schedule.status !== 'Rejected') return false
+  const rejectedAt = schedule.presensi?.rejected_at
+  if (!rejectedAt) return false
+  const diff = (now.value - new Date(rejectedAt)) / (1000 * 60 * 60)
+  return diff > 24
 }
 
 onMounted(async () => {
