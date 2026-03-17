@@ -388,7 +388,9 @@
       </div>
 
       <!-- Pagination -->
-      <div class="bg-white px-3 sm:px-6 py-3 border-t border-gray-200 rounded-sm mt-4 sm:mt-6">
+      <!-- Pagination -->
+      <div v-if="!isLoading && totalSlot > 0"
+        class="bg-white px-3 sm:px-6 py-3 border-t border-gray-200 rounded-sm mt-4 sm:mt-6">
         <div class="flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button @click="previousPage" :disabled="currentPage === 1"
