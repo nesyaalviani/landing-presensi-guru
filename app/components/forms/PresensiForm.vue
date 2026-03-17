@@ -350,7 +350,7 @@ onMounted(async () => {
       return
     }
 
-    alasanReject.value = scheduleToday.alasan_reject || ''
+    alasanReject.value = scheduleToday.presensi?.alasan_reject || ''
 
     const jadwalResult = await presensiStore.getJadwalById(jadwalId)
     if (!jadwalResult.success) {

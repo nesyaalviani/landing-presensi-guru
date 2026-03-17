@@ -149,13 +149,6 @@
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </button>
-                    <!-- <button v-if="history.status !== 'belum'" @click="viewDetail(history)"
-                      class="p-2 text-gray-600 hover:bg-gray-100 rounded-sm transition" title="Detail">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button> -->
                   </div>
                 </div>
 
@@ -173,7 +166,6 @@
 
                   <!-- Status Badges Mobile -->
                   <div class="flex items-center gap-2 flex-wrap">
-                    <!-- Status Kehadiran -->
                     <span v-if="history.status === 'hadir'"
                       class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +181,6 @@
                       </svg>
                       Tidak Hadir
                     </span>
-                    <!-- Belum dipresensi -->
                     <span v-else
                       class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs px-2.5 py-1 rounded-full">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,7 +199,6 @@
                       Ada Tugas
                     </span>
 
-                    <!-- Status Approve (hanya kalau sudah dipresensi) -->
                     <template v-if="history.status !== 'belum'">
                       <span v-if="history.statusApprove === 'Pending'"
                         class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-2.5 py-1 rounded-full">
@@ -241,114 +231,122 @@
                   <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
                   <p>{{ history.keterangan }}</p>
                 </div>
+
+                <div v-if="history.alasanReject"
+                  class="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-sm">
+                  <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
+                  <p>{{ history.alasanReject }}</p>
+                </div>
               </div>
 
               <!-- Desktop Layout -->
-              <div class="hidden sm:flex items-start justify-between">
-                <div class="flex gap-6 flex-1">
-                  <div class="text-gray-700 min-w-[140px]">
-                    <p class="text-lg font-medium">{{ history.timeRange }}</p>
-                    <p class="text-sm text-gray-500">{{ history.date }}</p>
-                  </div>
-
-                  <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <h3 class="text-lg font-semibold">{{ history.subject }}</h3>
+              <div class="hidden sm:block">
+                <div class="flex items-start justify-between">
+                  <div class="flex gap-6 flex-1">
+                    <div class="text-gray-700 min-w-[140px]">
+                      <p class="text-lg font-medium">{{ history.timeRange }}</p>
+                      <p class="text-sm text-gray-500">{{ history.date }}</p>
                     </div>
 
-                    <div class="flex items-center gap-2 text-gray-600 mb-3">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span class="text-sm">{{ history.teacher }}</span>
-                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-semibold">{{ history.subject }}</h3>
+                      </div>
 
-                    <!-- Status Badges Desktop -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span v-if="history.status === 'hadir'"
-                        class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Hadir
-                      </span>
-                      <span v-else-if="history.status === 'tidak-hadir'"
-                        class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
+                      <div class="flex items-center gap-2 text-gray-600 mb-3">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Tidak Hadir
-                      </span>
-                      <span v-else
-                        class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Tidak Dipresensi
-                      </span>
+                        <span class="text-sm">{{ history.teacher }}</span>
+                      </div>
 
-                      <span v-if="history.hasTugas"
-                        class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Ada Tugas
-                      </span>
-
-                      <template v-if="history.status !== 'belum'">
-                        <span v-if="history.statusApprove === 'Pending'"
-                          class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Pending
-                        </span>
-                        <span v-else-if="history.statusApprove === 'Approved'"
+                      <!-- Status Badges Desktop -->
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span v-if="history.status === 'hadir'"
                           class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                           </svg>
-                          Disetujui
+                          Hadir
                         </span>
-                        <span v-else-if="history.statusApprove === 'Rejected'"
+                        <span v-else-if="history.status === 'tidak-hadir'"
                           class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M6 18L18 6M6 6l12 12" />
                           </svg>
-                          Ditolak
+                          Tidak Hadir
                         </span>
-                      </template>
-                    </div>
+                        <span v-else
+                          class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-sm px-3 py-1 rounded-full">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Tidak Dipresensi
+                        </span>
 
-                    <div v-if="history.keterangan" class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
-                      <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
-                      <p>{{ history.keterangan }}</p>
+                        <span v-if="history.hasTugas"
+                          class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Ada Tugas
+                        </span>
+
+                        <template v-if="history.status !== 'belum'">
+                          <span v-if="history.statusApprove === 'Pending'"
+                            class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Pending
+                          </span>
+                          <span v-else-if="history.statusApprove === 'Approved'"
+                            class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 13l4 4L19 7" />
+                            </svg>
+                            Disetujui
+                          </span>
+                          <span v-else-if="history.statusApprove === 'Rejected'"
+                            class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Ditolak
+                          </span>
+                        </template>
+                      </div>
                     </div>
+                  </div>
+
+                  <!-- Actions Desktop -->
+                  <div class="flex gap-2">
+                    <button v-if="history.photo" @click="viewPhoto(history)"
+                      class="p-2 text-blue-600 hover:bg-blue-50 rounded-sm transition" title="Lihat Foto">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
-                <!-- Actions Desktop (hanya kalau sudah dipresensi) -->
-                <div class="flex gap-2">
-                  <button v-if="history.photo" @click="viewPhoto(history)"
-                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-sm transition" title="Lihat Foto">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                  <!-- <button v-if="history.status !== 'belum'" @click="viewDetail(history)"
-                    class="p-2 text-gray-600 hover:bg-gray-100 rounded-sm transition" title="Detail">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button> -->
+                <!-- Keterangan & Alasan full width di bawah row -->
+                <div v-if="history.keterangan" class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm ml-[164px]">
+                  <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
+                  <p>{{ history.keterangan }}</p>
+                </div>
+                <div v-if="history.alasanReject"
+                  class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-sm ml-[164px]">
+                  <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
+                  <p>{{ history.alasanReject }}</p>
                 </div>
               </div>
             </div>
@@ -361,7 +359,6 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <!-- Kalau belum dipresensi, tampilkan info berbeda -->
                 <span v-if="history.status === 'belum'" class="truncate text-gray-400 italic">
                   Presensi tidak dilakukan
                 </span>
@@ -459,20 +456,18 @@ import { usePresensiStore } from '@/stores/presensi'
 
 const presensiStore = usePresensiStore()
 
-// State
 const isLoading = ref(false)
 const currentPage = ref(1)
 const perPage = ref(10)
 const showPhotoModal = ref(false)
 const selectedPhoto = ref(null)
 const historyData = ref([])
-const totalSlot = ref(0)   // semua slot jadwal (hadir + tidak hadir + belum)
+const totalSlot = ref(0)
 const totalHadir = ref(0)
 const totalTidakHadir = ref(0)
-const totalBelum = ref(0)   // slot yang tidak dipresensi
+const totalBelum = ref(0)
 const totalPages = ref(1)
 
-// Format tanggal dari ISO string ke "5 Feb 2026"
 const formatDate = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -481,7 +476,6 @@ const formatDate = (isoString) => {
   })
 }
 
-// Format datetime dari ISO string ke "5 Feb 2026, 09:15"
 const formatDateTime = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -494,14 +488,9 @@ const formatDateTime = (isoString) => {
   return `${dateStr}, ${timeStr}`
 }
 
-// Map response BE ke format yang dipakai template
-// presensi: null  → status 'belum'
-// presensi.status === 'Hadir'      → 'hadir'
-// presensi.status === 'Tidak Hadir' → 'tidak-hadir'
 const mapToHistory = (item) => {
   const jamMulai = item.jadwal?.jam_mulai?.substring(0, 5) || ''
   const jamSelesai = item.jadwal?.jam_selesai?.substring(0, 5) || ''
-
   const isBelum = item.presensi === null
 
   return {
@@ -511,20 +500,19 @@ const mapToHistory = (item) => {
     timeRange: `${jamMulai} – ${jamSelesai}`,
     subject: item.jadwal?.mapel || 'N/A',
     teacher: item.jadwal?.guru || 'N/A',
-    // 'belum' | 'hadir' | 'tidak-hadir'
     status: isBelum
       ? 'belum'
       : item.presensi?.status === 'Hadir' ? 'hadir' : 'tidak-hadir',
     statusApprove: item.presensi?.status_approve || null,
     hasTugas: item.presensi?.memberikan_tugas || false,
     keterangan: item.presensi?.catatan || '',
+    alasanReject: item.presensi?.alasan_reject || null,
     photo: item.presensi?.foto_bukti || null,
     createdAt: formatDateTime(item.created_at),
     duration: null
   }
 }
 
-// Fetch data dari server
 const fetchRiwayat = async () => {
   isLoading.value = true
 
@@ -552,7 +540,6 @@ const fetchRiwayat = async () => {
   isLoading.value = false
 }
 
-// Pagination computed
 const displayPages = computed(() => {
   const pages = []
   const maxDisplay = 5
@@ -565,7 +552,6 @@ const displayPages = computed(() => {
   return pages
 })
 
-// Methods
 const viewPhoto = (history) => {
   selectedPhoto.value = history.photo
   showPhotoModal.value = true
@@ -576,10 +562,6 @@ const closePhotoModal = () => {
   showPhotoModal.value = false
   selectedPhoto.value = null
   document.body.style.overflow = ''
-}
-
-const viewDetail = (history) => {
-  console.log('View detail:', history)
 }
 
 const previousPage = () => { if (currentPage.value > 1) currentPage.value-- }
