@@ -9,7 +9,7 @@ export const ROLE_MENUS = {
   [ROLES.ADMIN]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { path: '/statistics', label: 'Statistik', icon: 'ChartLine' },
-    { path: '/kalender', label: 'Kalender Akademik', icon: 'Calendar' },
+    { path: '/kalender', label: 'Kalender Akademik', icon: 'CalendarCog' },
     { type: 'divider', label: 'Classroom Management' },
     { path: '/classroom', label: 'Data Kelas', icon: 'School' },
     { path: '/subjects', label: 'Mata Pelajaran', icon: 'BookOpen' },
