@@ -140,11 +140,14 @@
                   disabled>
                   Sesi Berakhir
                 </button>
-                <button v-else-if="schedule.status === 'Rejected'"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm"
-                  @click="handleResubmit(schedule)">
+                <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
+                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                  isBandingExpired(schedule)
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
                   <RotateCcw class="w-4 h-4" />
-                  Kirim Ulang
+                  {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
@@ -230,11 +233,14 @@
                   class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
                   Sesi Berakhir
                 </button>
-                <button v-else-if="schedule.status === 'Rejected'"
-                  class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-sm hover:bg-orange-600 focus:outline-none transition-all shadow-sm hover:shadow-md"
-                  @click="handleResubmit(schedule)">
-                  <RotateCcw class="w-4 lg:w-5 h-4 lg:h-5" />
-                  Kirim Ulang
+                <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
+                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                  isBandingExpired(schedule)
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
+                  <RotateCcw class="w-4 h-4" />
+                  {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                 </button>
                 <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
                   disabled>
@@ -428,6 +434,14 @@ const nextPage = () => {
 
 const goToPage = (page) => {
   currentPage.value = page
+}
+
+const isBandingExpired = (schedule) => {
+  if (schedule.status !== 'Rejected') return false
+  const rejectedAt = schedule.presensi?.rejected_at
+  if (!rejectedAt) return false
+  const diff = (now.value - new Date(rejectedAt)) / (1000 * 60 * 60)
+  return diff > 24
 }
 
 onMounted(async () => {
