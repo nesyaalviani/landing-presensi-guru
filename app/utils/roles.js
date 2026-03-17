@@ -9,13 +9,13 @@ export const ROLE_MENUS = {
   [ROLES.ADMIN]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { path: '/statistics', label: 'Statistik', icon: 'ChartLine' },
+    { path: '/kalender', label: 'Kalender Akademik', icon: 'CalendarCog' },
     { type: 'divider', label: 'Classroom Management' },
     { path: '/classroom', label: 'Data Kelas', icon: 'School' },
     { path: '/subjects', label: 'Mata Pelajaran', icon: 'BookOpen' },
     { path: '/schedule', label: 'Jadwal Pelajaran', icon: 'Calendar' },
     { type: 'divider', label: 'User Management' },
     { path: '/users', label: 'User', icon: 'Users' },
-    { path: '/teacher', label: 'Guru', icon: 'Users' }
   ],
 
   [ROLES.KM]: [
@@ -37,7 +37,7 @@ export const ROLE_MENUS = {
 }
 
 export const ROLE_PERMISSIONS = {
-  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics'],
+  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
   [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']

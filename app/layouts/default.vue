@@ -113,7 +113,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText, History, ClipboardList, ChartLine } from 'lucide-vue-next'
+import { Home, School, BookOpen, Calendar, ChevronDown, Users, UserCircle, LogOut, ClipboardCheck, FileText, History, ClipboardList, ChartLine, CalendarCog } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
 import { getMenuByRole, getRoleLabel } from '~/utils/roles'
 
@@ -135,6 +135,7 @@ const iconComponents = {
   History,
   ClipboardList,
   ChartLine,
+  CalendarCog,
 }
 
 const userRole = computed(() => authStore.user?.role)
@@ -167,6 +168,7 @@ const pageTitle = computed(() => {
     '/presensi/create': 'Buat Presensi',
     '/riwayat-presensi': 'Riwayat Presensi',
     '/profile': 'Profil Saya',
+    '/kalender': 'Kalender Akademik',
   }
 
   if (route.path === '/presensi/create' && route.query.mode === 'resubmit') {
