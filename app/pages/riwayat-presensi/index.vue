@@ -3,7 +3,6 @@
     <div class="max-w-7xl space-y-2 sm:space-y-3">
       <!-- Summary Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <!-- Total Slot -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-blue-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -20,7 +19,6 @@
           </div>
         </div>
 
-        <!-- Hadir -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-green-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -37,7 +35,6 @@
           </div>
         </div>
 
-        <!-- Tidak Hadir -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-red-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -54,7 +51,6 @@
           </div>
         </div>
 
-        <!-- Belum Dipresensi -->
         <div class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-5">
           <div class="flex items-center gap-3">
             <div class="bg-gray-100 p-2 sm:p-3 rounded-sm flex-shrink-0">
@@ -88,7 +84,6 @@
                   </div>
                   <div class="flex gap-2">
                     <div class="h-9 w-9 bg-gray-200 rounded-sm animate-pulse"></div>
-                    <div class="h-9 w-9 bg-gray-200 rounded-sm animate-pulse"></div>
                   </div>
                 </div>
                 <div class="space-y-2">
@@ -106,19 +101,14 @@
                     <div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
                   </div>
                   <div class="flex-1 space-y-3">
-                    <div class="flex items-center gap-3">
-                      <div class="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
-                      <div class="h-6 w-12 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
+                    <div class="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
                     <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
                     <div class="flex gap-2">
                       <div class="h-7 w-20 bg-gray-200 rounded-full animate-pulse"></div>
                     </div>
                   </div>
                 </div>
-                <div class="flex gap-2">
-                  <div class="h-9 w-9 bg-gray-200 rounded-sm animate-pulse"></div>
-                </div>
+                <div class="h-9 w-28 bg-gray-200 rounded-sm animate-pulse"></div>
               </div>
             </div>
             <div class="bg-gray-50 px-4 sm:px-6 py-2.5 sm:py-3 border-t border-gray-200">
@@ -164,7 +154,6 @@
                     <span class="text-sm">{{ history.teacher }}</span>
                   </div>
 
-                  <!-- Status Badges Mobile -->
                   <div class="flex items-center gap-2 flex-wrap">
                     <span v-if="history.status === 'hadir'"
                       class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">
@@ -237,6 +226,20 @@
                   <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
                   <p>{{ history.alasanReject }}</p>
                 </div>
+
+                <!-- Tombol Kirim Ulang Mobile -->
+                <button v-if="history.statusApprove === 'Rejected'" :disabled="isBandingExpired(history)" :class="[
+                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                  isBandingExpired(history)
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                ]" @click="!isBandingExpired(history) && handleResubmit(history)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {{ isBandingExpired(history) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
+                </button>
               </div>
 
               <!-- Desktop Layout -->
@@ -252,7 +255,6 @@
                       <div class="flex items-center gap-3 mb-2">
                         <h3 class="text-lg font-semibold">{{ history.subject }}</h3>
                       </div>
-
                       <div class="flex items-center gap-2 text-gray-600 mb-3">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -261,7 +263,6 @@
                         <span class="text-sm">{{ history.teacher }}</span>
                       </div>
 
-                      <!-- Status Badges Desktop -->
                       <div class="flex items-center gap-2 flex-wrap">
                         <span v-if="history.status === 'hadir'"
                           class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
@@ -327,13 +328,27 @@
                   </div>
 
                   <!-- Actions Desktop -->
-                  <div class="flex gap-2">
+                  <div class="flex items-center gap-2 flex-shrink-0">
                     <button v-if="history.photo" @click="viewPhoto(history)"
                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-sm transition" title="Lihat Foto">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
+                    </button>
+
+                    <!-- Tombol Kirim Ulang Desktop -->
+                    <button v-if="history.statusApprove === 'Rejected'" :disabled="isBandingExpired(history)" :class="[
+                      'flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                      isBandingExpired(history)
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
+                    ]" @click="!isBandingExpired(history) && handleResubmit(history)">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      {{ isBandingExpired(history) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                     </button>
                   </div>
                 </div>
@@ -453,8 +468,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { usePresensiStore } from '@/stores/presensi'
+import { useRouter } from 'vue-router'
 
 const presensiStore = usePresensiStore()
+const router = useRouter()
 
 const isLoading = ref(false)
 const currentPage = ref(1)
@@ -471,20 +488,14 @@ const totalPages = ref(1)
 const formatDate = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
-  return date.toLocaleDateString('id-ID', {
-    day: 'numeric', month: 'short', year: 'numeric'
-  })
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const formatDateTime = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
-  const dateStr = date.toLocaleDateString('id-ID', {
-    day: 'numeric', month: 'short', year: 'numeric'
-  })
-  const timeStr = date.toLocaleTimeString('id-ID', {
-    hour: '2-digit', minute: '2-digit'
-  })
+  const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
   return `${dateStr}, ${timeStr}`
 }
 
@@ -500,27 +511,43 @@ const mapToHistory = (item) => {
     timeRange: `${jamMulai} – ${jamSelesai}`,
     subject: item.jadwal?.mapel || 'N/A',
     teacher: item.jadwal?.guru || 'N/A',
-    status: isBelum
-      ? 'belum'
-      : item.presensi?.status === 'Hadir' ? 'hadir' : 'tidak-hadir',
+    status: isBelum ? 'belum' : item.presensi?.status === 'Hadir' ? 'hadir' : 'tidak-hadir',
     statusApprove: item.presensi?.status_approve || null,
     hasTugas: item.presensi?.memberikan_tugas || false,
     keterangan: item.presensi?.catatan || '',
     alasanReject: item.presensi?.alasan_reject || null,
+    rejectedAt: item.presensi?.rejected_at || null,
     photo: item.presensi?.foto_bukti || null,
     createdAt: formatDateTime(item.created_at),
     duration: null
   }
 }
 
+const isBandingExpired = (history) => {
+  if (history.statusApprove !== 'Rejected') return false
+  if (!history.rejectedAt) return false
+  const diff = (new Date() - new Date(history.rejectedAt)) / (1000 * 60 * 60)
+  return diff > 24
+}
+
+const handleResubmit = (history) => {
+  if (!history.id_presensi) return
+  router.push({
+    path: '/presensi/create',
+    query: {
+      jadwalId: history.id_jadwal,
+      presensiId: history.id_presensi,
+      mode: 'resubmit'
+    }
+  })
+}
+
 const fetchRiwayat = async () => {
   isLoading.value = true
-
   const result = await presensiStore.getRiwayatPresensiKM({
     page: currentPage.value,
     limit: perPage.value
   })
-
   if (result.success) {
     historyData.value = (result.data.data || []).map(mapToHistory)
     totalSlot.value = result.data.summary?.totalSlot || 0
@@ -536,7 +563,6 @@ const fetchRiwayat = async () => {
     totalBelum.value = 0
     totalPages.value = 1
   }
-
   isLoading.value = false
 }
 
@@ -545,9 +571,7 @@ const displayPages = computed(() => {
   const maxDisplay = 5
   let startPage = Math.max(1, currentPage.value - 2)
   let endPage = Math.min(totalPages.value, startPage + maxDisplay - 1)
-  if (endPage - startPage < maxDisplay - 1) {
-    startPage = Math.max(1, endPage - maxDisplay + 1)
-  }
+  if (endPage - startPage < maxDisplay - 1) startPage = Math.max(1, endPage - maxDisplay + 1)
   for (let i = startPage; i <= endPage; i++) pages.push(i)
   return pages
 })
