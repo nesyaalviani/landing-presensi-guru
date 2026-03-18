@@ -4,11 +4,36 @@
 
             <!-- Header -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div class="relative w-full sm:w-56">
-                    <input v-model="search" type="text" placeholder="Cari kelas atau jurusan..."
-                        class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
-                    <Search
-                        class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-80">
+                        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input type="text" v-model="search" placeholder="Cari berdasarkan nama kelas..."
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none" />
+                    </div>
+
+                    <div class="relative w-full sm:w-50">
+                        <select v-model="jurusanFilter" @change="onFilterChange"
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Semua Jurusan</option>
+                            <option v-for="j in jurusanList" :key="j.id" :value="j.id">
+                                {{ j.nama_jurusan }}
+                            </option>
+                        </select>
+                        <ChevronDown
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+
+                    <div class="relative w-full sm:w-32">
+                        <select v-model="tingkatFilter" @change="onFilterChange"
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Tingkat</option>
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
+                        </select>
+                        <ChevronDown
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
                 </div>
             </div>
 
@@ -17,8 +42,8 @@
             </div>
 
             <!-- Loading Skeleton (first load) -->
-            <div v-if="isFirstLoad" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <div v-for="i in 8" :key="'sk-' + i" class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
+            <div v-if="isFirstLoad" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div v-for="i in 12" :key="'sk-' + i" class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
                     <div class="flex items-start justify-between mb-4">
                         <div class="space-y-2">
                             <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
@@ -47,7 +72,7 @@
             </div>
 
             <!-- Card Grid -->
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div v-else class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <NuxtLink v-for="kelas in classrooms" :key="kelas.id" :to="`/schedule/${kelas.id}`"
                     class="group bg-white border border-gray-200 rounded-sm p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
 
@@ -118,50 +143,68 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Search, ChevronRight, CalendarDays } from 'lucide-vue-next'
+import { Search, ChevronRight, ChevronDown, CalendarDays } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 
 const classroomsStore = useClassroomsStore()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const search = ref('')
+const jurusanFilter = ref(null)
+const tingkatFilter = ref(null)
 const isFirstLoad = ref(true)
 const loadMoreRef = ref(null)
 let searchTimeout = null
 let observer = null
 
 const classrooms = computed(() => classroomsStore.classrooms)
+const jurusanList = computed(() => classroomsStore.jurusanList)
+
+const getFilters = () => ({
+    search: search.value || undefined,
+    id_jurusan: jurusanFilter.value || undefined,
+    tingkat: tingkatFilter.value || undefined,
+    limit: 12
+})
 
 // Server-side search dengan debounce
-watch(search, (val) => {
+watch(search, () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(async () => {
         isFirstLoad.value = true
-        await classroomsStore.resetAndFetch({ search: val, limit: 12 })
+        await classroomsStore.resetAndFetch(getFilters())
         isFirstLoad.value = false
     }, 400)
 })
+
+const onFilterChange = async () => {
+    isFirstLoad.value = true
+    await classroomsStore.resetAndFetch(getFilters())
+    isFirstLoad.value = false
+}
 
 // Infinite scroll via IntersectionObserver
 const setupObserver = () => {
     if (!process.client) return
     observer = new IntersectionObserver(async (entries) => {
         if (entries[0].isIntersecting && classroomsStore.hasMore && !classroomsStore.loading) {
-            await classroomsStore.loadMore({ search: search.value, limit: 12 })
+            await classroomsStore.loadMore(getFilters())
         }
     }, { threshold: 0.1 })
 
     if (loadMoreRef.value) observer.observe(loadMoreRef.value)
 }
 
-// Re-observe ketika loadMoreRef muncul
 watch(loadMoreRef, (el) => {
     if (el && observer) observer.observe(el)
 })
 
 onMounted(async () => {
     isFirstLoad.value = true
-    await classroomsStore.resetAndFetch({ limit: 12 })
+    await Promise.all([
+        classroomsStore.resetAndFetch(getFilters()),
+        classroomsStore.getJurusanList()
+    ])
     isFirstLoad.value = false
     setupObserver()
 })
