@@ -2,7 +2,6 @@
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
 
-            <!-- Header -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div class="relative w-full sm:w-80">
@@ -35,13 +34,25 @@
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="openImportModal"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
+                    <NuxtLink to="/schedule/create"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all shadow-md">
+                        <Plus class="h-4 w-4" />
+                        Tambah
+                    </NuxtLink>
+                </div>
             </div>
 
             <div class="mb-3">
                 <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
             </div>
 
-            <!-- Loading Skeleton (first load) -->
             <div v-if="isFirstLoad" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <div v-for="i in 12" :key="'sk-' + i" class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
                     <div class="flex items-start justify-between mb-4">
@@ -59,7 +70,6 @@
                 </div>
             </div>
 
-            <!-- Empty State -->
             <div v-else-if="classrooms.length === 0 && !classroomsStore.loading"
                 class="flex flex-col items-center justify-center py-20 text-center">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -71,7 +81,6 @@
                 </p>
             </div>
 
-            <!-- Card Grid -->
             <div v-else class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <NuxtLink v-for="kelas in classrooms" :key="kelas.id" :to="`/schedule/${kelas.id}`"
                     class="group bg-white border border-gray-200 rounded-sm p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
@@ -107,7 +116,6 @@
                     </div>
                 </NuxtLink>
 
-                <!-- Skeleton cards saat load more -->
                 <template v-if="classroomsStore.loading && !isFirstLoad">
                     <div v-for="i in 4" :key="'loadmore-' + i"
                         class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
@@ -127,26 +135,44 @@
                 </template>
             </div>
 
-            <!-- Load more indicator -->
             <div v-if="classroomsStore.hasMore && !classroomsStore.loading" ref="loadMoreRef" class="h-8 mt-4">
             </div>
 
-            <!-- No more data -->
             <div v-if="!classroomsStore.hasMore && classrooms.length > 0 && !isFirstLoad"
                 class="text-center text-xs text-gray-400 mt-6">
                 Semua kelas sudah ditampilkan
             </div>
 
         </div>
+
+        <AppImportModal v-model="showImportModal" title="Import Data Jadwal"
+            :required-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :preview-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :import-fn="importSchedule" :validate-row="validateImportRow" @download-template="downloadTemplate"
+            @imported="onImported">
+            <template #format-info>
+                Kolom: <span class="font-semibold">hari</span>, <span class="font-semibold">kelas</span>,
+                <span class="font-semibold">mapel</span>, <span class="font-semibold">guru</span>,
+                <span class="font-semibold">jam_mulai</span>, <span class="font-semibold">jam_selesai</span>
+            </template>
+        </AppImportModal>
+
+        <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Search, ChevronRight, ChevronDown, CalendarDays } from 'lucide-vue-next'
+import { Search, ChevronRight, ChevronDown, CalendarDays, Upload, Plus } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
+import { useSchedulesStore } from '~/stores/schedules'
+import { useTeachersStore } from '~/stores/teachers'
+import { useConfirm } from '~/composables/useConfirm'
 
 const classroomsStore = useClassroomsStore()
+const schedulesStore = useSchedulesStore()
+const teachersStore = useTeachersStore()
+const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const search = ref('')
@@ -154,6 +180,8 @@ const jurusanFilter = ref(null)
 const tingkatFilter = ref(null)
 const isFirstLoad = ref(true)
 const loadMoreRef = ref(null)
+const showImportModal = ref(false)
+const importTeachers = ref([])
 let searchTimeout = null
 let observer = null
 
@@ -167,7 +195,6 @@ const getFilters = () => ({
     limit: 12
 })
 
-// Server-side search dengan debounce
 watch(search, () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(async () => {
@@ -183,7 +210,6 @@ const onFilterChange = async () => {
     isFirstLoad.value = false
 }
 
-// Infinite scroll via IntersectionObserver
 const setupObserver = () => {
     if (!process.client) return
     observer = new IntersectionObserver(async (entries) => {
@@ -198,6 +224,52 @@ const setupObserver = () => {
 watch(loadMoreRef, (el) => {
     if (el && observer) observer.observe(el)
 })
+
+const openImportModal = async () => {
+    if (importTeachers.value.length === 0) {
+        const r = await teachersStore.getTeachers({ all: true })
+        if (r.success) importTeachers.value = teachersStore.teachers
+    }
+    showImportModal.value = true
+}
+
+const validateImportRow = (row) => {
+    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    if (!validDays.includes(String(row.hari).trim())) return `Hari "${row.hari}" tidak valid`
+
+    const kelasExists = classrooms.value.some(k => k.name === String(row.kelas).trim())
+    if (!kelasExists) return `Kelas "${row.kelas}" tidak ditemukan`
+
+    return null
+}
+
+const onImported = (result) => {
+    if (result.total > 0) {
+        showAlert('success', `Berhasil mengimport ${result.total} data jadwal.`)
+    } else {
+        showAlert('error', 'Tidak ada data yang berhasil diimport.')
+    }
+}
+
+const downloadTemplate = async () => {
+    const XLSX = await import('xlsx')
+    const data = [{
+        hari: 'Senin',
+        kelas: '10A',
+        mapel: 'Matematika',
+        guru: 'Budi',
+        jam_mulai: '07:00',
+        jam_selesai: '08:30'
+    }]
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Template')
+    XLSX.writeFile(wb, 'template_import_jadwal.xlsx')
+}
+
+const importSchedule = async (data) => {
+    return await schedulesStore.importSchedule(data)
+}
 
 onMounted(async () => {
     isFirstLoad.value = true

@@ -2,7 +2,6 @@
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
 
-            <!-- Back + Header -->
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <div class="flex items-center gap-3">
                     <NuxtLink to="/schedule"
@@ -22,20 +21,14 @@
                 </div>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button @click="openImportModal"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                        <Upload class="h-4 w-4" />
-                        Import
-                    </button>
                     <NuxtLink :to="`/schedule/create?kelasId=${kelasId}`"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
-                        Tambah
+                        Tambah Jadwal
                     </NuxtLink>
                 </div>
             </div>
 
-            <!-- Filter Hari -->
             <div class="mb-4 flex gap-2 flex-wrap">
                 <button v-for="h in hariOptions" :key="String(h.value)" @click="onHariChange(h.value)" :class="[
                     'px-3 py-1.5 text-xs font-medium rounded-sm border transition-all',
@@ -51,51 +44,35 @@
                 <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
             </div>
 
-            <!-- Table -->
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Hari</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Jam</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Mapel</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Guru</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Aksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hari</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mapel</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guru</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template v-if="loading">
                                 <tr v-for="i in 6" :key="'sk-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4">
-                                        <div class="h-5 w-16 bg-gray-200 rounded animate-pulse">
-                                        </div>
+                                        <div class="h-5 w-16 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse">
-                                        </div>
+                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse">
-                                        </div>
+                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse">
-                                        </div>
+                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="h-7 w-7 bg-gray-200 rounded-md animate-pulse">
-                                        </div>
+                                        <div class="h-7 w-7 bg-gray-200 rounded-md animate-pulse"></div>
                                     </td>
                                 </tr>
                             </template>
@@ -109,10 +86,8 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="schedule in schedules" :key="schedule.id_jadwal"
-                                    class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.hari }}
-                                    </td>
+                                <tr v-for="schedule in schedules" :key="schedule.id_jadwal" class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.hari }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ formatTime(schedule.jam_mulai) }} – {{ formatTime(schedule.jam_selesai) }}
                                     </td>
@@ -136,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- Pagination -->
             <div v-if="totalPages > 1" class="py-3 border-t border-gray-200 sm:px-6">
                 <div class="hidden sm:flex sm:items-center sm:justify-between">
                     <p class="text-sm text-gray-700">
@@ -161,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Dropdown -->
         <Teleport to="body">
             <Transition enter-active-class="transition ease-out duration-100"
                 enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
@@ -186,34 +159,20 @@
             </Transition>
         </Teleport>
 
-        <AppImportModal v-model="showImportModal" title="Import Data Jadwal"
-            :required-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
-            :preview-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
-            :import-fn="schedulesStore.importSchedule" :validate-row="validateImportRow"
-            @download-template="downloadTemplate" @imported="onImported">
-            <template #format-info>
-                Kolom: <span class="font-semibold">hari</span>, <span class="font-semibold">kelas</span>,
-                <span class="font-semibold">mapel</span>, <span class="font-semibold">guru</span>,
-                <span class="font-semibold">jam_mulai</span>, <span class="font-semibold">jam_selesai</span>
-            </template>
-        </AppImportModal>
-
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { ArrowLeft, Plus, Upload, ChevronLeft, ChevronRight, MoreVertical, Pencil, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Plus, ChevronLeft, ChevronRight, MoreVertical, Pencil, Trash2 } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
-import { useTeachersStore } from '~/stores/teachers'
 import { useConfirm } from '~/composables/useConfirm'
 
 const route = useRoute()
 const kelasId = computed(() => route.params.id)
 
 const schedulesStore = useSchedulesStore()
-const teachersStore = useTeachersStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
@@ -225,8 +184,6 @@ const totalPages = ref(1)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
-const showImportModal = ref(false)
-const importTeachers = ref([])
 
 const kelasName = ref('')
 const kelasMeta = ref('')
@@ -310,38 +267,6 @@ const handleDelete = async (schedule) => {
     }
 }
 
-const openImportModal = async () => {
-    if (importTeachers.value.length === 0) {
-        const r = await teachersStore.getTeachers({ all: true })
-        if (r.success) importTeachers.value = teachersStore.teachers
-    }
-    showImportModal.value = true
-}
-
-const validateImportRow = (row) => {
-    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-    if (!validDays.includes(String(row.hari).trim())) return `Hari "${row.hari}" tidak valid`
-    return null
-}
-
-const onImported = (result) => {
-    if (result.total > 0) {
-        showAlert('success', `Berhasil mengimport ${result.total} data jadwal.`)
-        fetchSchedules(1)
-    } else {
-        showAlert('error', 'Tidak ada data yang berhasil diimport.')
-    }
-}
-
-const downloadTemplate = async () => {
-    const XLSX = await import('xlsx')
-    const data = [{ hari: 'Senin', kelas: '10A', mapel: 'Matematika', guru: 'Budi', jam_mulai: '07:00', jam_selesai: '08:30' }]
-    const ws = XLSX.utils.json_to_sheet(data)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Template')
-    XLSX.writeFile(wb, 'template_import_jadwal.xlsx')
-}
-
 const handleClickOutside = (e) => {
     const isDropdown = e.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(e.target))
@@ -350,8 +275,6 @@ const handleClickOutside = (e) => {
 
 onMounted(async () => {
     loadingClass.value = true
-
-    // Fetch detail kelas langsung by ID, tidak perlu load semua kelas
     const config = useRuntimeConfig()
     try {
         let token = null
