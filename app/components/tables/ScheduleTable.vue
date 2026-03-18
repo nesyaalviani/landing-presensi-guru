@@ -234,7 +234,7 @@ const openImportModal = async () => {
 }
 
 const validateImportRow = (row) => {
-    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
     if (!validDays.includes(String(row.hari).trim())) return `Hari "${row.hari}" tidak valid`
 
     const kelasExists = classrooms.value.some(k => k.name === String(row.kelas).trim())

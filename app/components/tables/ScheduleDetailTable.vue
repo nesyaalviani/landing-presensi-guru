@@ -195,7 +195,7 @@ const hariOptions = [
     { value: 'Rabu', label: 'Rabu' },
     { value: 'Kamis', label: 'Kamis' },
     { value: 'Jumat', label: 'Jumat' },
-    { value: 'Sabtu', label: 'Sabtu' },
+    // { value: 'Sabtu', label: 'Sabtu' },
 ]
 
 const schedules = computed(() => schedulesStore.schedules)
