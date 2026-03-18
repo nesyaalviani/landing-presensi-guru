@@ -10,6 +10,11 @@ export const useClassroomsStore = defineStore('classrooms', {
             totalItems: 0,
             totalPages: 1
         },
+        page: 1,
+        perPage: 12,
+        totalItems: 0,
+        totalPages: 1,
+        hasMore: false,
         loading: false,
         error: null
     }),
@@ -32,8 +37,22 @@ export const useClassroomsStore = defineStore('classrooms', {
                     params
                 })
 
-                this.classrooms = response.data
-                this.pagination = response.pagination
+                const data = response.data || []
+                const p = response.pagination || {}
+
+                if (params.append) {
+                    this.classrooms = [...this.classrooms, ...data]
+                } else {
+                    this.classrooms = data
+                }
+
+                this.pagination = p
+                this.page = p.page ?? 1
+                this.perPage = p.perPage ?? 12
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
+                this.hasMore = p.hasMore ?? false
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -41,6 +60,19 @@ export const useClassroomsStore = defineStore('classrooms', {
                 this.loading = false
                 return { success: false, message: this.error }
             }
+        },
+
+        async resetAndFetch(params = {}) {
+            this.classrooms = []
+            this.page = 1
+            this.hasMore = false
+            return this.getClassrooms({ ...params, page: 1 })
+        },
+
+        async loadMore(params = {}) {
+            if (!this.hasMore || this.loading) return
+            const nextPage = this.page + 1
+            return this.getClassrooms({ ...params, page: nextPage, append: true })
         },
 
         async getJurusanList() {

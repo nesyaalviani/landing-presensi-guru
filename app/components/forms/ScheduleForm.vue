@@ -428,6 +428,11 @@ onMounted(async () => {
         subjectsStore.getSubjects({ all: true })
     ])
 
+    const kelasIdFromQuery = route.query.kelasId
+    if (kelasIdFromQuery) {
+        formData.value.kelas = parseInt(kelasIdFromQuery)
+    }
+
     if (classResult.success) {
         classrooms.value = classroomsStore.classrooms
     }

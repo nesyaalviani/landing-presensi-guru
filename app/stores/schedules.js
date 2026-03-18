@@ -27,6 +27,7 @@ export const useSchedulesStore = defineStore('schedules', {
                 const params = new URLSearchParams()
                 if (filters.hari) params.set('hari', filters.hari)
                 if (filters.id_kelas) params.set('id_kelas', filters.id_kelas)
+                if (filters.all) params.set('all', 'true')
                 if (filters.page) params.set('page', filters.page)
                 if (filters.limit) params.set('limit', filters.limit)
 
