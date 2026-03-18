@@ -15,7 +15,8 @@ export const ROLE_MENUS = {
     { path: '/subjects', label: 'Mata Pelajaran', icon: 'BookOpen' },
     { path: '/schedule', label: 'Jadwal Pelajaran', icon: 'Calendar' },
     { type: 'divider', label: 'User Management' },
-    { path: '/users', label: 'User', icon: 'Users' },
+    { path: '/users', label: 'User', icon: 'User' },
+    { path: '/teacher', label: 'Data Guru', icon: 'Users' },
   ],
 
   [ROLES.KM]: [
