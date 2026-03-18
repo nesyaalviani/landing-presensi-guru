@@ -30,6 +30,10 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+            </div>
+
             <div class="bg-white shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -55,7 +59,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template v-if="loading">
-                                <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
+                                <tr v-for="i in perPage" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-5 w-16 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
@@ -76,7 +80,7 @@
                                     <td colspan="4" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="subjectsStore.getSubjects()"
+                                            <button @click="fetchSubjects()"
                                                 class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
                                                 Coba Lagi
                                             </button>
@@ -85,7 +89,7 @@
                                 </tr>
                             </template>
 
-                            <template v-else-if="filteredSubjects.length === 0">
+                            <template v-else-if="subjects.length === 0">
                                 <tr>
                                     <td colspan="4" class="px-6 py-12">
                                         <div class="text-center">
@@ -96,7 +100,7 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="subject in filteredSubjects" :key="subject.id_mapel"
+                                <tr v-for="subject in subjects" :key="subject.id_mapel"
                                     class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ subject.kode_mapel || '-' }}
@@ -132,27 +136,31 @@
             <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
-                        <button
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Previous
                         </button>
-                        <button
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
                         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(page - 1)" :disabled="page <= 1 || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronLeft class="h-5 w-5" />
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                1
+                            <button v-for="p in visiblePages" :key="p" @click="goToPage(p)" :disabled="loading" :class="[
+                                'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                                p === page
+                                    ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            ]">
+                                {{ p }}
                             </button>
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <button @click="goToPage(page + 1)" :disabled="page >= totalPages || loading"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <ChevronRight class="h-5 w-5" />
                             </button>
                         </nav>
@@ -184,15 +192,20 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <AppConfirm />
     </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
 import { useSubjectsStore } from '~/stores/subjects'
+import { useConfirm } from '~/composables/useConfirm'
 
 const subjectsStore = useSubjectsStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
 const searchQuery = ref('')
 const selectedStatus = ref(null)
@@ -200,33 +213,51 @@ const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
 
+let autoCloseTimer = null
+let searchTimeout = null
+
 const subjects = computed(() => subjectsStore.subjects)
 const loading = computed(() => subjectsStore.loading)
 const error = computed(() => subjectsStore.error)
+const page = computed(() => subjectsStore.page)
+const perPage = computed(() => subjectsStore.perPage)
+const totalPages = computed(() => subjectsStore.totalPages)
 
-const filteredSubjects = computed(() => {
-    let filtered = subjects.value
+const visiblePages = computed(() => {
+    const pages = []
+    const range = 2
+    const start = Math.max(1, page.value - range)
+    const end = Math.min(totalPages.value, page.value + range)
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
+})
 
-    if (selectedStatus.value !== null) {
-        const isActive = selectedStatus.value === 'aktif'
-        filtered = filtered.filter(subject => subject.status === isActive)
+const fetchSubjects = (newPage = 1) => {
+    const filters = {
+        page: newPage,
     }
+    if (searchQuery.value) filters.search = searchQuery.value
+    if (selectedStatus.value) filters.status = selectedStatus.value
 
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(subject =>
-            subject.nama_mapel?.toLowerCase().includes(query) ||
-            subject.kode_mapel?.toLowerCase().includes(query)
-        )
-    }
+    subjectsStore.getSubjects(filters)
+}
 
-    return filtered
+const goToPage = (newPage) => {
+    if (newPage < 1 || newPage > totalPages.value || loading.value) return
+    fetchSubjects(newPage)
+}
+
+watch(searchQuery, () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => fetchSubjects(1), 400)
+})
+
+watch(selectedStatus, () => {
+    fetchSubjects(1)
 })
 
 const setButtonRef = (el, id) => {
-    if (el) {
-        buttonRefs.value[id] = el
-    }
+    if (el) buttonRefs.value[id] = el
 }
 
 const getSubjectById = (id) => {
@@ -243,22 +274,11 @@ const calculateDropdownPosition = (buttonEl) => {
     let top = rect.bottom + 8
     let left = rect.right - dropdownWidth
 
-    if (top + dropdownHeight > window.innerHeight) {
-        top = rect.top - dropdownHeight - 8
-    }
+    if (top + dropdownHeight > window.innerHeight) top = rect.top - dropdownHeight - 8
+    if (left < 8) left = 8
+    if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
 
-    if (left < 8) {
-        left = 8
-    }
-
-    if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-    }
-
-    return {
-        top: `${top}px`,
-        left: `${left}px`
-    }
+    return { top: `${top}px`, left: `${left}px` }
 }
 
 const toggleDropdown = (id) => {
@@ -280,18 +300,35 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+const showAutoAlert = (type, message) => {
+    clearTimeout(autoCloseTimer)
+    showAlert(type, message)
+    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+}
+
 const handleDelete = async (subject) => {
     if (!subject) return
 
-    if (confirm(`Apakah Anda yakin ingin menghapus mata pelajaran "${subject.nama_mapel}"?`)) {
-        const result = await subjectsStore.deleteSubject(subject.id_mapel)
+    const subjectInfo = subject.nama_mapel
 
-        if (result.success) {
-            closeDropdown()
-            alert('Mata pelajaran berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus mata pelajaran')
-        }
+    const confirmed = await confirm({
+        title: 'Hapus Mata Pelajaran',
+        message: `Apakah Anda yakin ingin menghapus mata pelajaran "${subjectInfo}"? Tindakan ini tidak dapat dibatalkan.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        type: 'danger',
+    })
+
+    if (!confirmed) return
+
+    closeDropdown()
+
+    const result = await subjectsStore.deleteSubject(subject.id_mapel)
+
+    if (result.success) {
+        showAutoAlert('success', `Mata Pelajaran ${subjectInfo} berhasil dihapus.`)
+    } else {
+        showAutoAlert('error', result.message || 'Gagal menghapus mata pelajaran.')
     }
 }
 
@@ -299,9 +336,7 @@ const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
 
-    if (!isDropdown && !isButton) {
-        closeDropdown()
-    }
+    if (!isDropdown && !isButton) closeDropdown()
 }
 
 const handleScroll = () => {
@@ -312,7 +347,7 @@ const handleScroll = () => {
 }
 
 onMounted(async () => {
-    await subjectsStore.getSubjects()
+    await fetchSubjects(1)
 
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
@@ -322,6 +357,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    clearTimeout(searchTimeout)
+    clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
         window.removeEventListener('scroll', handleScroll, true)

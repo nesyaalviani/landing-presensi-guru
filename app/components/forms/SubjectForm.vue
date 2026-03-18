@@ -33,6 +33,9 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+                         <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label for="kode" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Kode Mata Pelajaran <span class="text-red-500">*</span>
@@ -108,18 +111,11 @@
 
                         <hr class="border-gray-200" />
 
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading || loadingData"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Update Mata Pelajaran' : 'Simpan Mata Pelajaran') }}
+                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit Mapel' : 'Simpan') }}
                             </button>
                             <NuxtLink to="/subjects"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -146,7 +142,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { Check, X, Save, Info, AlertCircle } from 'lucide-vue-next'
+import { Check, X, Save, Info } from 'lucide-vue-next'
 import { useSubjectsStore } from '~/stores/subjects'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -163,9 +159,20 @@ const formData = ref({
     status: 'aktif'
 })
 
-const errorMessage = ref('')
 const loading = ref(false)
 const loadingData = ref(false)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const loadSubjectData = async () => {
     if (!isEditMode.value) return
@@ -182,28 +189,28 @@ const loadSubjectData = async () => {
             status: subject.status ? 'aktif' : 'nonaktif'
         }
     } else {
-        errorMessage.value = 'Gagal memuat data mata pelajaran'
+       showAlert('error', 'Gagal memuat data mata pelajaran')
     }
 }
 
 const validateForm = () => {
     if (!formData.value.kode || !formData.value.nama) {
-        errorMessage.value = 'Semua field wajib diisi'
+       showAlert('error', 'Semua field wajib diisi')
         return false
     }
-
+    
     if (formData.value.kode.trim().length === 0) {
-        errorMessage.value = 'Kode mata pelajaran tidak boleh kosong'
+        showAlert('error', 'Kode mata pelajaran tidak boleh kosong')
         return false
     }
 
     if (formData.value.kode.length > 5) {
-        errorMessage.value = 'Kode mata pelajaran maksimal 5 karakter'
+       showAlert('error', 'Kode mata pelajaran maksimal 5 karakter')
         return false
     }
 
     if (formData.value.nama.trim().length === 0) {
-        errorMessage.value = 'Nama mata pelajaran tidak boleh kosong'
+       showAlert('error', 'Nama mata pelajaran tidak boleh kosong')
         return false
     }
 
@@ -211,7 +218,7 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
+    clearAlert()
 
     if (!validateForm()) {
         return
@@ -237,9 +244,12 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/subjects')
+        showAlert('success', isEditMode.value ? 'Mata Pelajaran berhasil diupdate!' : 'Mata Pelajaran berhasil ditambahkan!', {
+            redirectDelay: 1500,
+            redirectFn: () => router.push('/subjects')
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
 

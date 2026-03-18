@@ -1,362 +1,288 @@
 <template>
     <section class="px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-sm border border-gray-200">
         <div class="mx-auto max-w-7xl">
+
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <div class="relative w-full sm:w-44">
-                        <select v-model="selectedDay"
-                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
-                            <option :value="null">Semua Hari</option>
-                            <option value="Senin">Senin</option>
-                            <option value="Selasa">Selasa</option>
-                            <option value="Rabu">Rabu</option>
-                            <option value="Kamis">Kamis</option>
-                            <option value="Jumat">Jumat</option>
+                    <div class="relative w-full sm:w-80">
+                        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input type="text" v-model="search" placeholder="Cari berdasarkan nama kelas..."
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm outline-none" />
+                    </div>
+
+                    <div class="relative w-full sm:w-50">
+                        <select v-model="jurusanFilter" @change="onFilterChange"
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Semua Jurusan</option>
+                            <option v-for="j in jurusanList" :key="j.id" :value="j.id">
+                                {{ j.nama_jurusan }}
+                            </option>
                         </select>
                         <ChevronDown
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
 
-                    <div class="relative w-full sm:w-44">
-                        <select v-model="selectedClass"
-                            class="w-full pl-3 pr-8 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
-                            <option :value="null">Semua Kelas</option>
-                            <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
-                                {{ kelas.name }}
-                            </option>
+                    <div class="relative w-full sm:w-32">
+                        <select v-model="tingkatFilter" @change="onFilterChange"
+                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8">
+                            <option :value="null">Tingkat</option>
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
                         </select>
                         <ChevronDown
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="openImportModal"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/schedule/create"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
                         Tambah
                     </NuxtLink>
                 </div>
             </div>
 
-            <div class="bg-white shadow overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Jam
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Kelas
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Mapel
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Guru
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Hari
-                                </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Aksi
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <template v-if="loading">
-                                <tr v-for="i in 5" :key="'skeleton-' + i" class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-36 bg-gray-200 rounded animate-pulse"></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-5 w-16 bg-gray-200 rounded animate-pulse"></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="h-7 w-7 bg-gray-200 rounded-md animate-pulse"></div>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <template v-else-if="error">
-                                <tr>
-                                    <td colspan="6" class="px-6 py-12">
-                                        <div class="text-center">
-                                            <p class="text-sm text-red-600">{{ error }}</p>
-                                            <button @click="schedulesStore.getSchedules()"
-                                                class="mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded-sm hover:bg-blue-600">
-                                                Coba Lagi
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <template v-else-if="filteredSchedules.length === 0">
-                                <tr>
-                                    <td colspan="6" class="px-6 py-12">
-                                        <div class="text-center">
-                                            <p class="text-sm text-gray-500">Tidak ada data jadwal</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <template v-else>
-                                <tr v-for="schedule in filteredSchedules" :key="schedule.id_jadwal"
-                                    class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ formatTime(schedule.jam_mulai) }} – {{ formatTime(schedule.jam_selesai) }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ schedule.nama_kelas || '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ schedule.guru?.mapel?.nama_mapel || '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ schedule.guru?.nama_guru || '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {{ schedule.hari }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        <button @click="toggleDropdown(schedule.id_jadwal)"
-                                            :ref="el => setButtonRef(el, schedule.id_jadwal)"
-                                            class="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-                                            title="More actions">
-                                            <MoreVertical class="h-4 w-4" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="mb-3">
+                <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
             </div>
 
-            <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Previous
-                        </button>
-                        <button
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Next
-                        </button>
+            <div v-if="isFirstLoad" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div v-for="i in 12" :key="'sk-' + i" class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="space-y-2">
+                            <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+                            <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                        <div class="h-8 w-8 bg-gray-200 rounded-sm animate-pulse"></div>
                     </div>
-                    <div class="hidden sm:flex sm:items-center sm:justify-end sm:w-full">
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <ChevronLeft class="h-5 w-5" />
-                            </button>
-                            <button
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                                1
-                            </button>
-                            <button
-                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <ChevronRight class="h-5 w-5" />
-                            </button>
-                        </nav>
+                    <div class="h-px bg-gray-100 my-3"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+                        <div class="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                 </div>
             </div>
+
+            <div v-else-if="classrooms.length === 0 && !classroomsStore.loading"
+                class="flex flex-col items-center justify-center py-20 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <CalendarDays class="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada kelas</h3>
+                <p class="text-sm text-gray-500">
+                    {{ search ? `Tidak ada kelas yang cocok dengan "${search}"` : 'Belum ada data kelas.' }}
+                </p>
+            </div>
+
+            <div v-else class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <NuxtLink v-for="kelas in classrooms" :key="kelas.id" :to="`/schedule/${kelas.id}`"
+                    class="group bg-white border border-gray-200 rounded-sm p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
+
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {{ kelas.name }}
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-0.5 truncate">
+                                {{ kelas.tingkat }} · {{ kelas.nama_jurusan || '-' }}
+                            </p>
+                        </div>
+                        <div
+                            class="w-8 h-8 bg-blue-50 group-hover:bg-blue-100 rounded-sm flex items-center justify-center transition-colors flex-shrink-0 ml-2">
+                            <ChevronRight class="h-4 w-4 text-blue-500" />
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-gray-100 mb-3"></div>
+
+                    <div class="flex items-center gap-1.5 text-xs"
+                        :class="parseInt(kelas.schedule_count) === 0 ? 'text-gray-400 italic' : 'text-gray-500'">
+                        <CalendarDays class="h-3.5 w-3.5 flex-shrink-0" />
+                        <span>
+                            {{
+                                parseInt(kelas.schedule_count) === 0
+                                    ? 'Belum ada jadwal terdaftar'
+                                    : `${kelas.schedule_count} jadwal terdaftar`
+                            }}
+                        </span>
+                    </div>
+                </NuxtLink>
+
+                <template v-if="classroomsStore.loading && !isFirstLoad">
+                    <div v-for="i in 4" :key="'loadmore-' + i"
+                        class="bg-white border border-gray-200 rounded-sm p-5 shadow-sm">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="space-y-2">
+                                <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
+                            </div>
+                            <div class="h-8 w-8 bg-gray-200 rounded-sm animate-pulse"></div>
+                        </div>
+                        <div class="h-px bg-gray-100 my-3"></div>
+                        <div class="flex items-center gap-2">
+                            <div class="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+                            <div class="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div v-if="classroomsStore.hasMore && !classroomsStore.loading" ref="loadMoreRef" class="h-8 mt-4">
+            </div>
+
+            <div v-if="!classroomsStore.hasMore && classrooms.length > 0 && !isFirstLoad"
+                class="text-center text-xs text-gray-400 mt-6">
+                Semua kelas sudah ditampilkan
+            </div>
+
         </div>
 
-        <Teleport to="body">
-            <Transition enter-active-class="transition ease-out duration-100"
-                enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95">
-                <div v-if="activeDropdown !== null" :style="dropdownStyle"
-                    class="fixed w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 z-50">
-                    <div class="py-1">
-                        <NuxtLink :to="`/schedule/edit/${activeDropdown}`" @click="closeDropdown"
-                            class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                            <Pencil class="h-4 w-4 mr-3 text-gray-500" />
-                            Edit
-                        </NuxtLink>
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <button @click="handleDelete(getScheduleById(activeDropdown))"
-                            class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <Trash2 class="h-4 w-4 mr-3" />
-                            Hapus
-                        </button>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <AppImportModal v-model="showImportModal" title="Import Data Jadwal"
+            :required-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :preview-columns="['hari', 'kelas', 'mapel', 'guru', 'jam_mulai', 'jam_selesai']"
+            :import-fn="importSchedule" :validate-row="validateImportRow" @download-template="downloadTemplate"
+            @imported="onImported">
+            <template #format-info>
+                Kolom: <span class="font-semibold">hari</span>, <span class="font-semibold">kelas</span>,
+                <span class="font-semibold">mapel</span>, <span class="font-semibold">guru</span>,
+                <span class="font-semibold">jam_mulai</span>, <span class="font-semibold">jam_selesai</span>
+            </template>
+        </AppImportModal>
+
+        <AppConfirm />
     </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
-import { useSchedulesStore } from '~/stores/schedules'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { Search, ChevronRight, ChevronDown, CalendarDays, Upload, Plus } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
+import { useSchedulesStore } from '~/stores/schedules'
+import { useTeachersStore } from '~/stores/teachers'
+import { useConfirm } from '~/composables/useConfirm'
 
-const schedulesStore = useSchedulesStore()
 const classroomsStore = useClassroomsStore()
+const schedulesStore = useSchedulesStore()
+const teachersStore = useTeachersStore()
+const { confirm } = useConfirm()
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
-const selectedDay = ref(null)
-const selectedClass = ref(null)
-const activeDropdown = ref(null)
-const dropdownStyle = ref({})
-const buttonRefs = ref({})
+const search = ref('')
+const jurusanFilter = ref(null)
+const tingkatFilter = ref(null)
+const isFirstLoad = ref(true)
+const loadMoreRef = ref(null)
+const showImportModal = ref(false)
+const importTeachers = ref([])
+let searchTimeout = null
+let observer = null
 
-const schedules = computed(() => schedulesStore.schedules)
 const classrooms = computed(() => classroomsStore.classrooms)
-const loading = computed(() => schedulesStore.loading)
-const error = computed(() => schedulesStore.error)
+const jurusanList = computed(() => classroomsStore.jurusanList)
 
-const filteredSchedules = computed(() => {
-    let filtered = schedules.value
-
-    if (selectedDay.value) {
-        filtered = filtered.filter(schedule => schedule.hari === selectedDay.value)
-    }
-
-    if (selectedClass.value) {
-        filtered = filtered.filter(schedule => schedule.id_kelas === parseInt(selectedClass.value))
-    }
-
-    return filtered
+const getFilters = () => ({
+    search: search.value || undefined,
+    id_jurusan: jurusanFilter.value || undefined,
+    tingkat: tingkatFilter.value || undefined,
+    limit: 12
 })
 
-const formatTime = (time) => {
-    if (!time) return '-'
-    return time.substring(0, 5)
+watch(search, () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(async () => {
+        isFirstLoad.value = true
+        await classroomsStore.resetAndFetch(getFilters())
+        isFirstLoad.value = false
+    }, 400)
+})
+
+const onFilterChange = async () => {
+    isFirstLoad.value = true
+    await classroomsStore.resetAndFetch(getFilters())
+    isFirstLoad.value = false
 }
 
-const setButtonRef = (el, id) => {
-    if (el) {
-        buttonRefs.value[id] = el
-    }
-}
-
-const getScheduleById = (id) => {
-    return schedules.value.find(s => s.id_jadwal === id)
-}
-
-const calculateDropdownPosition = (buttonEl) => {
-    if (!buttonEl) return {}
-
-    const rect = buttonEl.getBoundingClientRect()
-    const dropdownWidth = 192
-    const dropdownHeight = 120
-
-    let top = rect.bottom + 8
-    let left = rect.right - dropdownWidth
-
-    if (top + dropdownHeight > window.innerHeight) {
-        top = rect.top - dropdownHeight - 8
-    }
-
-    if (left < 8) {
-        left = 8
-    }
-
-    if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-    }
-
-    return {
-        top: `${top}px`,
-        left: `${left}px`
-    }
-}
-
-const toggleDropdown = (id) => {
-    if (activeDropdown.value === id) {
-        closeDropdown()
-        return
-    }
-
-    activeDropdown.value = id
-
-    nextTick(() => {
-        const buttonEl = buttonRefs.value[id]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
-    })
-}
-
-const closeDropdown = () => {
-    activeDropdown.value = null
-    dropdownStyle.value = {}
-}
-
-const handleDelete = async (schedule) => {
-    if (!schedule) return
-
-    const timeRange = `${formatTime(schedule.jam_mulai)} – ${formatTime(schedule.jam_selesai)}`
-    const scheduleInfo = `${schedule.hari}, ${timeRange}, ${schedule.nama_kelas}`
-
-    if (confirm(`Apakah Anda yakin ingin menghapus jadwal "${scheduleInfo}"?`)) {
-        const result = await schedulesStore.deleteSchedule(schedule.id_jadwal)
-
-        if (result.success) {
-            closeDropdown()
-            alert('Jadwal berhasil dihapus')
-        } else {
-            alert(result.message || 'Gagal menghapus jadwal')
+const setupObserver = () => {
+    if (!process.client) return
+    observer = new IntersectionObserver(async (entries) => {
+        if (entries[0].isIntersecting && classroomsStore.hasMore && !classroomsStore.loading) {
+            await classroomsStore.loadMore(getFilters())
         }
+    }, { threshold: 0.1 })
+
+    if (loadMoreRef.value) observer.observe(loadMoreRef.value)
+}
+
+watch(loadMoreRef, (el) => {
+    if (el && observer) observer.observe(el)
+})
+
+const openImportModal = async () => {
+    if (importTeachers.value.length === 0) {
+        const r = await teachersStore.getTeachers({ all: true })
+        if (r.success) importTeachers.value = teachersStore.teachers
+    }
+    showImportModal.value = true
+}
+
+const validateImportRow = (row) => {
+    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
+    if (!validDays.includes(String(row.hari).trim())) return `Hari "${row.hari}" tidak valid`
+
+    const kelasExists = classrooms.value.some(k => k.name === String(row.kelas).trim())
+    if (!kelasExists) return `Kelas "${row.kelas}" tidak ditemukan`
+
+    return null
+}
+
+const onImported = (result) => {
+    if (result.total > 0) {
+        showAlert('success', `Berhasil mengimport ${result.total} data jadwal.`)
+    } else {
+        showAlert('error', 'Tidak ada data yang berhasil diimport.')
     }
 }
 
-const handleClickOutside = (event) => {
-    const isDropdown = event.target.closest('.fixed.w-48')
-    const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
-
-    if (!isDropdown && !isButton) {
-        closeDropdown()
-    }
+const downloadTemplate = async () => {
+    const XLSX = await import('xlsx')
+    const data = [{
+        hari: 'Senin',
+        kelas: '10A',
+        mapel: 'Matematika',
+        guru: 'Budi',
+        jam_mulai: '07:00',
+        jam_selesai: '08:30'
+    }]
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Template')
+    XLSX.writeFile(wb, 'template_import_jadwal.xlsx')
 }
 
-const handleScroll = () => {
-    if (activeDropdown.value !== null) {
-        const buttonEl = buttonRefs.value[activeDropdown.value]
-        dropdownStyle.value = calculateDropdownPosition(buttonEl)
-    }
+const importSchedule = async (data) => {
+    return await schedulesStore.importSchedule(data)
 }
 
 onMounted(async () => {
+    isFirstLoad.value = true
     await Promise.all([
-        schedulesStore.getSchedules(),
-        classroomsStore.getClassrooms()
+        classroomsStore.resetAndFetch(getFilters()),
+        classroomsStore.getJurusanList()
     ])
-
-    if (process.client) {
-        document.addEventListener('click', handleClickOutside)
-        window.addEventListener('scroll', handleScroll, true)
-        window.addEventListener('resize', handleScroll)
-    }
+    isFirstLoad.value = false
+    setupObserver()
 })
 
 onUnmounted(() => {
-    if (process.client) {
-        document.removeEventListener('click', handleClickOutside)
-        window.removeEventListener('scroll', handleScroll, true)
-        window.removeEventListener('resize', handleScroll)
-    }
+    if (observer) observer.disconnect()
+    clearTimeout(searchTimeout)
 })
 </script>

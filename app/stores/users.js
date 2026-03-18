@@ -3,12 +3,16 @@ import { defineStore } from 'pinia'
 export const useUsersStore = defineStore('users', {
     state: () => ({
         users: [],
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 1,
         loading: false,
         error: null
     }),
 
     actions: {
-        async getUsers() {
+        async getUsers(filters = {}) {
             this.loading = true
             this.error = null
 
@@ -20,7 +24,16 @@ export const useUsersStore = defineStore('users', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/users', {
+                const params = new URLSearchParams()
+                if (filters.search) params.set('search', filters.search)
+                if (filters.id_role) params.set('id_role', filters.id_role)
+                if (filters.page) params.set('page', filters.page)
+                if (filters.limit) params.set('limit', filters.limit)
+
+                const queryString = params.toString()
+                const url = queryString ? `/users?${queryString}` : '/users'
+
+                const response = await $fetch(url, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -28,7 +41,13 @@ export const useUsersStore = defineStore('users', {
                     }
                 })
 
-                this.users = response
+                this.users = response.data || response
+                const p = response.pagination || {}
+                this.page = p.page ?? filters.page ?? 1
+                this.perPage = p.perPage ?? filters.limit ?? 10
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -93,7 +112,7 @@ export const useUsersStore = defineStore('users', {
                     body: userData
                 })
 
-                await this.getUsers()
+                await this.getUsers({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -129,7 +148,7 @@ export const useUsersStore = defineStore('users', {
                     body: userData
                 })
 
-                await this.getUsers()
+                await this.getUsers({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -164,7 +183,7 @@ export const useUsersStore = defineStore('users', {
                     }
                 })
 
-                await this.getUsers()
+                await this.getUsers({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -183,7 +202,7 @@ export const useUsersStore = defineStore('users', {
     getters: {
         getUsersByRole: (state) => (roleName) => {
             if (!roleName) return state.users
-            return state.users.filter(user => user.role_name === roleName)
+            return state.users.filter(user => user.role?.name === roleName)
         }
     }
 })

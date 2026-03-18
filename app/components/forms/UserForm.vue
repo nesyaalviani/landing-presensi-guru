@@ -46,13 +46,16 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+                         <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Role <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div @click="formData.id_role = 1" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 1
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -61,7 +64,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 2" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 2
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -70,7 +73,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 3" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 3
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -79,7 +82,7 @@
                                 </div>
 
                                 <div @click="formData.id_role = 4" :class="[
-                                    'cursor-pointer border-2 rounded-sm px-4 py-2.5 text-center transition-all',
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
                                     formData.id_role === 4
                                         ? 'border-blue-500 bg-blue-500 text-white'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -99,13 +102,13 @@
                                     class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
                                     <option value="" disabled>Pilih Kelas</option>
                                     <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
-                                        {{ kelas.name }} - {{ kelas.jurusan }}
+                                        {{ kelas.name }} - {{ kelas.nama_jurusan }}
                                     </option>
                                 </select>
                                 <ChevronDown
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                             </div>
-                            <p class="mt-1.5 text-xs text-gray-500">KM wajib memiliki kelas</p>
+                            <p class="mt-1.5 text-xs text-gray-500">KM wajib memilih kelas</p>
                         </div>
 
                         <div>
@@ -144,18 +147,11 @@
 
                         <hr class="border-gray-200" />
 
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading || loadingData"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Update User' : 'Simpan User') }}
+                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit User' : 'Simpan') }}
                             </button>
                             <NuxtLink to="/users"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -182,7 +178,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { X, Save, Info, ChevronDown, AlertCircle } from 'lucide-vue-next'
+import { X, Save, Info, ChevronDown } from 'lucide-vue-next'
 import { useUsersStore } from '~/stores/users'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useRouter, useRoute } from 'vue-router'
@@ -204,9 +200,20 @@ const formData = ref({
 })
 
 const classrooms = ref([])
-const errorMessage = ref('')
 const loading = ref(false)
 const loadingData = ref(false)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const loadUserData = async () => {
     if (!isEditMode.value) return
@@ -223,7 +230,7 @@ const loadUserData = async () => {
             id_kelas: user.id_kelas || ''
         }
     } else {
-        errorMessage.value = 'Gagal memuat data user'
+       showAlert('error', 'Gagal memuat data user')
     }
 }
 
@@ -235,34 +242,34 @@ watch(() => formData.value.id_role, (newRole) => {
 
 const validateForm = () => {
     if (!formData.value.id_role) {
-        errorMessage.value = 'Silakan pilih role pengguna'
+        showAlert('error', 'Silakan pilih role pengguna')
         return false
     }
 
     if (formData.value.id_role === 2 && !formData.value.id_kelas) {
-        errorMessage.value = 'KM wajib memilih kelas'
+        showAlert('error', 'KM wajib memilih kelas')
         return false
     }
 
     if (!formData.value.name || formData.value.name.trim().length === 0) {
-        errorMessage.value = 'Nama tidak boleh kosong'
+       showAlert('error', 'Nama tidak boleh kosong')
         return false
     }
 
     if (!formData.value.username || formData.value.username.trim().length < 3) {
-        errorMessage.value = 'Username minimal 3 karakter'
+        showAlert('error', 'Username minimal 3 karakter')
         return false
     }
 
     const usernameRegex = /^[a-z0-9_]+$/
     if (!usernameRegex.test(formData.value.username)) {
-        errorMessage.value = 'Username hanya boleh huruf kecil, angka, dan underscore (tanpa spasi)'
+        showAlert('error', 'Username hanya boleh huruf kecil, angka, dan underscore (tanpa spasi)')
         return false
     }
 
     if (!isEditMode.value || formData.value.password) {
         if (formData.value.password.length < 8) {
-            errorMessage.value = 'Password minimal 8 karakter'
+            showAlert('error', 'Password minimal 8 karakter')
             return false
         }
     }
@@ -271,7 +278,8 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
+    // 🔴 FIX 1: Ganti 'errorMessage.value = ""' (variabel tidak terdefinisi) dengan 'clearAlert()'
+    clearAlert()
 
     if (!validateForm()) {
         return
@@ -300,9 +308,12 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/users')
+        showAlert('success', isEditMode.value ? 'User berhasil diupdate' : 'User berhasil dibuat', {
+            redirectDelay: 1500,
+            redirectFn: () => router.push('/users')
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
 
@@ -311,7 +322,7 @@ onMounted(async () => {
         loadingData.value = true
     }
 
-    const classroomResult = await classroomsStore.getClassrooms()
+    const classroomResult = await classroomsStore.getClassrooms({ all: true })
     if (classroomResult.success) {
         classrooms.value = classroomsStore.classrooms
     }

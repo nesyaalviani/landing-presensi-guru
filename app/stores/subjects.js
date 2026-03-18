@@ -3,12 +3,16 @@ import { defineStore } from 'pinia'
 export const useSubjectsStore = defineStore('subjects', {
     state: () => ({
         subjects: [],
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 1,
         loading: false,
         error: null
     }),
 
     actions: {
-        async getSubjects() {
+        async getSubjects(filters = {}) {
             this.loading = true
             this.error = null
 
@@ -20,7 +24,17 @@ export const useSubjectsStore = defineStore('subjects', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/mapel?all=true', {
+                const params = new URLSearchParams()
+                if (filters.search) params.set('search', filters.search)
+                if (filters.status) params.set('status', filters.status)
+                if (filters.page) params.set('page', filters.page)
+                if (filters.limit) params.set('limit', filters.limit)
+                if (filters.all) params.set('all', 'true')
+
+                const queryString = params.toString()
+                const url = queryString ? `/mapel?${queryString}` : '/mapel'
+
+                const response = await $fetch(url, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -28,7 +42,13 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                this.subjects = response
+                this.subjects = response.data || response
+                const p = response.pagination || {}
+                this.page = p.page ?? filters.page ?? 1
+                this.perPage = p.perPage ?? filters.limit ?? 10
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -96,7 +116,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     body: subjectData
                 })
 
-                await this.getSubjects()
+                await this.getSubjects({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -122,10 +142,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 }
 
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: errorMessage }
             }
         },
 
@@ -150,7 +167,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     body: subjectData
                 })
 
-                await this.getSubjects()
+                await this.getSubjects({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -172,10 +189,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 }
 
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: errorMessage }
             }
         },
 
@@ -199,7 +213,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 })
 
-                await this.getSubjects()
+                await this.getSubjects({ page: this.page, limit: this.perPage })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -219,10 +233,7 @@ export const useSubjectsStore = defineStore('subjects', {
                     }
                 }
 
-                return {
-                    success: false,
-                    message: errorMessage
-                }
+                return { success: false, message: errorMessage }
             }
         }
     },

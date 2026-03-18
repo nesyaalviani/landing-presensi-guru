@@ -31,6 +31,9 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                            :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+
                         <div>
                             <label for="nama_kelas"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -65,13 +68,12 @@
                                 Jurusan <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <select id="jurusan" v-model="formData.jurusan" required
+                                <select id="jurusan" v-model="formData.id_jurusan" required
                                     class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
                                     <option value="" disabled>Pilih Jurusan</option>
-                                    <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                                    <option value="Perhotelan">Perhotelan</option>
-                                    <option value="Teknik Komputer & Jaringan">Teknik Komputer & Jaringan</option>
-                                    <option value="Multimedia">Multimedia</option>
+                                    <option v-for="j in jurusanList" :key="j.id" :value="j.id">
+                                        {{ j.nama_jurusan }}
+                                    </option>
                                 </select>
                                 <ChevronDown
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -80,19 +82,12 @@
                         </div>
 
                         <hr class="border-gray-200" />
-
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
+                        
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update Kelas' : 'Simpan Kelas') }}
+                                {{ loading ? 'Menyimpan...' : (isEditMode ? 'Edit Kelas' : 'Simpan') }}
                             </button>
                             <NuxtLink to="/classroom"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -118,8 +113,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { X, Save, Info, ChevronDown, AlertCircle } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { X, Save, Info, ChevronDown } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -130,14 +125,27 @@ const route = useRoute()
 const isEditMode = computed(() => !!route.params.id)
 const classroomId = computed(() => route.params.id)
 
+const jurusanList = computed(() => classroomsStore.jurusanList)
+
 const formData = ref({
     name: '',
     tingkat: '',
-    jurusan: ''
+    id_jurusan: ''
 })
 
-const errorMessage = ref('')
 const loading = ref(false)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
 
 const loadClassroomData = async () => {
     if (!isEditMode.value) return
@@ -151,18 +159,18 @@ const loadClassroomData = async () => {
         formData.value = {
             name: classroom.name,
             tingkat: classroom.tingkat,
-            jurusan: classroom.jurusan
+            id_jurusan: classroom.id_jurusan
         }
     } else {
-        errorMessage.value = 'Gagal memuat data kelas'
+       showAlert('error', 'Gagal memuat data kelas')
     }
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
-
-    if (!formData.value.name || !formData.value.tingkat || !formData.value.jurusan) {
-        errorMessage.value = 'Semua field wajib diisi.'
+    clearAlert()
+    
+    if (!formData.value.name || !formData.value.tingkat || !formData.value.id_jurusan) {
+        showAlert('error', 'Semua field wajib diisi.')
         return
     }
 
@@ -171,7 +179,7 @@ const handleSubmit = async () => {
     const payload = {
         name: formData.value.name,
         tingkat: formData.value.tingkat,
-        jurusan: formData.value.jurusan
+        id_jurusan: formData.value.id_jurusan
     }
 
     let result
@@ -184,13 +192,19 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/classroom')
+        showAlert('success', isEditMode.value ? 'Kelas berhasil diupdate!' : 'Kelas berhasil ditambahkan!', 
+        { redirectDelay: 1500, 
+        redirectFn: () => router.push('/classroom') 
+        })
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
     }
 }
 
 onMounted(async () => {
-    await loadClassroomData()
+    await Promise.all([
+        classroomsStore.getJurusanList(),
+        loadClassroomData()
+    ])
 })
 </script>

@@ -3,12 +3,16 @@ import { defineStore } from 'pinia'
 export const useSchedulesStore = defineStore('schedules', {
     state: () => ({
         schedules: [],
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 1,
         loading: false,
         error: null
     }),
 
     actions: {
-        async getSchedules() {
+        async getSchedules(filters = {}) {
             this.loading = true
             this.error = null
 
@@ -20,7 +24,17 @@ export const useSchedulesStore = defineStore('schedules', {
                     token = localStorage.getItem('token')
                 }
 
-                const response = await $fetch('/jadwal', {
+                const params = new URLSearchParams()
+                if (filters.hari) params.set('hari', filters.hari)
+                if (filters.id_kelas) params.set('id_kelas', filters.id_kelas)
+                if (filters.all) params.set('all', 'true')
+                if (filters.page) params.set('page', filters.page)
+                if (filters.limit) params.set('limit', filters.limit)
+
+                const queryString = params.toString()
+                const url = queryString ? `/jadwal?${queryString}` : '/jadwal'
+
+                const response = await $fetch(url, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: {
@@ -28,7 +42,13 @@ export const useSchedulesStore = defineStore('schedules', {
                     }
                 })
 
-                this.schedules = response
+                this.schedules = response.data || []
+                const p = response.pagination || {}
+                this.page = p.page ?? 1
+                this.perPage = p.perPage ?? 10
+                this.totalItems = p.totalItems ?? 0
+                this.totalPages = p.totalPages ?? 1
+
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
@@ -96,7 +116,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     body: scheduleData
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -152,7 +172,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     body: scheduleData
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -207,7 +227,7 @@ export const useSchedulesStore = defineStore('schedules', {
                     }
                 })
 
-                await this.getSchedules()
+                await this.getSchedules({ page: this.page })
 
                 this.loading = false
                 return { success: true, data: response }
@@ -230,6 +250,38 @@ export const useSchedulesStore = defineStore('schedules', {
                 return {
                     success: false,
                     message: errorMessage
+                }
+            }
+        },
+
+        async importSchedule(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/jadwal/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: formData
+                })
+
+                await this.getSchedules({ page: 1 })
+
+                return { success: true, data: response, inserted: response.inserted, errors: response.errors ?? [], total: response.inserted }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data jadwal.'
                 }
             }
         }

@@ -52,6 +52,12 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+
+                        <div ref="alertRef" v-if="alertMessage">
+                            <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                                :on-close="clearAlert" :on-redirect="alertRedirectFn" />
+                        </div>
+
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Jam Pelajaran <span class="text-red-500">*</span>
@@ -174,6 +180,8 @@
                                     <option value="Rabu">Rabu</option>
                                     <option value="Kamis">Kamis</option>
                                     <option value="Jumat">Jumat</option>
+                                    <option value="Sabtu">Sabtu</option>
+                                    <option value="Minggu">Minggu</option>
                                 </select>
                                 <ChevronDown
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -183,18 +191,11 @@
 
                         <hr class="border-gray-200" />
 
-                        <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-sm">
-                            <div class="flex items-center gap-2 text-sm text-red-800">
-                                <AlertCircle class="h-4 w-4 shrink-0" />
-                                <p>{{ errorMessage }}</p>
-                            </div>
-                        </div>
-
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <button type="submit" :disabled="loading || loadingData"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Update Jadwal' : 'Simpan Jadwal') }}
+                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit Jadwal' : 'Simpan') }}
                             </button>
                             <NuxtLink to="/schedule"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -220,8 +221,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { ChevronDown, X, Save, Info, AlertCircle } from 'lucide-vue-next'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { ChevronDown, X, Save, Info } from 'lucide-vue-next'
 import { useSchedulesStore } from '~/stores/schedules'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useTeachersStore } from '~/stores/teachers'
@@ -255,9 +256,32 @@ const classrooms = ref([])
 const teachers = ref([])
 const subjects = ref([])
 const filteredTeachers = ref([])
-const errorMessage = ref('')
 const loading = ref(false)
 const loadingData = ref(false)
+
+const alertRef = ref(null)
+
+const {
+    alertType,
+    alertMessage,
+    alertRedirectDelay,
+    alertRedirectFn,
+    showAlert,
+    clearAlert,
+    watchInputClearError
+} = useAlert()
+
+watchInputClearError(formData)
+
+const scrollToAlert = async () => {
+    await nextTick()
+    if (alertRef.value) {
+        const navbar = document.querySelector('nav, header, [data-navbar]')
+        const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
+        const elementTop = alertRef.value.getBoundingClientRect().top + window.scrollY
+        window.scrollTo({ top: elementTop - navbarHeight - 16, behavior: 'smooth' })
+    }
+}
 
 const activeSubjects = computed(() => {
     return subjects.value.filter(s => s.status === true)
@@ -305,38 +329,45 @@ const loadScheduleData = async () => {
             filterTeachers()
         }
     } else {
-        errorMessage.value = 'Gagal memuat data jadwal'
+        showAlert('error', 'Gagal memuat data jadwal')
+        scrollToAlert() 
     }
 }
 
 const validateForm = () => {
     if (!formData.value.jamMulai || !formData.value.jamSelesai) {
-        errorMessage.value = 'Jam mulai dan jam selesai wajib diisi'
+        showAlert('error', 'Jam mulai dan jam selesai wajib diisi')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.kelas) {
-        errorMessage.value = 'Kelas wajib dipilih'
+        showAlert('error', 'Kelas wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.mapel) {
-        errorMessage.value = 'Mata pelajaran wajib dipilih'
+        showAlert('error', 'Mata pelajaran wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.guru) {
-        errorMessage.value = 'Guru wajib dipilih'
+        showAlert('error', 'Guru wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (!formData.value.hari) {
-        errorMessage.value = 'Hari wajib dipilih'
+        showAlert('error', 'Hari wajib dipilih')
+        scrollToAlert() 
         return false
     }
 
     if (formData.value.jamMulai >= formData.value.jamSelesai) {
-        errorMessage.value = 'Jam selesai harus lebih besar dari jam mulai'
+        showAlert('error', 'Jam selesai harus lebih besar dari jam mulai')
+        scrollToAlert() 
         return false
     }
 
@@ -344,7 +375,7 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-    errorMessage.value = ''
+    clearAlert()
 
     if (!validateForm()) {
         return
@@ -371,23 +402,36 @@ const handleSubmit = async () => {
     loading.value = false
 
     if (result.success) {
-        router.push('/schedule')
+        showAlert('success', isEditMode.value ? 'Jadwal berhasil diupdate!' : 'Jadwal berhasil ditambahkan!', {
+            redirectDelay: 1500,
+            redirectFn: () => router.push('/schedule')
+        })
+        scrollToAlert() 
     } else {
-        errorMessage.value = result.message
+        showAlert('error', result.message)
+        scrollToAlert() 
     }
 }
 
 onMounted(async () => {
-    // Set loadingData true SEBELUM fetch data jika edit mode
+    if (process.client) {
+        await import('clock-timepicker') 
+    }
+
     if (isEditMode.value) {
         loadingData.value = true
     }
 
     const [classResult, teacherResult, subjectResult] = await Promise.all([
-        classroomsStore.getClassrooms(),
-        teachersStore.getTeachers(),
-        subjectsStore.getSubjects()
+        classroomsStore.getClassrooms({ all: true }),
+        teachersStore.getTeachers({ all: true }),
+        subjectsStore.getSubjects({ all: true })
     ])
+
+    const kelasIdFromQuery = route.query.kelasId
+    if (kelasIdFromQuery) {
+        formData.value.kelas = parseInt(kelasIdFromQuery)
+    }
 
     if (classResult.success) {
         classrooms.value = classroomsStore.classrooms
@@ -428,9 +472,8 @@ onMounted(async () => {
 
 :deep(.timepicker-simple input:focus) {
     border-color: rgb(59 130 246) !important;
-    ring: 2px !important;
-    ring-color: rgb(59 130 246) !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 0 0 1px rgb(59 130 246) !important;
+    outline: none !important;
 }
 
 :deep(.timepicker-simple input::placeholder) {
