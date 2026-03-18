@@ -345,12 +345,12 @@ onMounted(async () => {
   const scheduleToday = presensiStore.jadwalHariIni.find(s => s.id == jadwalId)
 
   if (getIsResubmitMode()) {
-    if (!scheduleToday || scheduleToday.status !== 'Rejected') {
+    if (scheduleToday && scheduleToday.status !== 'Rejected') {
       router.push('/presensi')
       return
     }
 
-    alasanReject.value = scheduleToday.presensi?.alasan_reject || ''
+    // alasanReject.value = scheduleToday?.presensi?.alasan_reject || ''
 
     const jadwalResult = await presensiStore.getJadwalById(jadwalId)
     if (!jadwalResult.success) {
@@ -368,6 +368,11 @@ onMounted(async () => {
       const presensiResult = await presensiStore.getPresensiByIdKM(presensiId)
       if (presensiResult.success) {
         const d = presensiResult.data
+
+        if (d.id_jadwal != jadwalId) { router.push('/presensi'); return }
+        if (d.status_approve !== 'Rejected') { router.push('/presensi'); return }
+
+        alasanReject.value = d.alasan_reject || ''
 
         if (d.status) {
           presensiData.value.statusKehadiran = d.status
