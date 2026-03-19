@@ -1,18 +1,24 @@
 <template>
   <div class="min-h-screen bg-slate-50 font-sans">
 
-    <div class="max-w-screen-lg mx-auto px-0 sm:px-0 lg:px-0 py-0 lg:py-0 flex flex-col lg:flex-row gap-4">
+    <div ref="alertRef" class="max-w-screen-lg mx-auto px-1 sm:px-4 lg:px-2 pt-2">
+      <AppAlert v-if="alertMessage" :type="alertType" :message="alertMessage" :on-close="clearAlert" />
+    </div>
+
+    <div class="max-w-screen-lg mx-auto px-1 sm:px-4 lg:px-2 py-1 lg:py-1 flex flex-col lg:flex-row gap-4">
+
       <div class="flex-1 min-w-0">
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-300">
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
             <div class="flex items-center gap-1 flex-shrink-0">
               <h2 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight mr-1">
                 {{ monthName }} {{ currentYear }}
               </h2>
-              <button @click="prevMonth" class="p-1.5  hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <button @click="prevMonth" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                 <ChevronLeft class="h-4 w-4" />
               </button>
-              <button @click="nextMonth" class="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <button @click="nextMonth" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                 <ChevronRight class="h-4 w-4" />
               </button>
             </div>
@@ -24,7 +30,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-7 border-b border-slate-300">
+          <div class="grid grid-cols-7 border-b border-slate-100">
             <div
               v-for="(day, i) in dayLabels"
               :key="day"
@@ -47,7 +53,7 @@
                   v-for="(cell, cIdx) in week"
                   :key="cIdx"
                   @click="cell.isCurrentMonth && cell.date && selectDate(cell.date)"
-                  class="relative border-b border-r border-slate-200 transition-colors"
+                  class="relative border-b border-r border-slate-100 transition-colors"
                   :class="[
                     'min-h-[56px] sm:min-h-[70px] lg:min-h-[75px]',
                     'p-1 sm:p-1.5 lg:p-2',
@@ -58,7 +64,6 @@
                     cell.date && selectedDate === cell.date ? 'bg-blue-100/70 ring-1 ring-inset ring-blue-300' : '',
                   ]"
                 >
-                  <!-- Day Number -->
                   <div v-if="cell.date" class="flex items-start justify-between mb-0.5 sm:mb-1.5">
                     <span
                       class="inline-flex items-center justify-center rounded-full font-semibold transition-colors z-10 relative"
@@ -120,6 +125,7 @@
       </div>
 
       <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-3 sm:space-y-4">
+
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700 truncate pr-2">
@@ -156,6 +162,10 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-xs sm:text-sm font-semibold text-slate-800 truncate">{{ event.title }}</p>
                   <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">{{ event.categoryLabel }}</p>
+                  <p v-if="event.jamMulai || event.jamBerakhir" class="text-[10px] sm:text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                    <span>🕐</span>
+                    <span>{{ event.jamMulai || '--:--' }} – {{ event.jamBerakhir || '--:--' }}</span>
+                  </p>
                   <p v-if="event.endDate && event.endDate !== event.date" class="text-[10px] sm:text-xs text-slate-400 mt-0.5">
                     {{ formatDateShort(event.date) }} – {{ formatDateShort(event.endDate) }}
                   </p>
@@ -218,6 +228,14 @@
             </div>
           </div>
         </div>
+
+        <!-- <button
+          @click="openAddModal"
+          class="lg:hidden w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-sm transition-all duration-150"
+        >
+          <Plus class="h-4 w-4" />
+          Tambah Kegiatan
+        </button> -->
       </div>
     </div>
 
@@ -258,6 +276,19 @@
                     class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                 </div>
               </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jam Mulai</label>
+                  <input v-model="form.jamMulai" type="time"
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jam Berakhir</label>
+                  <input v-model="form.jamBerakhir" type="time"
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                </div>
+              </div>
+
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kategori <span class="text-red-500">*</span></label>
                 <div class="relative">
@@ -278,9 +309,11 @@
               </div>
             </div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 flex gap-3 flex-shrink-0">
+              <p v-if="formErrors.api" class="w-full text-xs text-red-500 text-center -mt-2 pb-1">{{ formErrors.api }}</p>
               <button @click="closeModal" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Batal</button>
-              <button @click="saveEvent" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm">
-                {{ editingEvent ? 'Simpan' : 'Tambah' }}
+              <button @click="saveEvent" :disabled="loadingSubmit" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors shadow-sm">
+                <span v-if="loadingSubmit">Menyimpan...</span>
+                <span v-else>{{ editingEvent ? 'Simpan' : 'Tambah' }}</span>
               </button>
             </div>
           </div>
@@ -288,10 +321,11 @@
       </Transition>
     </Teleport>
 
+    <!-- Confirm Delete -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="() => { showDeleteConfirm = false; deleteError = null }"></div>  <!-- ✅ DIUPDATE: reset error saat tutup -->
           <div class="relative bg-white w-full sm:max-w-sm z-10 p-6 text-center rounded-t-2xl sm:rounded-2xl shadow-2xl">
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
               <Trash2 class="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
@@ -300,9 +334,23 @@
             <p class="text-xs sm:text-sm text-slate-500 mb-5">
               Kegiatan <span class="font-semibold text-slate-700">"{{ deletingEvent?.title }}"</span> akan dihapus permanen.
             </p>
+            <p v-if="deleteError" class="text-xs text-red-500 mb-3">{{ deleteError }}</p>
             <div class="flex gap-3">
-              <button @click="showDeleteConfirm = false" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Batal</button>
-              <button @click="deleteEvent" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">Hapus</button>
+              <button
+                @click="showDeleteConfirm = false"
+                :disabled="loadingDelete"
+                class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                @click="deleteEvent"
+                :disabled="loadingDelete"
+                class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors"
+              >
+                <span v-if="loadingDelete">Menghapus...</span>
+                <span v-else>Hapus</span>
+              </button>
             </div>
           </div>
         </div>
@@ -313,7 +361,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue' // ✅ DITAMBAH: onUnmounted, nextTick
 import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, ChevronDown } from 'lucide-vue-next'
 
 const today = new Date()
@@ -326,8 +374,38 @@ const showDeleteConfirm = ref(false)
 const editingEvent      = ref(null)
 const deletingEvent     = ref(null)
 
-const form       = ref({ title: '', date: '', endDate: '', category: '', description: '' })
+const form       = ref({ title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '', category: '', description: '' })
 const formErrors = ref({})
+
+const loadingFetch  = ref(false)
+const loadingSubmit = ref(false)
+const loadingDelete = ref(false)   
+const fetchError    = ref(null)
+const deleteError   = ref(null)    
+
+const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
+
+const alertRef = ref(null)
+
+const scrollToAlert = async () => {
+  await nextTick()
+  if (alertRef.value) {
+    const navbar       = document.querySelector('nav, header, [data-navbar]')
+    const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0
+    const elementTop   = alertRef.value.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: elementTop - navbarHeight - 8, behavior: 'smooth' })
+  }
+}
+
+let autoCloseTimer = null
+const showAutoAlert = async (type, message) => {
+  clearTimeout(autoCloseTimer)
+  showAlert(type, message)
+  await scrollToAlert()
+  autoCloseTimer = setTimeout(() => clearAlert(), 3000)
+}
+
+onUnmounted(() => { clearTimeout(autoCloseTimer) })
 
 const categories = [
   { value: 'libur',    label: 'Hari Libur',       dot: 'bg-rose-400',   chip: 'bg-rose-50 text-rose-600' },
@@ -355,18 +433,46 @@ const barTextMap = {
 const getBarTextClass = (cat) => barTextMap[cat] || 'text-slate-700'
 
 const pad = (n) => String(n).padStart(2, '0')
-const mm  = pad(today.getMonth() + 1)
-const yy  = today.getFullYear()
 
-const events = ref([
-  { id: 1, title: 'Libur Idul Fitri',          date: `${yy}-${mm}-01`, endDate: `${yy}-${mm}-03`, category: 'libur',    description: 'Libur nasional Idul Fitri 1446 H.' },
-  { id: 2, title: 'UTS Semester Genap',         date: `${yy}-${mm}-08`, endDate: `${yy}-${mm}-12`, category: 'ujian',    description: 'Ujian Tengah Semester Genap untuk semua kelas.' },
-  { id: 3, title: 'Rapat Komite Sekolah',       date: `${yy}-${mm}-10`, endDate: '',               category: 'rapat',    description: '' },
-  { id: 4, title: 'Peringatan Hari Pendidikan', date: `${yy}-${mm}-02`, endDate: '',               category: 'kegiatan', description: 'Upacara bendera dan pentas seni.' },
-  { id: 5, title: 'Classmeeting',               date: `${yy}-${mm}-18`, endDate: `${yy}-${mm}-20`, category: 'kegiatan', description: 'Lomba antar kelas.' },
-  { id: 6, title: 'UAS Semester Genap',         date: `${yy}-${mm}-25`, endDate: `${yy}-${mm}-28`, category: 'ujian',    description: 'Ujian Akhir Semester Genap.' },
-])
-let nextId = 7
+const events = ref([])
+
+const parseDateFromApi = (isoStr) => {
+  if (!isoStr) return ''
+  return isoStr.substring(0, 10)
+}
+
+const mapFromApi = (item) => ({
+  id:          item.id,
+  title:       item.keterangan || '',
+  date:        parseDateFromApi(item.tanggal_mulai),    
+  endDate:     parseDateFromApi(item.tanggal_selesai), 
+  jamMulai:    item.jam_mulai?.substring(0, 5) || '',  
+  jamBerakhir: item.jam_selesai?.substring(0, 5) || '',
+  category:    item.tipe || 'lainnya',
+  description: item.keterangan || '',
+})
+
+const fetchKalender = async () => {
+  loadingFetch.value = true
+  fetchError.value   = null
+  try {
+    const config = useRuntimeConfig()
+    let token = null
+    if (process.client) token = localStorage.getItem('token')
+
+    const response = await $fetch('/kalender', {
+      method: 'GET',
+      baseURL: config.public.apiBase,
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    })
+
+    events.value = (response.data || []).map(mapFromApi)
+  } catch (err) {
+    fetchError.value = err.data?.message || 'Gagal mengambil data kalender.'
+  } finally {
+    loadingFetch.value = false
+  }
+}
 
 const dayLabels  = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
@@ -499,7 +605,7 @@ const getSpanBarCountForCell = (dateStr, wIdx) => {
 
 const getBarStyle = (bar) => {
   const colWidth = 100 / 7
-  const GAP      = 0.2  // gap kiri-kanan (%)
+  const GAP      = 0.2  
 
   const left  = bar.colStart * colWidth + GAP
   const width = (bar.colEnd - bar.colStart + 1) * colWidth - GAP * 2
@@ -525,7 +631,7 @@ const formatDayNum     = (dateStr) => dateStr.split('-')[2]
 const formatMonthShort = (dateStr) => monthNames[Number(dateStr.split('-')[1]) - 1].slice(0, 3)
 
 const resetForm = () => {
-  form.value         = { title: '', date: '', endDate: '', category: '', description: '' }
+  form.value         = { title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '', category: '', description: '' }
   formErrors.value   = {}
   editingEvent.value = null
 }
@@ -534,10 +640,12 @@ const openAddModalForDate = (dateStr) => { resetForm(); form.value.date = dateSt
 const openEditModal = (event) => {
   resetForm()
   editingEvent.value = event
-  form.value = { title: event.title, date: event.date, endDate: event.endDate || '', category: event.category, description: event.description || '' }
+  form.value = { title: event.title, date: event.date, endDate: event.endDate || '', jamMulai: event.jamMulai || '', jamBerakhir: event.jamBerakhir || '', category: event.category, description: event.description || '' }
   showModal.value = true
 }
 const closeModal = () => { showModal.value = false; resetForm() }
+
+onMounted(() => { fetchKalender() })
 
 const validateForm = () => {
   const errors = {}
@@ -547,23 +655,99 @@ const validateForm = () => {
   formErrors.value = errors
   return Object.keys(errors).length === 0
 }
-const saveEvent = () => {
+const saveEvent = async () => {
   if (!validateForm()) return
-  if (editingEvent.value) {
-    const idx = events.value.findIndex(e => e.id === editingEvent.value.id)
-    if (idx !== -1) events.value[idx] = { ...events.value[idx], ...form.value }
-  } else {
-    events.value.push({ id: nextId++, ...form.value })
+  loadingSubmit.value = true
+
+  try {
+    const config = useRuntimeConfig()
+    let token = null
+    if (process.client) token = localStorage.getItem('token')
+
+    const formatDateForApi = (dateStr) => dateStr ? `${dateStr}T00:00:00` : null
+
+    const payload = {
+      tanggal_mulai:   formatDateForApi(form.value.date),                        // "2025-03-07T00:00:00"
+      tanggal_selesai: formatDateForApi(form.value.endDate || form.value.date),  // "2025-03-07T00:00:00"
+      jam_mulai:       form.value.jamMulai    ? `${form.value.jamMulai}:00`    : null,
+      jam_selesai:     form.value.jamBerakhir ? `${form.value.jamBerakhir}:00` : null,
+      tipe:            form.value.category,
+      keterangan:      form.value.title,
+    }
+
+    if (editingEvent.value) {
+      await $fetch(`/kalender/${editingEvent.value.id}`, {
+        method: 'PUT',
+        baseURL: config.public.apiBase,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: payload,
+      })
+    } else {
+      await $fetch('/kalender', {
+        method: 'POST',
+        baseURL: config.public.apiBase,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: payload,
+      })
+    }
+
+    const isEditing  = !!editingEvent.value
+    const savedTitle = form.value.title.trim()
+    selectedDate.value = form.value.date
+    closeModal()
+    await fetchKalender()
+    await showAutoAlert('success', isEditing
+      ? `Kegiatan "${savedTitle}" berhasil diperbarui.`
+      : `Kegiatan "${savedTitle}" berhasil ditambahkan.`
+    )
+  } catch (err) {
+    formErrors.value.api = err.data?.message || 'Gagal menyimpan kegiatan.'
+    await showAutoAlert('error', err.data?.message || 'Gagal menyimpan kegiatan.')
+  } finally {
+    loadingSubmit.value = false
   }
-  selectedDate.value = form.value.date
-  closeModal()
 }
 
-const confirmDelete = (event) => { deletingEvent.value = event; showDeleteConfirm.value = true }
-const deleteEvent   = () => {
-  events.value = events.value.filter(e => e.id !== deletingEvent.value.id)
-  showDeleteConfirm.value = false
-  deletingEvent.value = null
+const confirmDelete = (event) => {
+  deletingEvent.value = event
+  deleteError.value   = null   
+  showDeleteConfirm.value = true
+}
+
+const deleteEvent = async () => {
+  if (!deletingEvent.value) return
+  loadingDelete.value = true
+  deleteError.value   = null
+
+  try {
+    const config = useRuntimeConfig()
+    let token = null
+    if (process.client) token = localStorage.getItem('token')
+
+    await $fetch(`/kalender/${deletingEvent.value.id}`, {
+      method: 'DELETE',
+      baseURL: config.public.apiBase,
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    })
+
+    const deletedTitle = deletingEvent.value.title
+
+    showDeleteConfirm.value = false
+    deletingEvent.value     = null
+    await fetchKalender()
+    await showAutoAlert('success', `Kegiatan "${deletedTitle}" berhasil dihapus.`)
+  } catch (err) {
+    deleteError.value = err.data?.message || 'Gagal menghapus kegiatan.'
+    await showAutoAlert('error', err.data?.message || 'Gagal menghapus kegiatan.')
+  } finally {
+    loadingDelete.value = false
+  }
 }
 </script>
 
