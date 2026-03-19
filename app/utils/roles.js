@@ -26,7 +26,7 @@ export const ROLE_MENUS = {
 
   [ROLES.PIKET]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
-    { path: '/approval', label: 'Absensi', icon: 'ClipboardCheck' }
+    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' }
   ],
 
   [ROLES.KS]: [

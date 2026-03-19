@@ -163,13 +163,14 @@ const pageTitle = computed(() => {
     '/teacher': 'Data Guru',
     '/teacher/create': 'Tambah Guru',
     '/teacher/edit': 'Edit Guru',
-    '/approval': 'Absensi',
+    '/approval': 'Presensi',
     '/reports': 'Laporan',
     '/presensi': 'Presensi',
     '/presensi/create': 'Buat Presensi',
     '/riwayat-presensi': 'Riwayat Presensi',
     '/profile': 'Profil Saya',
     '/kalender': 'Kalender Akademik',
+    '/statistics': 'Statistik'
   }
 
   if (route.path === '/presensi/create' && route.query.mode === 'resubmit') {
