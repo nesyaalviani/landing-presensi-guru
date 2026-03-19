@@ -170,6 +170,7 @@ const pageTitle = computed(() => {
     '/riwayat-presensi': 'Riwayat Presensi',
     '/profile': 'Profil Saya',
     '/kalender': 'Kalender Akademik',
+    '/statistics': 'Statistik'
   }
 
   if (route.path === '/presensi/create' && route.query.mode === 'resubmit') {
