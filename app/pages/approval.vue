@@ -74,9 +74,9 @@
 
                 <div class="p-3">
 
-                    <!-- Loading skeleton: grid for pending/approved/rejected -->
+                    <!-- Loading skeleton: grid -->
                     <template v-if="loading && activeTab !== 'belum'">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div v-for="i in 8" :key="i"
                                 class="animate-pulse rounded-sm overflow-hidden bg-slate-100 border border-slate-200">
                                 <div class="bg-slate-200 aspect-video"></div>
@@ -89,7 +89,7 @@
                         </div>
                     </template>
 
-                    <!-- Loading skeleton: list for belum -->
+                    <!-- Loading skeleton: list belum -->
                     <template v-else-if="loading && activeTab === 'belum'">
                         <div class="space-y-2">
                             <div v-for="i in 5" :key="i"
@@ -112,17 +112,13 @@
                             untuk filter ini</p>
                     </div>
 
-                    <!-- ===================== -->
-                    <!-- TAB BELUM: List view  -->
-                    <!-- ===================== -->
+                    <!-- TAB BELUM: List view -->
                     <div v-else-if="activeTab === 'belum'" class="space-y-2">
                         <div v-for="row in filteredCards" :key="row.id_jadwal"
                             class="flex items-center gap-3 px-4 py-3 rounded-sm border border-slate-200 bg-white">
-                            <!-- Icon placeholder -->
                             <div class="h-9 w-9 rounded-sm bg-slate-100 flex items-center justify-center flex-shrink-0">
                                 <UserX class="h-4 w-4 text-slate-400" />
                             </div>
-                            <!-- Info -->
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-semibold text-slate-800 truncate">{{ getGuruName(row) }}</p>
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
@@ -135,7 +131,6 @@
                                         }}</span>
                                 </div>
                             </div>
-                            <!-- Badge -->
                             <span
                                 class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
                                 Belum diabsen
@@ -143,14 +138,13 @@
                         </div>
                     </div>
 
-                    <!-- ========================= -->
-                    <!-- GRID: pending/approved/rejected -->
-                    <!-- ========================= -->
-                    <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <!-- GRID: pending / approved / rejected -->
+                    <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div v-for="row in filteredCards" :key="row.id_jadwal"
                             class="rounded-sm overflow-hidden border border-slate-200 bg-white flex flex-col">
-                            <!-- Foto area: klik = fullscreen -->
-                            <div class="relative aspect-video overflow-hidden cursor-pointer group bg-slate-100 flex-shrink-0"
+                            <!-- Foto: klik = fullscreen -->
+                            <div class="relative aspect-video overflow-hidden bg-slate-100 flex-shrink-0"
+                                :class="row.foto_bukti ? 'cursor-pointer group' : ''"
                                 @click="row.foto_bukti ? openImageModal(row.foto_bukti) : null">
                                 <img v-if="row.foto_bukti" :src="row.foto_bukti" :alt="getGuruName(row)"
                                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -160,7 +154,7 @@
                                     <span class="text-[11px] opacity-40" :class="noPhotoIcon(row)">Tanpa foto</span>
                                 </div>
 
-                                <!-- Zoom hint on hover (hanya kalau ada foto) -->
+                                <!-- Zoom hint -->
                                 <div v-if="row.foto_bukti"
                                     class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                                     <div
@@ -169,7 +163,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Status badge di pojok kanan atas foto -->
+                                <!-- Status badge -->
                                 <div class="absolute top-1.5 right-1.5">
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm backdrop-blur-sm"
                                         :class="statusPillClass(row.status_approve)">{{ statusLabel(row.status_approve)
@@ -177,9 +171,8 @@
                                 </div>
                             </div>
 
-                            <!-- Info + action area di bawah foto -->
+                            <!-- Info + actions -->
                             <div class="p-2.5 flex flex-col gap-2 flex-1">
-                                <!-- Nama & mapel -->
                                 <div class="min-w-0">
                                     <p class="text-xs font-semibold text-slate-800 truncate leading-tight">{{
                                         getGuruName(row) }}</p>
@@ -213,7 +206,7 @@
                                     class="text-[10px] text-slate-400 italic leading-tight line-clamp-1">"{{ row.catatan
                                     }}"</p>
 
-                                <!-- Action buttons (pending only) -->
+                                <!-- Action buttons -->
                                 <div v-if="row.id_presensi && row.status_approve === 'Pending'"
                                     class="flex gap-1.5 mt-auto pt-1">
                                     <button @click="openSingleRejectPanel(row)" :disabled="!!processingId"
@@ -405,7 +398,6 @@ const switchTab = (key) => {
     closeRejectPanel()
 }
 
-// Styling helpers
 const noPhotoBg = (row) => {
     if (row.status_approve === 'Approved') return 'bg-emerald-50'
     if (row.status_approve === 'Rejected') return 'bg-rose-50'
