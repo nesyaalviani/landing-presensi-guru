@@ -40,8 +40,9 @@ export const usePresensiStore = defineStore('presensi', {
                 return { success: true, data: response }
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch jadwal'
-                this.jadwalHariIni = []           // ← FIX: clear list saat error
-                this.jadwalHariIniResponse = null // ← FIX: clear response saat error
+                // FIX: clear state saat error agar list lama tidak tersisa di UI
+                this.jadwalHariIni = []
+                this.jadwalHariIniResponse = null
                 this.loading = false
 
                 return {
