@@ -1,66 +1,85 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <!-- Loading -->
+  <div v-if="presensiStore.loading" class="min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="mb-6 sm:mb-8">
+        <div class="h-8 sm:h-9 w-48 sm:w-64 bg-gray-200 rounded animate-pulse mb-3 sm:mb-4"></div>
+        <div class="space-y-2">
+          <div class="h-5 sm:h-6 w-56 sm:w-72 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-4 sm:h-5 w-32 sm:w-48 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div class="space-y-3 sm:space-y-4">
+        <div v-for="i in 5" :key="i" class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div class="hidden sm:flex items-start justify-between">
+            <div class="flex gap-4 lg:gap-6 flex-1">
+              <div class="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
+              <div class="flex-1 space-y-3">
+                <div class="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-7 w-32 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-10 w-28 bg-gray-200 rounded-sm animate-pulse"></div>
+          </div>
+          <div class="block sm:hidden space-y-4">
+            <div class="flex justify-between">
+              <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-6 w-28 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+            <div class="space-y-3">
+              <div class="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State: full viewport, no scroll -->
+  <div v-else-if="schedules.length === 0" class="py-24 flex flex-col overflow-hidden bg-gray-50">
+    <!-- Center -->
+    <div class="flex-1 flex items-center justify-center px-6">
+      <div class="text-center max-w-xs w-full">
+
+        <!-- Icon -->
+        <div class="relative inline-flex items-center justify-center mb-8">
+          <div :class="['w-32 h-32 rounded-full flex items-center justify-center', stateConfig.ringClass]">
+            <div :class="['w-20 h-20 rounded-full flex items-center justify-center shadow-sm', stateConfig.iconBg]">
+              <component :is="stateConfig.icon" :class="['w-9 h-9', stateConfig.iconColor]" :stroke-width="1.5" />
+            </div>
+          </div>
+          <span :class="['absolute top-2 right-2 w-2.5 h-2.5 rounded-full', stateConfig.dotColor]"></span>
+          <span :class="['absolute bottom-3 left-1 w-1.5 h-1.5 rounded-full opacity-50', stateConfig.dotColor]"></span>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-gray-900 mb-3 tracking-tight">{{ stateConfig.title }}</h2>
+        <p class="text-sm text-gray-500 leading-relaxed mb-6">{{ stateConfig.description }}</p>
+
+        <div class="inline-flex items-center gap-2 rounded-full border px-4 py-2" :class="stateConfig.badgeClass">
+          <span :class="['w-1.5 h-1.5 rounded-full flex-shrink-0', stateConfig.dotColor]"></span>
+          <span class="text-xs font-medium">{{ emptyStateKeterangan ?? stateConfig.badgeLabel }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Normal: has schedules -->
+  <div v-else class="min-h-screen bg-gray-50">
     <section class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div class="mx-auto max-w-7xl">
+
         <div class="mb-6 sm:mb-8">
-          <template v-if="presensiStore.loading">
-            <div class="h-8 sm:h-9 w-48 sm:w-64 bg-gray-200 rounded animate-pulse mb-3 sm:mb-4"></div>
-            <div class="space-y-2">
-              <div class="h-5 sm:h-6 w-56 sm:w-72 bg-gray-200 rounded animate-pulse"></div>
-              <div class="h-4 sm:h-5 w-32 sm:w-48 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </template>
-
-          <template v-else-if="schedules.length > 0">
-            <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
-            <div class="text-gray-600">
-              <p class="text-base sm:text-lg">{{ formattedDate }} - {{ formattedTime }}</p>
-              <p class="text-sm sm:text-base">Kelas: {{ kelasName }}</p>
-            </div>
-          </template>
-        </div>
-
-        <div v-if="presensiStore.error && !presensiStore.loading"
-          class="bg-red-50 border border-red-200 rounded-sm p-4 mb-6">
-          <p class="text-red-700 text-sm">{{ presensiStore.error }}</p>
-        </div>
-
-        <div v-if="presensiStore.loading" class="space-y-3 sm:space-y-4 mb-6">
-          <div v-for="i in 5" :key="'skeleton-' + i"
-            class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div class="block sm:hidden space-y-4">
-              <div class="flex items-start justify-between">
-                <div class="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
-                <div class="h-6 w-28 bg-gray-200 rounded-full animate-pulse"></div>
-              </div>
-              <div class="space-y-3">
-                <div class="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
-                <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-              <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
-            </div>
-
-            <div class="hidden sm:flex items-start justify-between">
-              <div class="flex gap-4 lg:gap-6 flex-1">
-                <div class="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
-                <div class="flex-1 space-y-3">
-                  <div class="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
-                  <div class="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
-                  <div class="h-7 w-32 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </div>
-              <div class="h-10 w-28 bg-gray-200 rounded-sm animate-pulse"></div>
-            </div>
+          <h1 class="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Jadwal Hari Ini</h1>
+          <div class="text-gray-600">
+            <p class="text-base sm:text-lg">{{ formattedDate }} - {{ formattedTime }}</p>
+            <p class="text-sm sm:text-base">Kelas: {{ kelasName }}</p>
           </div>
         </div>
 
-        <div v-else-if="schedules.length === 0" class="bg-white rounded-sm border border-gray-200 p-8 text-center">
-          <ClipboardList class="mx-auto h-12 w-12 text-gray-400" />
-          <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada jadwal</h3>
-          <p class="mt-1 text-sm text-gray-500">Tidak ada jadwal untuk hari ini.</p>
-        </div>
-
-        <div v-else class="space-y-3 sm:space-y-4 mb-6">
+        <div class="space-y-3 sm:space-y-4 mb-6">
           <div v-for="schedule in paginatedSchedules" :key="schedule.id"
             class="bg-white rounded-sm shadow-sm border border-gray-200 p-4 sm:p-6">
 
@@ -70,95 +89,71 @@
                 <div class="text-gray-700">
                   <p class="text-base font-medium">{{ schedule.timeRange }}</p>
                   <span v-if="schedule.timeStatus === 'belum_dimulai'"
-                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">
-                    Belum Dimulai
-                  </span>
+                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">Belum Dimulai</span>
                   <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
-                    class="inline-block mt-1 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">
-                    Sedang Berlangsung
-                  </span>
+                    class="inline-block mt-1 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">Sedang
+                    Berlangsung</span>
                   <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
-                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">
-                    Sudah Selesai
-                  </span>
+                    class="inline-block mt-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">Sudah Selesai</span>
                 </div>
-
                 <div>
                   <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
-                    class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded">
-                    Belum Presensi
-                  </span>
+                    class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded">Belum Presensi</span>
                   <span v-else-if="schedule.status === 'Pending'"
                     class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded">
-                    <Clock class="w-3 h-3" />
-                    Pending
+                    <Clock class="w-3 h-3" /> Pending
                   </span>
                   <span v-else-if="schedule.status === 'Approved'"
                     class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-3 py-1 rounded">
-                    <Check class="w-3 h-3" />
-                    Disetujui
+                    <Check class="w-3 h-3" /> Disetujui
                   </span>
                   <span v-else-if="schedule.status === 'Rejected'"
                     class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-3 py-1 rounded">
-                    <X class="w-3 h-3" />
-                    Ditolak
+                    <X class="w-3 h-3" /> Ditolak
                   </span>
                 </div>
               </div>
-
               <div>
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="text-lg font-semibold">{{ schedule.subject }}</h3>
-                </div>
+                <h3 class="text-lg font-semibold mb-2">{{ schedule.subject }}</h3>
                 <div class="flex items-center gap-2 text-gray-600">
                   <User class="w-4 h-4" />
                   <span class="text-sm">{{ schedule.teacher }}</span>
                 </div>
               </div>
-
               <div v-if="schedule.presensi?.catatan" class="text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
                 <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
                 <p>{{ schedule.presensi.catatan }}</p>
               </div>
-
               <div v-if="schedule.status === 'Rejected' && schedule.presensi?.alasan_reject"
                 class="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-sm">
                 <p class="font-medium text-red-700 mb-1">Alasan Penolakan:</p>
                 <p>{{ schedule.presensi.alasan_reject }}</p>
               </div>
-
               <div class="w-full">
                 <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm"
+                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 transition-all shadow-sm"
                   @click="handlePresensi(schedule)">
-                  <Plus class="w-4 h-4" />
-                  Presensi
+                  <Plus class="w-4 h-4" /> Presensi
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
                   class="w-full bg-gray-100 text-gray-500 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed flex items-center justify-center gap-2"
                   disabled>
                   <Clock class="w-4 h-4 text-gray-400" />
-                  {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
+                  {{ getCountdown(schedule.jam_mulai) ?? 'Segera Dimulai' }}
                 </button>
                 <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
                   class="w-full bg-gray-100 text-gray-400 px-4 py-2.5 text-sm font-medium rounded-sm cursor-not-allowed"
-                  disabled>
-                  Sesi Berakhir
-                </button>
-                <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
-                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
-                  isBandingExpired(schedule)
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
-                ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
+                  disabled>Sesi Berakhir</button>
+                <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)"
+                  :class="['w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                    isBandingExpired(schedule) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'text-white bg-orange-500 hover:bg-orange-600']"
+                  @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
                   <RotateCcw class="w-4 h-4" />
                   {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                 </button>
                 <button v-else
                   class="w-full bg-gray-200 text-gray-600 px-4 py-2.5 text-sm font-medium rounded-sm cursor-default"
-                  disabled>
-                  Sudah Presensi
-                </button>
+                  disabled>Sudah Presensi</button>
               </div>
             </div>
 
@@ -169,86 +164,63 @@
                   <div class="text-gray-700 min-w-[120px]">
                     <p class="text-base lg:text-lg font-medium">{{ schedule.timeRange }}</p>
                   </div>
-
                   <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <h3 class="text-base lg:text-lg font-semibold">{{ schedule.subject }}</h3>
-                    </div>
+                    <h3 class="text-base lg:text-lg font-semibold mb-2">{{ schedule.subject }}</h3>
                     <div class="flex items-center gap-2 text-gray-600 mb-3">
                       <User class="w-4 h-4" />
                       <span class="text-sm">{{ schedule.teacher }}</span>
                     </div>
-
                     <div class="mt-3 flex items-center gap-2 flex-wrap">
                       <span v-if="schedule.timeStatus === 'belum_dimulai'"
-                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
-                        Belum Dimulai
-                      </span>
+                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">Belum Dimulai</span>
                       <span v-else-if="schedule.timeStatus === 'sedang_berlangsung'"
-                        class="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">
-                        Sedang Berlangsung
-                      </span>
+                        class="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">Sedang
+                        Berlangsung</span>
                       <span v-else-if="schedule.timeStatus === 'sudah_selesai'"
-                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">
-                        Sudah Selesai
-                      </span>
-
+                        class="inline-block bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded">Sudah Selesai</span>
                       <span v-if="schedule.status === 'belum' && schedule.timeStatus !== 'belum_dimulai'"
-                        class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">
-                        Belum Presensi
-                      </span>
+                        class="inline-block bg-amber-100 text-amber-700 text-sm px-4 py-1 rounded">Belum Presensi</span>
                       <span v-else-if="schedule.status === 'Pending'"
                         class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-sm px-4 py-1 rounded">
-                        <Clock class="w-4 h-4" />
-                        Pending
+                        <Clock class="w-4 h-4" /> Pending
                       </span>
                       <span v-else-if="schedule.status === 'Approved'"
                         class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm px-4 py-1 rounded">
-                        <Check class="w-4 h-4" />
-                        Disetujui
+                        <Check class="w-4 h-4" /> Disetujui
                       </span>
                       <span v-else-if="schedule.status === 'Rejected'"
                         class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-sm px-4 py-1 rounded">
-                        <X class="w-4 h-4" />
-                        Ditolak
+                        <X class="w-4 h-4" /> Ditolak
                       </span>
                     </div>
                   </div>
                 </div>
-
                 <div class="flex-shrink-0">
                   <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
-                    class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md"
+                    class="flex items-center gap-2 px-4 lg:px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
                     @click="handlePresensi(schedule)">
-                    <Plus class="w-4 lg:w-5 h-4 lg:h-5" />
-                    Presensi
+                    <Plus class="w-4 lg:w-5 h-4 lg:h-5" /> Presensi
                   </button>
                   <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
                     class="bg-gray-100 text-gray-500 px-4 lg:px-5 py-2 text-sm rounded-sm cursor-not-allowed flex items-center gap-2"
                     disabled>
                     <Clock class="w-4 h-4 text-gray-400" />
-                    {{ getCountdown(schedule.jam_mulai) ? `${getCountdown(schedule.jam_mulai)}` : 'Segera Dimulai' }}
+                    {{ getCountdown(schedule.jam_mulai) ?? 'Segera Dimulai' }}
                   </button>
                   <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
-                    class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed" disabled>
-                    Sesi Berakhir
-                  </button>
-                  <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)" :class="[
-                    'flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-sm transition-all shadow-sm',
-                    isBandingExpired(schedule)
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'text-white bg-orange-500 hover:bg-orange-600 focus:outline-none hover:shadow-md'
-                  ]" @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
+                    class="bg-gray-100 text-gray-400 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-not-allowed"
+                    disabled>Sesi Berakhir</button>
+                  <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)"
+                    :class="['flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-sm transition-all shadow-sm',
+                      isBandingExpired(schedule) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'text-white bg-orange-500 hover:bg-orange-600']"
+                    @click="!isBandingExpired(schedule) && handleResubmit(schedule)">
                     <RotateCcw class="w-4 h-4" />
                     {{ isBandingExpired(schedule) ? 'Banding Kedaluwarsa' : 'Kirim Ulang' }}
                   </button>
                   <button v-else class="bg-gray-200 text-gray-600 px-4 lg:px-6 py-2 text-sm rounded-sm cursor-default"
-                    disabled>
-                    Sudah Presensi
-                  </button>
+                    disabled>Sudah Presensi</button>
                 </div>
               </div>
-
               <div v-if="schedule.presensi?.catatan"
                 class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm ml-[144px]">
                 <p class="font-medium text-gray-700 mb-1">Keterangan:</p>
@@ -260,65 +232,49 @@
                 <p>{{ schedule.presensi.alasan_reject }}</p>
               </div>
             </div>
-
           </div>
         </div>
 
-        <template v-if="presensiStore.loading">
-          <div class="mb-6 bg-gray-200 h-16 sm:h-14 rounded-sm animate-pulse"></div>
-        </template>
-        <div v-else-if="schedules.length > 0"
-          class="mb-6 flex items-start gap-2 sm:gap-3 text-gray-600 bg-blue-50 p-3 sm:p-4 rounded-sm">
+        <div class="mb-6 flex items-start gap-2 sm:gap-3 text-gray-600 bg-blue-50 p-3 sm:p-4 rounded-sm">
           <Info class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-blue-600 flex-shrink-0" />
           <p class="text-xs sm:text-sm">
             Tombol <strong>'Presensi'</strong> hanya aktif saat jam pelajaran sedang berlangsung.
           </p>
         </div>
 
-        <div v-if="totalPages > 1 && !presensiStore.loading"
-          class="bg-white rounded-sm border border-gray-200 px-3 sm:px-4 py-3">
+        <div v-if="totalPages > 1" class="bg-white rounded-sm border border-gray-200 px-3 sm:px-4 py-3">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 Previous
               </button>
-              <span class="inline-flex items-center text-xs text-gray-700">
-                {{ currentPage }} / {{ totalPages }}
-              </span>
+              <span class="inline-flex items-center text-xs text-gray-700">{{ currentPage }} / {{ totalPages }}</span>
               <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 Next
               </button>
             </div>
-
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700">
-                  Halaman <span class="font-medium">{{ currentPage }}</span> dari <span class="font-medium">{{
-                    totalPages }}</span>
-                </p>
-              </div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <ChevronLeft class="h-5 w-5" />
-                  </button>
-                  <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
-                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                    page === currentPage
-                      ? 'border-blue-500 bg-blue-50 text-blue-600 z-10'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  ]">
-                    {{ page }}
-                  </button>
-                  <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <ChevronRight class="h-5 w-5" />
-                  </button>
-                </nav>
-              </div>
+              <p class="text-sm text-gray-700">
+                Halaman <span class="font-medium">{{ currentPage }}</span> dari
+                <span class="font-medium">{{ totalPages }}</span>
+              </p>
+              <nav class="inline-flex rounded-md shadow-sm -space-x-px">
+                <button @click="previousPage" :disabled="currentPage === 1"
+                  class="inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <ChevronLeft class="h-5 w-5" />
+                </button>
+                <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+                  :class="['inline-flex items-center px-4 py-2 border text-sm font-medium',
+                    page === currentPage ? 'border-blue-500 bg-blue-50 text-blue-600 z-10' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50']">
+                  {{ page }}
+                </button>
+                <button @click="nextPage" :disabled="currentPage === totalPages"
+                  class="inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <ChevronRight class="h-5 w-5" />
+                </button>
+              </nav>
             </div>
           </div>
         </div>
@@ -330,7 +286,11 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ChevronRight, ChevronLeft, Clock, Check, X, User, Plus, RotateCcw, Info, ClipboardList } from 'lucide-vue-next'
+import {
+  ChevronRight, ChevronLeft, Clock, Check, X, User,
+  Plus, RotateCcw, Info, CalendarOff, Coffee,
+  CalendarX, UsersRound
+} from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
 import { useAuthStore } from '~/stores/auth'
 
@@ -340,26 +300,69 @@ const router = useRouter()
 
 const currentPage = ref(1)
 const itemsPerPage = 10
-
 const now = ref(new Date())
 let clockInterval = null
 
-const schedules = computed(() => {
-  return presensiStore.jadwalHariIni || []
-})
-
-const kelasName = computed(() => {
-  const jadwalData = presensiStore.jadwalHariIniResponse
-  if (jadwalData?.kelas) {
-    return jadwalData.kelas.name
+// ─── Empty state config map ───────────────────────────────────
+const STATE_CONFIGS = {
+  weekend: {
+    icon: Coffee,
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-500',
+    ringClass: 'bg-violet-50',
+    dotColor: 'bg-violet-400',
+    badgeClass: 'bg-violet-50 border-violet-200 text-violet-600',
+    title: 'Selamat Beristirahat',
+    description: 'Tidak ada kegiatan belajar mengajar hari ini. Manfaatkan akhir pekan untuk istirahat.',
+    badgeLabel: 'Sabtu / Minggu'
+  },
+  libur: {
+    icon: CalendarOff,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-500',
+    ringClass: 'bg-emerald-50',
+    dotColor: 'bg-emerald-400',
+    badgeClass: 'bg-emerald-50 border-emerald-200 text-emerald-600',
+    title: 'Hari Libur',
+    description: 'Tidak ada kegiatan belajar mengajar hari ini sesuai kalender akademik.',
+    badgeLabel: 'Libur Akademik'
+  },
+  kegiatan: {
+    icon: UsersRound,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-500',
+    ringClass: 'bg-amber-50',
+    dotColor: 'bg-amber-400',
+    badgeClass: 'bg-amber-50 border-amber-200 text-amber-600',
+    title: 'Presensi Ditangguhkan',
+    description: 'Presensi tidak dapat dilakukan saat ini karena terdapat kegiatan yang sedang berlangsung.',
+    badgeLabel: 'Sedang Ada Kegiatan'
+  },
+  kosong: {
+    icon: CalendarX,
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-500',
+    ringClass: 'bg-blue-50',
+    dotColor: 'bg-blue-400',
+    badgeClass: 'bg-blue-50 border-blue-200 text-blue-600',
+    title: 'Tidak Ada Jadwal',
+    description: 'Tidak ada jadwal pelajaran yang terdaftar untuk kelas Anda pada hari ini.',
+    badgeLabel: 'Tidak Ada Jadwal'
   }
-  return authStore.user?.kelas?.name || 'N/A'
-})
+}
 
-const formattedDate = computed(() => {
-  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-  return new Date().toLocaleDateString('id-ID', options)
-})
+// ─── Computed ────────────────────────────────────────────────
+const schedules = computed(() => presensiStore.jadwalHariIni || [])
+
+const kelasName = computed(() =>
+  presensiStore.jadwalHariIniResponse?.kelas?.name ?? authStore.user?.kelas?.name ?? 'N/A'
+)
+
+const formattedDate = computed(() =>
+  new Date().toLocaleDateString('id-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+)
 
 const formattedTime = computed(() => {
   const h = String(now.value.getHours()).padStart(2, '0')
@@ -367,14 +370,27 @@ const formattedTime = computed(() => {
   return `${h}:${m}`
 })
 
-const totalPages = computed(() => {
-  return Math.ceil(schedules.value.length / itemsPerPage)
+const emptyStateType = computed(() => {
+  const msg = (presensiStore.error || '').toLowerCase()
+  if (msg.includes('weekend') || msg.includes('sabtu') || msg.includes('minggu')) return 'weekend'
+  if (msg.includes('tidak tersedia saat ini')) return 'kegiatan'
+  if (msg.includes('tidak ada kbm')) return 'libur'
+  return 'kosong'
 })
+
+// Ambil keterangan dari "(…)" dalam pesan error, misal "(Rapat Guru)" → "Rapat Guru"
+const emptyStateKeterangan = computed(() => {
+  const match = (presensiStore.error || '').match(/\(([^)]+)\)/)
+  return match ? match[1] : null
+})
+
+const stateConfig = computed(() => STATE_CONFIGS[emptyStateType.value])
+
+const totalPages = computed(() => Math.ceil(schedules.value.length / itemsPerPage))
 
 const paginatedSchedules = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return schedules.value.slice(start, end)
+  return schedules.value.slice(start, start + itemsPerPage)
 })
 
 const visiblePages = computed(() => {
@@ -382,22 +398,18 @@ const visiblePages = computed(() => {
   const maxVisible = 3
   let start = Math.max(1, currentPage.value - 1)
   let end = Math.min(totalPages.value, start + maxVisible - 1)
-  if (end - start < maxVisible - 1) {
-    start = Math.max(1, end - maxVisible + 1)
-  }
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
+  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1)
+  for (let i = start; i <= end; i++) pages.push(i)
   return pages
 })
 
+// ─── Methods ─────────────────────────────────────────────────
 const getCountdown = (jamMulai) => {
   if (!jamMulai) return null
   const [h, m, s] = jamMulai.split(':').map(Number)
-  const nowTime = now.value
-  const target = new Date(nowTime)
+  const target = new Date(now.value)
   target.setHours(h, m, s || 0, 0)
-  const diff = target - nowTime
+  const diff = target - now.value
   if (diff <= 0) return null
   const hh = Math.floor(diff / 3600000)
   const mm = Math.floor((diff % 3600000) / 60000)
@@ -406,58 +418,31 @@ const getCountdown = (jamMulai) => {
   return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
 }
 
-const fetchJadwal = async () => {
-  await presensiStore.getJadwalHariIni()
-}
-
 const handlePresensi = (schedule) => {
   if (schedule.timeStatus !== 'sedang_berlangsung') return
-  router.push({
-    path: '/presensi/create',
-    query: { jadwalId: schedule.id }
-  })
+  router.push({ path: '/presensi/create', query: { jadwalId: schedule.id } })
 }
 
 const handleResubmit = (schedule) => {
   const pid = schedule.presensi?.id ?? schedule.presensi?.id_presensi ?? null
-
-  if (!pid) {
-    console.warn('[handleResubmit] presensiId tidak ditemukan di schedule.presensi:', schedule.presensi)
-    return
-  }
-
-  router.push({
-    path: '/presensi/create',
-    query: {
-      jadwalId: schedule.id,
-      presensiId: pid,
-      mode: 'resubmit'
-    }
-  })
-}
-
-const previousPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const goToPage = (page) => {
-  currentPage.value = page
+  if (!pid) { console.warn('[handleResubmit] presensiId tidak ditemukan:', schedule.presensi); return }
+  router.push({ path: '/presensi/create', query: { jadwalId: schedule.id, presensiId: pid, mode: 'resubmit' } })
 }
 
 const isBandingExpired = (schedule) => {
   if (schedule.status !== 'Rejected') return false
   const rejectedAt = schedule.presensi?.rejected_at
   if (!rejectedAt) return false
-  const diff = (now.value - new Date(rejectedAt)) / (1000 * 60 * 60)
-  return diff > 24
+  return (now.value - new Date(rejectedAt)) / (1000 * 60 * 60) > 24
 }
 
+const previousPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const goToPage = (page) => { currentPage.value = page }
+
+// ─── Lifecycle ───────────────────────────────────────────────
 onMounted(async () => {
-  await fetchJadwal()
+  await presensiStore.getJadwalHariIni()
 
   const serverTime = presensiStore.jadwalHariIniResponse?.serverTime
   if (serverTime) {
