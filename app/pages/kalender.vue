@@ -8,17 +8,17 @@
     <div class="max-w-screen-lg mx-auto px-1 sm:px-4 lg:px-2 py-1 lg:py-1 flex flex-col lg:flex-row gap-4">
 
       <div class="flex-1 min-w-0">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
 
           <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
             <div class="flex items-center gap-1 flex-shrink-0">
               <h2 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight mr-1">
                 {{ monthName }} {{ currentYear }}
               </h2>
-              <button @click="prevMonth" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <button @click="prevMonth" class="p-1.5 rounded-sm hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                 <ChevronLeft class="h-4 w-4" />
               </button>
-              <button @click="nextMonth" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <button @click="nextMonth" class="p-1.5 rounded-sm hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                 <ChevronRight class="h-4 w-4" />
               </button>
             </div>
@@ -126,7 +126,7 @@
 
       <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-3 sm:space-y-4">
 
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700 truncate pr-2">
               {{ selectedDate ? formatDateLabel(selectedDate) : 'Pilih tanggal' }}
@@ -172,10 +172,10 @@
                   <p v-if="event.description" class="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">{{ event.description }}</p>
                 </div>
                 <div class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                  <button @click="openEditModal(event)" class="p-1.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors">
+                  <button @click="openEditModal(event)" class="p-1.5 rounded-sm hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors">
                     <Pencil class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   </button>
-                  <button @click="confirmDelete(event)" class="p-1.5 rounded-md hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors">
+                  <button @click="confirmDelete(event)" class="p-1.5 rounded-sm hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors">
                     <Trash2 class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   </button>
                 </div>
@@ -185,7 +185,7 @@
         </div>
 
         <!-- Upcoming Events -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700">Kegiatan Mendatang</h3>
           </div>
@@ -198,7 +198,7 @@
                 v-for="event in upcomingEvents"
                 :key="event.id"
                 @click="jumpToEvent(event)"
-                class="flex-shrink-0 w-36 bg-slate-50 rounded-lg p-2.5 cursor-pointer hover:bg-blue-50 transition-colors border border-slate-100"
+                class="flex-shrink-0 w-36 bg-slate-50 rounded-sm p-2.5 cursor-pointer hover:bg-blue-50 transition-colors border border-slate-100"
               >
                 <div class="flex items-center gap-1.5 mb-1.5">
                   <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="eventDotClass(event.category)"></span>
@@ -214,7 +214,7 @@
                 class="flex px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer items-start gap-3"
                 @click="jumpToEvent(event)"
               >
-                <div class="flex-shrink-0 text-center bg-slate-100 rounded-lg px-2 py-1 min-w-[38px]">
+                <div class="flex-shrink-0 text-center bg-slate-100 rounded-sm px-2 py-1 min-w-[38px]">
                   <p class="text-xs font-bold text-slate-700 leading-none">{{ formatDayNum(event.date) }}</p>
                   <p class="text-[10px] text-slate-400 uppercase mt-0.5">{{ formatMonthShort(event.date) }}</p>
                 </div>
@@ -231,7 +231,7 @@
 
         <!-- <button
           @click="openAddModal"
-          class="lg:hidden w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-sm transition-all duration-150"
+          class="lg:hidden w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-3 rounded-sm shadow-sm transition-all duration-150"
         >
           <Plus class="h-4 w-4" />
           Tambah Kegiatan
@@ -244,13 +244,13 @@
       <Transition name="modal">
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeModal"></div>
-          <div class="relative bg-white w-full sm:max-w-md z-10 overflow-hidden rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] flex flex-col">
+          <div class="relative bg-white w-full sm:max-w-md z-10 overflow-hidden rounded-t-sm sm:rounded-sm shadow-2xl max-h-[92vh] flex flex-col">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
               <div class="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-200 rounded-full sm:hidden"></div>
               <h3 class="text-sm sm:text-base font-bold text-slate-800 mt-2 sm:mt-0">
                 {{ editingEvent ? 'Edit Kegiatan' : 'Tambah Kegiatan' }}
               </h3>
-              <button @click="closeModal" class="p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors mt-2 sm:mt-0">
+              <button @click="closeModal" class="p-1.5 sm:p-2 rounded-sm hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors mt-2 sm:mt-0">
                 <X class="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
@@ -258,7 +258,7 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Kegiatan <span class="text-red-500">*</span></label>
                 <input v-model="form.title" type="text" placeholder="Contoh: Ujian Tengah Semester"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   :class="formErrors.title ? 'border-red-400 focus:ring-red-400' : ''" />
                 <p v-if="formErrors.title" class="text-xs text-red-500 mt-1">{{ formErrors.title }}</p>
               </div>
@@ -266,26 +266,26 @@
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Mulai <span class="text-red-500">*</span></label>
                   <input v-model="form.date" type="date"
-                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     :class="formErrors.date ? 'border-red-400 focus:ring-red-400' : ''" />
                   <p v-if="formErrors.date" class="text-xs text-red-500 mt-1">{{ formErrors.date }}</p>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Selesai</label>
                   <input v-model="form.endDate" type="date"
-                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jam Mulai</label>
                   <input v-model="form.jamMulai" type="time"
-                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jam Berakhir</label>
                   <input v-model="form.jamBerakhir" type="time"
-                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                    class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                 </div>
               </div>
 
@@ -293,7 +293,7 @@
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kategori <span class="text-red-500">*</span></label>
                 <div class="relative">
                   <select v-model="form.category"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition"
                     :class="formErrors.category ? 'border-red-400 focus:ring-red-400' : ''">
                     <option value="">Pilih kategori</option>
                     <option v-for="cat in categories" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
@@ -305,13 +305,13 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Keterangan</label>
                 <textarea v-model="form.description" rows="3" placeholder="Tambahkan keterangan kegiatan (opsional)..."
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"></textarea>
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"></textarea>
               </div>
             </div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 flex gap-3 flex-shrink-0">
               <p v-if="formErrors.api" class="w-full text-xs text-red-500 text-center -mt-2 pb-1">{{ formErrors.api }}</p>
-              <button @click="closeModal" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Batal</button>
-              <button @click="saveEvent" :disabled="loadingSubmit" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors shadow-sm">
+              <button @click="closeModal" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-sm transition-colors">Batal</button>
+              <button @click="saveEvent" :disabled="loadingSubmit" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-sm transition-colors shadow-sm">
                 <span v-if="loadingSubmit">Menyimpan...</span>
                 <span v-else>{{ editingEvent ? 'Simpan' : 'Tambah' }}</span>
               </button>
@@ -326,7 +326,7 @@
       <Transition name="modal">
         <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="() => { showDeleteConfirm = false; deleteError = null }"></div>  <!-- ✅ DIUPDATE: reset error saat tutup -->
-          <div class="relative bg-white w-full sm:max-w-sm z-10 p-6 text-center rounded-t-2xl sm:rounded-2xl shadow-2xl">
+          <div class="relative bg-white w-full sm:max-w-sm z-10 p-6 text-center rounded-t-sm sm:rounded-sm shadow-2xl">
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
               <Trash2 class="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
             </div>
@@ -339,14 +339,14 @@
               <button
                 @click="showDeleteConfirm = false"
                 :disabled="loadingDelete"
-                class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-lg transition-colors"
+                class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-sm transition-colors"
               >
                 Batal
               </button>
               <button
                 @click="deleteEvent"
                 :disabled="loadingDelete"
-                class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors"
+                class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-sm transition-colors"
               >
                 <span v-if="loadingDelete">Menghapus...</span>
                 <span v-else>Hapus</span>
