@@ -1,6 +1,9 @@
 // stores/auth.js
 import { defineStore } from 'pinia'
 
+const getErrorStatus = (error) =>
+    error?.status || error?.statusCode || error?.response?.status
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         user: null,
@@ -41,10 +44,7 @@ export const useAuthStore = defineStore('auth', {
             const config = useRuntimeConfig()
 
             try {
-                let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                const token = process.client ? localStorage.getItem('token') : null
 
                 const response = await $fetch('/auth/me', {
                     method: 'GET',
@@ -55,7 +55,6 @@ export const useAuthStore = defineStore('auth', {
                 })
 
                 const userData = response.user ?? response
-
                 this.user = userData
 
                 if (process.client) {
@@ -64,7 +63,8 @@ export const useAuthStore = defineStore('auth', {
 
                 return { success: true, user: userData }
             } catch (error) {
-                if (error.status === 401 || error.status === 403) {
+                const status = getErrorStatus(error)
+                if (status === 401 || status === 403) {
                     this.logout()
                     return { success: false, shouldLogout: true }
                 }
@@ -80,10 +80,7 @@ export const useAuthStore = defineStore('auth', {
             const config = useRuntimeConfig()
 
             try {
-                let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                const token = process.client ? localStorage.getItem('token') : null
 
                 const body = { name: payload.name.trim() }
                 if (payload.password?.trim()) {
@@ -107,7 +104,8 @@ export const useAuthStore = defineStore('auth', {
 
                 return { success: true, user: this.user }
             } catch (error) {
-                if (error.status === 401 || error.status === 403) {
+                const status = getErrorStatus(error)
+                if (status === 401 || status === 403) {
                     this.logout()
                     return { success: false, shouldLogout: true }
                 }
@@ -123,10 +121,7 @@ export const useAuthStore = defineStore('auth', {
             const config = useRuntimeConfig()
 
             try {
-                let token = null
-                if (process.client) {
-                    token = localStorage.getItem('token')
-                }
+                const token = process.client ? localStorage.getItem('token') : null
 
                 const response = await $fetch(`/kelas/${id_kelas}`, {
                     method: 'GET',
@@ -140,6 +135,12 @@ export const useAuthStore = defineStore('auth', {
 
                 return { success: true, data: response }
             } catch (error) {
+                const status = getErrorStatus(error)
+                if (status === 401 || status === 403) {
+                    this.logout()
+                    return { success: false, shouldLogout: true }
+                }
+
                 this.user = { ...this.user, kelas: null }
                 return { success: false, message: error.data?.message }
             }
@@ -162,7 +163,6 @@ export const useAuthStore = defineStore('auth', {
                 })
 
                 const userData = response.user ?? response
-
                 this.user = userData
 
                 if (process.client) {
@@ -171,7 +171,8 @@ export const useAuthStore = defineStore('auth', {
 
                 return { success: true, user: userData }
             } catch (error) {
-                if (error.status === 401 || error.status === 403) {
+                const status = getErrorStatus(error)
+                if (status === 401 || status === 403) {
                     this.logout()
                     return { success: false, shouldLogout: true }
                 }
