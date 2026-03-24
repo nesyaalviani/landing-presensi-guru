@@ -42,17 +42,14 @@
             </div>
           </div>
 
-          <!-- ✅ Loading skeleton kalender grid -->
+          <!-- Loading skeleton kalender grid -->
           <div v-if="loadingFetch">
             <div v-for="week in 6" :key="'skel-week-' + week" class="grid grid-cols-7">
               <div v-for="cell in 7" :key="'skel-cell-' + cell"
                 class="min-h-[56px] sm:min-h-[70px] lg:min-h-[75px] p-1 sm:p-1.5 lg:p-2 border-b border-r border-slate-100"
                 :class="cell === 7 ? 'border-r-0' : ''">
-                <!-- Tanggal -->
                 <div class="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 bg-gray-200 rounded-full animate-pulse mb-1 sm:mb-1.5">
                 </div>
-
-                <!-- Event bar placeholder (hanya tampil di sm ke atas) -->
                 <div class="hidden sm:flex flex-col gap-1">
                   <div v-if="(week + cell) % 3 === 0"
                     class="h-4 sm:h-[18px] w-full bg-gray-200 rounded-full animate-pulse"></div>
@@ -92,6 +89,7 @@
                     </span>
                   </div>
 
+                  <!-- Desktop: chip events -->
                   <div v-if="cell.date && cell.isCurrentMonth" class="hidden sm:block space-y-0.5 lg:space-y-1">
                     <div v-for="_ in getSpanBarCountForCell(cell.date, wIdx)" :key="_" class="h-[20px]"></div>
                     <div v-for="(event, eIdx) in getSingleDayEventsForDate(cell.date).slice(0, 2)" :key="eIdx"
@@ -107,16 +105,28 @@
                       +{{ getSingleDayEventsForDate(cell.date).length - 2 }} lagi
                     </div>
                   </div>
+
+                  <!-- Mobile: placeholder baris + dot indicator -->
+                  <div v-if="cell.date && cell.isCurrentMonth" class="sm:hidden">
+                    <div v-for="_ in getSpanBarCountForCell(cell.date, wIdx)" :key="'ph-' + _" class="h-[14px]"></div>
+                    <div v-if="getSingleDayEventsForDate(cell.date).length > 0" class="flex flex-wrap gap-0.5 mt-0.5">
+                      <span v-for="(ev, i) in getSingleDayEventsForDate(cell.date).slice(0, 3)" :key="i"
+                        class="w-1 h-1 rounded-full flex-shrink-0" :class="eventDotClass(ev.category)"></span>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
+             <!-- Span bar layer -->
               <div class="bar-layer absolute inset-x-0 pointer-events-none">
                 <div v-for="(bar, bIdx) in getSpanBarsForWeek(wIdx)" :key="bIdx"
-                  class="absolute flex items-center overflow-visible pointer-events-auto cursor-pointer hover:opacity-80 transition-opacity"
+                  class="absolute flex items-center overflow-hidden pointer-events-auto cursor-pointer hover:opacity-80 transition-opacity"
                   :style="{ ...getBarStyle(bar), backgroundColor: barColorMap[bar.event.category] || '#e2e8f0' }"
                   @click.stop="selectEventFromCalendar(bar.event)">
-                  <span
-                    class="whitespace-nowrap font-semibold leading-none px-1 text-[8px] sm:px-1.5 sm:text-[10px] lg:text-xs"
+                  <span class="flex-shrink-0 w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ml-1 sm:ml-1.5"
+                    :class="eventDotClass(bar.event.category)"></span>
+                  <span class="truncate font-semibold leading-none px-1 text-[8px] sm:px-1.5 sm:text-[10px] lg:text-xs"
                     :class="getBarTextClass(bar.event.category)">
                     {{ bar.event.title }}
                   </span>
@@ -143,7 +153,6 @@
             </button>
           </div>
 
-          <!-- ✅ Loading spinner panel tanggal -->
           <div v-if="loadingFetch" class="flex items-center justify-center gap-2 px-4 py-8">
             <span
               class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
@@ -202,7 +211,6 @@
             <h3 class="text-xs sm:text-sm font-bold text-slate-700">Kegiatan Mendatang</h3>
           </div>
 
-          <!-- ✅ Loading spinner kegiatan mendatang -->
           <div v-if="loadingFetch" class="flex items-center justify-center gap-2 px-4 py-8">
             <span
               class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
@@ -383,8 +391,6 @@ import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, Chevr
 
 // ── Auth ─────────────────────────────────────────────────
 const authStore = useAuthStore()
-
-// ✅ KM tidak bisa tambah / edit / delete
 const isKM = computed(() => authStore.user?.role === 'km')
 
 // ── Kalender state ────────────────────────────────────────
@@ -678,7 +684,7 @@ const validateForm = () => {
 }
 
 const saveEvent = async () => {
-  if (isKM.value) return  // ✅ guard ekstra
+  if (isKM.value) return
   if (!validateForm()) return
   loadingSubmit.value = true
 
@@ -733,14 +739,14 @@ const saveEvent = async () => {
 
 // ── Delete ────────────────────────────────────────────────
 const confirmDelete = (event) => {
-  if (isKM.value) return  // ✅ guard ekstra
+  if (isKM.value) return
   deletingEvent.value = event
   deleteError.value = null
   showDeleteConfirm.value = true
 }
 
 const deleteEvent = async () => {
-  if (isKM.value) return  // ✅ guard ekstra
+  if (isKM.value) return
   if (!deletingEvent.value) return
   loadingDelete.value = true
   deleteError.value = null
@@ -799,11 +805,13 @@ const deleteEvent = async () => {
   }
 }
 
+/* ✅ FIX: CSS variables untuk bar sekarang didefinisikan dari mobile-first */
 .bar-layer {
   top: 0;
-  --bar-offset: 26px;
-  --bar-h: 14px;
-  --bar-row-h: 16px;
+  /* Mobile */
+  --bar-offset: 22px;
+  --bar-h: 10px;
+  --bar-row-h: 13px;
 }
 
 @media (min-width: 640px) {
