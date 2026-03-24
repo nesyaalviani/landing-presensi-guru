@@ -74,7 +74,7 @@
             <h2 class="text-sm font-semibold text-gray-900">Kehadiran Guru Hari Ini</h2>
             <p class="text-xs text-gray-400 mt-0.5">Berdasarkan presensi yang sudah disetujui</p>
           </div>
-          <NuxtLink to="/presensi"
+          <NuxtLink to="/approval"
             class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:text-blue-700 flex-shrink-0">
             Kelola
             <ChevronRight class="h-3.5 w-3.5" />
