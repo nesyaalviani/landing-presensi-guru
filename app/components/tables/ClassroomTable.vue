@@ -10,31 +10,83 @@
                             @input="onSearchInput" />
                     </div>
 
-                    <div class="relative w-full sm:w-50">
-                        <select v-model="jurusanFilter"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8"
-                            @change="onFilterChange">
-                            <option :value="null">Semua Jurusan</option>
-                            <option v-for="j in jurusanList" :key="j.id" :value="j.id">
-                                {{ j.nama_jurusan }}
-                            </option>
-                        </select>
-                        <ChevronDown
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <!-- Dropdown Jurusan -->
+                    <div class="relative w-full sm:w-50" ref="jurusanDropdownRef">
+                        <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors"
+                            :class="jurusanDropdownOpen ? 'border-blue-400' : 'border-gray-500'">
+                            <input type="text" readonly :placeholder="selectedJurusanName || 'Semua Jurusan'" :class="[
+                                'flex-1 min-w-0 pl-3 pr-2 py-2 text-sm outline-none bg-transparent cursor-pointer',
+                                jurusanFilter ? 'text-gray-900 placeholder-gray-900' : 'text-gray-400 placeholder-gray-400'
+                            ]" @click.stop="toggleJurusanDropdown" />
+                            <button type="button" @click.stop="toggleJurusanDropdown"
+                                class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                                <ChevronDown class="h-3.5 w-3.5 transition-transform duration-200"
+                                    :class="{ 'rotate-180': jurusanDropdownOpen }" />
+                            </button>
+                        </div>
+
+                        <Transition enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                            <div v-if="jurusanDropdownOpen"
+                                class="absolute z-[10] mt-1 w-full bg-white border border-gray-200 rounded-sm shadow-lg">
+                                <ul class="jurusan-scroll max-h-48 overflow-y-auto py-1">
+                                    <li v-for="j in jurusanList" :key="j.id" @mousedown.prevent="selectJurusan(j)"
+                                        class="px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2"
+                                        :class="jurusanFilter === j.id
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-700 hover:bg-gray-50'">
+                                        <span class="flex-1">{{ j.nama_jurusan }}</span>
+                                        <Check v-if="jurusanFilter === j.id"
+                                            class="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                    </li>
+                                </ul>
+                            </div>
+                        </Transition>
                     </div>
 
-                    <div class="relative w-full sm:w-32">
-                        <select v-model="tingkatFilter"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8"
-                            @change="onFilterChange">
-                            <option :value="null">Tingkat</option>
-                            <option value="X">X</option>
-                            <option value="XI">XI</option>
-                            <option value="XII">XII</option>
-                        </select>
-                        <ChevronDown
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <!-- Dropdown Tingkat -->
+                    <div class="relative w-full sm:w-32" ref="tingkatDropdownRef">
+                        <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors"
+                            :class="tingkatDropdownOpen ? 'border-blue-400' : 'border-gray-500'">
+                            <input type="text" readonly :placeholder="tingkatFilter || 'Tingkat'" :class="[
+                                'flex-1 min-w-0 pl-3 pr-2 py-2 text-sm outline-none bg-transparent cursor-pointer',
+                                tingkatFilter ? 'text-gray-900 placeholder-gray-900' : 'text-gray-400 placeholder-gray-400'
+                            ]" @click.stop="toggleTingkatDropdown" />
+                            <button type="button" @click.stop="toggleTingkatDropdown"
+                                class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                                <ChevronDown class="h-3.5 w-3.5 transition-transform duration-200"
+                                    :class="{ 'rotate-180': tingkatDropdownOpen }" />
+                            </button>
+                        </div>
+
+                        <Transition enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                            <div v-if="tingkatDropdownOpen"
+                                class="absolute z-[10] mt-1 w-full bg-white border border-gray-200 rounded-sm shadow-lg">
+                                <ul class="tingkat-scroll max-h-48 overflow-y-auto py-1">
+                                    <li v-for="t in tingkatOptions" :key="t" @mousedown.prevent="selectTingkat(t)"
+                                        class="px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2"
+                                        :class="tingkatFilter === t
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-700 hover:bg-gray-50'">
+                                        <span class="flex-1">{{ t }}</span>
+                                        <Check v-if="tingkatFilter === t"
+                                            class="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                    </li>
+                                </ul>
+                            </div>
+                        </Transition>
                     </div>
+
+                    <!-- 1 tombol hapus filter -->
+                    <button v-if="jurusanFilter || tingkatFilter" type="button" @click="clearAllFilters"
+                        class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors self-center">
+                        Hapus Filter
+                    </button>
                 </div>
 
                 <div class="flex items-center w-full sm:w-auto">
@@ -46,7 +98,7 @@
                 </div>
             </div>
 
-             <div class="mb-3">
+            <div class="mb-3">
                 <AppAlert :type="alertType" :message="alertMessage" :on-close="clearAlert" />
             </div>
 
@@ -211,14 +263,14 @@
                 </div>
             </Transition>
         </Teleport>
-        
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical } from 'lucide-vue-next'
+import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical, Check } from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -259,6 +311,17 @@ const visiblePages = computed(() => {
     return pages
 })
 
+// ===================== Jurusan dropdown =====================
+const jurusanDropdownOpen = ref(false)
+const jurusanDropdownRef = ref(null)
+const selectedJurusanName = ref('')
+
+const tingkatOptions = ['X', 'XI', 'XII']
+
+// ===================== Tingkat dropdown =====================
+const tingkatDropdownOpen = ref(false)
+const tingkatDropdownRef = ref(null)
+
 const fetchClassrooms = () => {
     classroomsStore.getClassrooms({
         search: searchQuery.value || undefined,
@@ -288,6 +351,60 @@ const goToPage = (page) => {
     fetchClassrooms()
 }
 
+// ===================== Jurusan handlers =====================
+const toggleJurusanDropdown = () => {
+    jurusanDropdownOpen.value = !jurusanDropdownOpen.value
+}
+
+const selectJurusan = (j) => {
+    jurusanFilter.value = j.id
+    selectedJurusanName.value = j.nama_jurusan
+    jurusanDropdownOpen.value = false
+    onFilterChange()
+}
+
+const clearJurusanFilter = () => {
+    jurusanFilter.value = null
+    selectedJurusanName.value = ''
+    jurusanDropdownOpen.value = false
+}
+
+const handleJurusanClickOutside = (event) => {
+    if (jurusanDropdownRef.value && !jurusanDropdownRef.value.contains(event.target)) {
+        jurusanDropdownOpen.value = false
+    }
+}
+
+// ===================== Tingkat handlers =====================
+const toggleTingkatDropdown = () => {
+    tingkatDropdownOpen.value = !tingkatDropdownOpen.value
+}
+
+const selectTingkat = (t) => {
+    tingkatFilter.value = t
+    tingkatDropdownOpen.value = false
+    onFilterChange()
+}
+
+const clearTingkatFilter = () => {
+    tingkatFilter.value = null
+    tingkatDropdownOpen.value = false
+}
+
+const handleTingkatClickOutside = (event) => {
+    if (tingkatDropdownRef.value && !tingkatDropdownRef.value.contains(event.target)) {
+        tingkatDropdownOpen.value = false
+    }
+}
+
+// ===================== Clear all filters =====================
+const clearAllFilters = () => {
+    clearJurusanFilter()
+    clearTingkatFilter()
+    onFilterChange()
+}
+
+// ===================== Action dropdown =====================
 const setButtonRef = (el, id) => {
     if (el) buttonRefs.value[id] = el
 }
@@ -301,14 +418,11 @@ const calculateDropdownPosition = (buttonEl) => {
     const rect = buttonEl.getBoundingClientRect()
     const dropdownWidth = 192
     const dropdownHeight = 120
-
     let top = rect.bottom + 8
     let left = rect.right - dropdownWidth
-
     if (top + dropdownHeight > window.innerHeight) top = rect.top - dropdownHeight - 8
     if (left < 8) left = 8
     if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
-
     return { top: `${top}px`, left: `${left}px` }
 }
 
@@ -333,7 +447,6 @@ const showAutoAlert = (type, message) => {
 
 const handleDelete = async (classroom) => {
     if (!classroom) return
-
     const confirmed = await confirm({
         title: 'Hapus Kelas',
         message: `Apakah Anda yakin ingin menghapus kelas ${classroom.name}? Tindakan ini tidak dapat dibatalkan.`,
@@ -341,13 +454,9 @@ const handleDelete = async (classroom) => {
         cancelText: 'Batal',
         type: 'danger',
     })
-
     if (!confirmed) return
-
     closeDropdown()
-    
     const result = await classroomsStore.deleteClassroom(classroom.id)
-
     if (result.success) {
         showAutoAlert('success', `Kelas ${classroom.name} berhasil dihapus.`)
     } else {
@@ -372,9 +481,10 @@ onMounted(async () => {
         fetchClassrooms(),
         classroomsStore.getJurusanList()
     ])
-
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
+        document.addEventListener('click', handleJurusanClickOutside)
+        document.addEventListener('click', handleTingkatClickOutside)
         window.addEventListener('scroll', handleScroll, true)
         window.addEventListener('resize', handleScroll)
     }
@@ -385,8 +495,40 @@ onUnmounted(() => {
     clearTimeout(autoCloseTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
+        document.removeEventListener('click', handleJurusanClickOutside)
+        document.removeEventListener('click', handleTingkatClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
         window.removeEventListener('resize', handleScroll)
     }
 })
 </script>
+
+<style scoped>
+.jurusan-scroll::-webkit-scrollbar,
+.tingkat-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.jurusan-scroll::-webkit-scrollbar-track,
+.tingkat-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.jurusan-scroll::-webkit-scrollbar-thumb,
+.tingkat-scroll::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 99px;
+}
+
+.jurusan-scroll::-webkit-scrollbar-thumb:hover,
+.tingkat-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+.jurusan-scroll,
+.tingkat-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+</style>
