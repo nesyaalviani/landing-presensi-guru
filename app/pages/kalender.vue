@@ -42,7 +42,28 @@
             </div>
           </div>
 
-          <div>
+          <!-- ✅ Loading skeleton kalender grid -->
+          <div v-if="loadingFetch">
+            <div v-for="week in 6" :key="'skel-week-' + week" class="grid grid-cols-7">
+              <div v-for="cell in 7" :key="'skel-cell-' + cell"
+                class="min-h-[56px] sm:min-h-[70px] lg:min-h-[75px] p-1 sm:p-1.5 lg:p-2 border-b border-r border-slate-100"
+                :class="cell === 7 ? 'border-r-0' : ''">
+                <!-- Tanggal -->
+                <div class="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 bg-gray-200 rounded-full animate-pulse mb-1 sm:mb-1.5">
+                </div>
+
+                <!-- Event bar placeholder (hanya tampil di sm ke atas) -->
+                <div class="hidden sm:flex flex-col gap-1">
+                  <div v-if="(week + cell) % 3 === 0"
+                    class="h-4 sm:h-[18px] w-full bg-gray-200 rounded-full animate-pulse"></div>
+                  <div v-if="(week + cell) % 5 === 0"
+                    class="h-4 sm:h-[18px] w-3/4 bg-gray-200 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else>
             <div v-for="(week, wIdx) in calendarWeeks" :key="wIdx" class="relative">
               <div class="grid grid-cols-7">
                 <div v-for="(cell, cIdx) in week" :key="cIdx"
@@ -103,17 +124,18 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
       <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-3 sm:space-y-4">
 
+        <!-- Panel Tanggal -->
         <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700 truncate pr-2">
               {{ selectedDate ? formatDateLabel(selectedDate) : 'Pilih tanggal' }}
             </h3>
-            <!-- ✅ Tombol Tambah — disembunyikan untuk KM -->
             <button v-if="selectedDate && !isKM" @click="openAddModalForDate(selectedDate)"
               class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0">
               <Plus class="h-3.5 w-3.5" />
@@ -121,7 +143,14 @@
             </button>
           </div>
 
-          <div v-if="!selectedDate" class="px-4 py-6 sm:py-8 text-center">
+          <!-- ✅ Loading spinner panel tanggal -->
+          <div v-if="loadingFetch" class="flex items-center justify-center gap-2 px-4 py-8">
+            <span
+              class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+            <p class="text-xs text-slate-400">Memuat...</p>
+          </div>
+
+          <div v-else-if="!selectedDate" class="px-4 py-6 sm:py-8 text-center">
             <CalendarDays class="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-slate-200 mb-2" />
             <p class="text-xs text-slate-400">Klik tanggal untuk melihat kegiatan</p>
           </div>
@@ -151,7 +180,6 @@
                   <p v-if="event.description" class="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">{{
                     event.description }}</p>
                 </div>
-                <!-- ✅ Tombol Edit & Delete — disembunyikan untuk KM -->
                 <div v-if="!isKM"
                   class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button @click="openEditModal(event)"
@@ -168,14 +196,23 @@
           </div>
         </div>
 
-        <!-- Upcoming Events -->
+        <!-- Kegiatan Mendatang -->
         <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700">Kegiatan Mendatang</h3>
           </div>
-          <div v-if="upcomingEvents.length === 0" class="px-4 py-5 text-center">
+
+          <!-- ✅ Loading spinner kegiatan mendatang -->
+          <div v-if="loadingFetch" class="flex items-center justify-center gap-2 px-4 py-8">
+            <span
+              class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+            <p class="text-xs text-slate-400">Memuat...</p>
+          </div>
+
+          <div v-else-if="upcomingEvents.length === 0" class="px-4 py-5 text-center">
             <p class="text-xs text-slate-400">Tidak ada kegiatan mendatang</p>
           </div>
+
           <div v-else>
             <div class="flex gap-2 p-3 overflow-x-auto lg:hidden pb-3">
               <div v-for="event in upcomingEvents" :key="event.id" @click="jumpToEvent(event)"
@@ -207,10 +244,11 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Modal Tambah / Edit — tetap di DOM tapi tidak bisa dipanggil oleh KM -->
+    <!-- Modal Tambah / Edit -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showModal && !isKM"
@@ -302,7 +340,7 @@
       </Transition>
     </Teleport>
 
-    <!-- Confirm Delete — tetap di DOM tapi tidak bisa dipanggil oleh KM -->
+    <!-- Confirm Delete -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showDeleteConfirm && !isKM"
