@@ -46,9 +46,10 @@
                     </div>
 
                     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
-                         <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
+                        <AppAlert :type="alertType" :message="alertMessage" :redirect-delay="alertRedirectDelay"
                             :on-close="clearAlert" :on-redirect="alertRedirectFn" />
 
+                        <!-- Role -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Role <span class="text-red-500">*</span>
@@ -93,24 +94,83 @@
                             <p class="mt-1.5 text-xs text-gray-500">Pilih role sesuai dengan tugas pengguna</p>
                         </div>
 
+                        <!-- Kelas (searchable single-select dropdown) -->
                         <div v-if="formData.id_role === 2">
                             <label for="kelas" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Kelas <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <select id="kelas" v-model="formData.id_kelas" required
-                                    class="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition-all hover:border-gray-400">
-                                    <option value="" disabled>Pilih Kelas</option>
-                                    <option v-for="kelas in classrooms" :key="kelas.id" :value="kelas.id">
-                                        {{ kelas.name }} - {{ kelas.nama_jurusan }}
-                                    </option>
-                                </select>
-                                <ChevronDown
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+
+                            <div class="relative" ref="kelasDropdownRef">
+                                <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors"
+                                    :class="kelasDropdownOpen ? 'border-blue-400' : 'border-gray-300'">
+
+                                    <!-- Input search sekaligus trigger -->
+                                    <input ref="kelasInputRef" v-model="kelasSearchQuery" type="text"
+                                        placeholder="Cari atau pilih kelas"
+                                        class="flex-1 min-w-0 pl-3 pr-2 py-2.5 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                                        @click.stop="openKelasDropdown" @input="onKelasSearchInput" />
+
+                                    <!-- Clear button (tampil jika ada kelas yang dipilih) -->
+                                    <button v-if="formData.id_kelas" type="button" @click.stop="clearKelasSelection"
+                                        class="px-2 py-2 text-gray-400 hover:text-gray-600 flex-shrink-0 transition-colors">
+                                        <X class="h-3.5 w-3.5" />
+                                    </button>
+
+                                    <!-- Chevron -->
+                                    <button type="button" @click.stop="toggleKelasDropdown"
+                                        class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                                        <ChevronDown class="h-3.5 w-3.5 transition-transform duration-200"
+                                            :class="{ 'rotate-180': kelasDropdownOpen }" />
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown panel -->
+                                <Transition enter-active-class="transition duration-100 ease-out"
+                                    enter-from-class="opacity-0 -translate-y-1"
+                                    enter-to-class="opacity-100 translate-y-0"
+                                    leave-active-class="transition duration-75 ease-in"
+                                    leave-from-class="opacity-100 translate-y-0"
+                                    leave-to-class="opacity-0 -translate-y-1">
+                                    <div v-if="kelasDropdownOpen"
+                                        class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                                        <ul ref="kelasListRef" class="kelas-scroll max-h-60 overflow-y-auto py-1"
+                                            @scroll="onKelasListScroll">
+
+                                            <!-- Empty state -->
+                                            <li v-if="kelasDropdownItems.length === 0 && !kelasFetching"
+                                                class="px-3 py-3 text-sm text-gray-400 text-center">
+                                                Tidak ada hasil
+                                            </li>
+
+                                            <!-- Items (single select, tanpa checkbox) -->
+                                            <li v-for="kelas in kelasDropdownItems" :key="kelas.id"
+                                                @mousedown.prevent="selectKelasItem(kelas)"
+                                                class="px-3 py-2 text-sm cursor-pointer transition-colors" :class="formData.id_kelas === kelas.id
+                                                    ? 'bg-blue-50 text-blue-700 font-medium'
+                                                    : 'text-gray-700 hover:bg-gray-50'">
+                                                {{ kelas.name }} - {{ kelas.nama_jurusan }}
+                                            </li>
+
+                                            <!-- Loading spinner -->
+                                            <li v-if="kelasFetching" class="px-3 py-2.5 flex justify-center">
+                                                <span
+                                                    class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                            </li>
+
+                                            <!-- End of list -->
+                                            <li v-else-if="!kelasHasMore && kelasDropdownItems.length > 0"
+                                                class="px-3 py-1.5 text-xs text-gray-400 text-center border-t border-gray-100 mt-1">
+                                                Semua data ditampilkan
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </Transition>
                             </div>
+
                             <p class="mt-1.5 text-xs text-gray-500">KM wajib memilih kelas</p>
                         </div>
 
+                        <!-- Nama -->
                         <div>
                             <label for="nama" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Nama <span class="text-red-500">*</span>
@@ -120,6 +180,7 @@
                             <p class="mt-1.5 text-xs text-gray-500">Masukkan nama lengkap pengguna</p>
                         </div>
 
+                        <!-- Username -->
                         <div>
                             <label for="username"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -132,6 +193,7 @@
                                 (minimal 3 karakter)</p>
                         </div>
 
+                        <!-- Password -->
                         <div>
                             <label for="password"
                                 class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -151,7 +213,8 @@
                             <button type="submit" :disabled="loading || loadingData"
                                 class="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-sm hover:bg-blue-700 focus:outline-none transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Save class="h-4 w-4" />
-                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit User' : 'Simpan') }}
+                                {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit User'
+                                : 'Simpan') }}
                             </button>
                             <NuxtLink to="/users"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
@@ -177,7 +240,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { X, Save, Info, ChevronDown } from 'lucide-vue-next'
 import { useUsersStore } from '~/stores/users'
 import { useClassroomsStore } from '~/stores/classrooms'
@@ -199,7 +262,6 @@ const formData = ref({
     id_kelas: ''
 })
 
-const classrooms = ref([])
 const loading = ref(false)
 const loadingData = ref(false)
 
@@ -215,6 +277,147 @@ const {
 
 watchInputClearError(formData)
 
+// ===================== Kelas searchable single-select dropdown =====================
+const KELAS_LIMIT = 10
+
+const kelasDropdownOpen = ref(false)
+const kelasSearchQuery = ref('')
+const kelasDropdownItems = ref([])
+const kelasPage = ref(1)
+const kelasHasMore = ref(true)
+const kelasFetching = ref(false)
+const kelasDropdownRef = ref(null)
+const kelasInputRef = ref(null)
+const kelasListRef = ref(null)
+const kelasNameCache = ref({})
+
+let kelasSearchTimer = null
+
+const fetchKelasDropdown = async (reset = false) => {
+    if (kelasFetching.value) return
+    if (!kelasHasMore.value && !reset) return
+
+    kelasFetching.value = true
+
+    if (reset) {
+        kelasDropdownItems.value = []
+        kelasPage.value = 1
+        kelasHasMore.value = true
+    }
+
+    try {
+        const params = {
+            page: kelasPage.value,
+            limit: KELAS_LIMIT,
+        }
+        if (kelasSearchQuery.value) params.search = kelasSearchQuery.value
+
+        const result = await classroomsStore.getClassrooms(params)
+
+        if (result.success) {
+            const incoming = classroomsStore.classrooms
+
+            // Cache nama kelas untuk display
+            incoming.forEach(k => {
+                kelasNameCache.value[k.id] = `${k.name} - ${k.nama_jurusan}`
+            })
+
+            kelasDropdownItems.value = reset
+                ? [...incoming]
+                : [...kelasDropdownItems.value, ...incoming]
+
+            kelasHasMore.value = classroomsStore.hasMore
+            if (!reset) kelasPage.value++
+        }
+    } catch (e) {
+        console.error('Gagal fetch kelas dropdown:', e)
+    } finally {
+        kelasFetching.value = false
+    }
+}
+
+const openKelasDropdown = async () => {
+    if (kelasDropdownOpen.value) {
+        closeKelasDropdown()
+        return
+    }
+    kelasDropdownOpen.value = true
+    if (kelasDropdownItems.value.length === 0) {
+        await fetchKelasDropdown(true)
+    }
+}
+
+const toggleKelasDropdown = async () => {
+    if (kelasDropdownOpen.value) {
+        closeKelasDropdown()
+    } else {
+        kelasDropdownOpen.value = true
+        if (kelasDropdownItems.value.length === 0) {
+            await fetchKelasDropdown(true)
+        }
+    }
+}
+
+const closeKelasDropdown = () => {
+    kelasDropdownOpen.value = false
+    // Kembalikan nama kelas terpilih ke input (atau kosongkan jika belum ada pilihan)
+    kelasSearchQuery.value = formData.value.id_kelas
+        ? getKelasName(formData.value.id_kelas)
+        : ''
+}
+
+const onKelasSearchInput = () => {
+    if (!kelasDropdownOpen.value) kelasDropdownOpen.value = true
+    clearTimeout(kelasSearchTimer)
+    kelasSearchTimer = setTimeout(() => fetchKelasDropdown(true), 350)
+}
+
+const onKelasListScroll = () => {
+    const el = kelasListRef.value
+    if (!el) return
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 40
+    if (nearBottom && kelasHasMore.value && !kelasFetching.value) {
+        fetchKelasDropdown()
+    }
+}
+
+const selectKelasItem = (kelas) => {
+    formData.value.id_kelas = kelas.id
+    kelasNameCache.value[kelas.id] = `${kelas.name} - ${kelas.nama_jurusan}`
+    // Tampilkan nama kelas terpilih di input, lalu tutup dropdown
+    kelasSearchQuery.value = `${kelas.name} - ${kelas.nama_jurusan}`
+    kelasDropdownOpen.value = false
+}
+
+const clearKelasSelection = () => {
+    formData.value.id_kelas = ''
+    kelasSearchQuery.value = ''
+    fetchKelasDropdown(true)
+}
+
+const getKelasName = (kelasId) => {
+    return kelasNameCache.value[kelasId] || ''
+}
+
+const handleKelasClickOutside = (event) => {
+    if (kelasDropdownRef.value && !kelasDropdownRef.value.contains(event.target)) {
+        closeKelasDropdown()
+    }
+}
+
+// ===================== Watch role change =====================
+watch(() => formData.value.id_role, (newRole) => {
+    if (newRole !== 2) {
+        formData.value.id_kelas = ''
+        kelasSearchQuery.value = ''
+    } else {
+        // Reset dan fetch ulang saat role KM dipilih
+        kelasDropdownItems.value = []
+        fetchKelasDropdown(true)
+    }
+})
+
+// ===================== Load user data (edit mode) =====================
 const loadUserData = async () => {
     if (!isEditMode.value) return
 
@@ -229,17 +432,24 @@ const loadUserData = async () => {
             id_role: user.id_role,
             id_kelas: user.id_kelas || ''
         }
+        // Seed cache jika ada kelas terpilih supaya input langsung tampil nama
+        if (user.id_kelas && user.nama_kelas) {
+            kelasNameCache.value[user.id_kelas] = user.nama_kelas
+        }
     } else {
-       showAlert('error', 'Gagal memuat data user')
+        showAlert('error', 'Gagal memuat data user')
     }
 }
 
-watch(() => formData.value.id_role, (newRole) => {
-    if (newRole !== 2) {
-        formData.value.id_kelas = ''
+// ===================== Computed input placeholder kelas =====================
+const kelasInputPlaceholder = computed(() => {
+    if (formData.value.id_kelas) {
+        return getKelasName(formData.value.id_kelas) || 'Kelas terpilih'
     }
+    return 'Cari atau pilih kelas'
 })
 
+// ===================== Validation & Submit =====================
 const validateForm = () => {
     if (!formData.value.id_role) {
         showAlert('error', 'Silakan pilih role pengguna')
@@ -252,7 +462,7 @@ const validateForm = () => {
     }
 
     if (!formData.value.name || formData.value.name.trim().length === 0) {
-       showAlert('error', 'Nama tidak boleh kosong')
+        showAlert('error', 'Nama tidak boleh kosong')
         return false
     }
 
@@ -278,12 +488,9 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-    // 🔴 FIX 1: Ganti 'errorMessage.value = ""' (variabel tidak terdefinisi) dengan 'clearAlert()'
     clearAlert()
 
-    if (!validateForm()) {
-        return
-    }
+    if (!validateForm()) return
 
     loading.value = true
 
@@ -317,14 +524,10 @@ const handleSubmit = async () => {
     }
 }
 
+// ===================== Lifecycle =====================
 onMounted(async () => {
     if (isEditMode.value) {
         loadingData.value = true
-    }
-
-    const classroomResult = await classroomsStore.getClassrooms({ all: true })
-    if (classroomResult.success) {
-        classrooms.value = classroomsStore.classrooms
     }
 
     await loadUserData()
@@ -332,5 +535,41 @@ onMounted(async () => {
     if (isEditMode.value) {
         loadingData.value = false
     }
+
+    if (process.client) {
+        document.addEventListener('click', handleKelasClickOutside)
+    }
+})
+
+onUnmounted(() => {
+    clearTimeout(kelasSearchTimer)
+    if (process.client) {
+        document.removeEventListener('click', handleKelasClickOutside)
+    }
 })
 </script>
+
+<style scoped>
+.kelas-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.kelas-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.kelas-scroll::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 99px;
+}
+
+.kelas-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+.kelas-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+</style>
