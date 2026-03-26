@@ -1,7 +1,7 @@
 <template>
   <!-- Loading Skeleton -->
   <div v-if="presensiStore.loading" class="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-    <div class="mx-auto max-w-3xl">
+    <div class="mx-auto max-w-full">
       <div class="mb-8">
         <div class="h-7 w-52 bg-slate-200 rounded-md animate-pulse mb-3"></div>
         <div class="h-4 w-72 bg-slate-200 rounded animate-pulse mb-2"></div>
@@ -24,7 +24,7 @@
   </div>
 
   <div v-else-if="schedules.length === 0"
-    class="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 py-24">
+    class="bg-slate-50 flex flex-col items-center justify-center px-6 py-24">
     <div class="text-center max-w-sm w-full">
       <div class="relative inline-flex items-center justify-center mb-8">
         <div class="w-28 h-28 rounded-full flex items-center justify-center" :class="stateConfig.ringBg">
