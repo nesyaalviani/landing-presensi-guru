@@ -275,7 +275,7 @@
                 <X class="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
-            <div class="px-5 sm:px-6 py-4 sm:py-5 space-y-4 overflow-y-auto flex-1">
+            <div class="px-5 sm:px-6 py-4 sm:py-5 space-y-4 overflow-y-auto flex-1 hide-scroll">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Kegiatan <span
                     class="text-red-500">*</span></label>
@@ -314,15 +314,36 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kategori <span
                     class="text-red-500">*</span></label>
-                <div class="relative">
-                  <select v-model="form.category"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition"
-                    :class="formErrors.category ? 'border-red-400 focus:ring-red-400' : ''">
-                    <option value="">Pilih kategori</option>
-                    <option v-for="cat in categories" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
-                  </select>
-                  <ChevronDown
-                    class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <div class="relative" ref="categoryDropdownRef">
+                  <button type="button" @click.stop="toggleCategoryDropdown"
+                    class="w-full flex items-center justify-between px-3.5 py-2.5 border rounded-sm bg-white text-sm transition"
+                    :class="[
+                      categoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-300',
+                      formErrors.category ? 'border-red-400 ring-2 ring-red-400' : ''
+                    ]">
+                    <span :class="form.category ? 'text-slate-800' : 'text-slate-400'">
+                      {{ form.category ? getCatMeta(form.category).label : 'Pilih kategori' }}
+                    </span>
+                    <ChevronDown class="h-4 w-4 text-slate-400 flex-shrink-0 transition-transform duration-200"
+                      :class="{ 'rotate-180': categoryDropdownOpen }" />
+                  </button>
+                  <Transition enter-active-class="transition duration-100 ease-out"
+                    enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-1">
+                    <div v-if="categoryDropdownOpen"
+                      class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-sm shadow-lg">
+                      <ul class="py-1 custom-scroll max-h-60 overflow-y-auto">
+                        <li v-for="cat in categories" :key="cat.value" @mousedown.prevent="selectCategory(cat)"
+                          class="flex items-center gap-2.5 px-3.5 py-2 text-sm cursor-pointer transition-colors" :class="form.category === cat.value
+                            ? 'bg-blue-50 text-blue-700 font-medium'
+                            : 'text-slate-700 hover:bg-slate-50'">
+                          <span class="w-2 h-2 rounded-full flex-shrink-0" :class="cat.dot"></span>
+                          {{ cat.label }}
+                        </li>
+                      </ul>
+                    </div>
+                  </Transition>
                 </div>
                 <p v-if="formErrors.category" class="text-xs text-red-500 mt-1">{{ formErrors.category }}</p>
               </div>
@@ -434,7 +455,10 @@ const showAutoAlert = async (type, message) => {
   autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
-onUnmounted(() => { clearTimeout(autoCloseTimer) })
+onUnmounted(() => {
+  clearTimeout(autoCloseTimer)
+  if (process.client) document.removeEventListener('click', handleCategoryClickOutside) // ← tambah
+})
 
 // ── Kategori ──────────────────────────────────────────────
 const categories = [
@@ -659,6 +683,24 @@ const formatDateShort = (dateStr) => {
 const formatDayNum = (dateStr) => dateStr.split('-')[2]
 const formatMonthShort = (dateStr) => monthNames[Number(dateStr.split('-')[1]) - 1].slice(0, 3)
 
+const categoryDropdownOpen = ref(false)
+const categoryDropdownRef = ref(null)
+
+const toggleCategoryDropdown = () => {
+  categoryDropdownOpen.value = !categoryDropdownOpen.value
+}
+
+const selectCategory = (cat) => {
+  form.value.category = cat.value
+  categoryDropdownOpen.value = false
+}
+
+const handleCategoryClickOutside = (e) => {
+  if (categoryDropdownRef.value && !categoryDropdownRef.value.contains(e.target)) {
+    categoryDropdownOpen.value = false
+  }
+}
+
 // ── Modal helpers ─────────────────────────────────────────
 const resetForm = () => {
   form.value = { title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '', category: '', description: '' }
@@ -669,9 +711,12 @@ const resetForm = () => {
 const openAddModal = () => { if (isKM.value) return; resetForm(); if (selectedDate.value) form.value.date = selectedDate.value; showModal.value = true }
 const openAddModalForDate = (dateStr) => { if (isKM.value) return; resetForm(); form.value.date = dateStr; showModal.value = true }
 const openEditModal = (event) => { if (isKM.value) return; resetForm(); editingEvent.value = event; form.value = { title: event.title, date: event.date, endDate: event.endDate || '', jamMulai: event.jamMulai || '', jamBerakhir: event.jamBerakhir || '', category: event.category, description: event.description || '' }; showModal.value = true }
-const closeModal = () => { showModal.value = false; resetForm() }
+const closeModal = () => { showModal.value = false; resetForm(); categoryDropdownOpen.value = false }
 
-onMounted(() => { fetchKalender() })
+onMounted(() => {
+  fetchKalender()
+  if (process.client) document.addEventListener('click', handleCategoryClickOutside) // ← tambah
+})
 
 // ── Save ──────────────────────────────────────────────────
 const validateForm = () => {
@@ -828,5 +873,36 @@ const deleteEvent = async () => {
     --bar-h: 18px;
     --bar-row-h: 20px;
   }
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 99px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  scrollbar-width: none;
 }
 </style>
