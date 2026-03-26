@@ -1,29 +1,90 @@
 <template>
     <div class="max-w-7xl space-y-4 sm:space-y-5">
 
-        <!-- FILTER GLOBAL -->
-        <div class="bg-white rounded-sm border border-gray-200 px-6 py-4">
+      <div class="bg-white rounded-sm border border-gray-200 px-6 py-4">
             <div class="flex flex-wrap items-center gap-3">
                 <span class="text-sm font-medium text-gray-600">Filter:</span>
-                <div class="relative">
-                    <select v-model="selectedPeriode" @change="onFilterChange"
-                        class="appearance-none pl-4 pr-9 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 cursor-pointer">
-                        <option value="minggu">Minggu Ini</option>
-                        <option value="bulan">Bulan Ini</option>
-                        <option value="tahun">Tahun Ini</option>
-                    </select>
-                    <ChevronDown class="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+
+                <!-- Periode -->
+                <div class="relative" ref="periodeDropdownRef">
+                    <button type="button" @click.stop="togglePeriodeDropdown"
+                        class="flex items-center justify-between gap-6 pl-4 pr-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 min-w-[120px]"
+                        :class="periodeDropdownOpen ? 'border-blue-400' : 'border-gray-300 hover:border-gray-400'">
+                        <span>{{PERIODE_LIST.find(p => p.value === selectedPeriode)?.label}}</span>
+                        <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                            :class="{ 'rotate-180': periodeDropdownOpen }" />
+                    </button>
+                    <Transition enter-active-class="transition duration-100 ease-out"
+                        enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 -translate-y-1">
+                        <div v-if="periodeDropdownOpen"
+                            class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                            <ul class="py-1">
+                                <li v-for="p in PERIODE_LIST" :key="p.value" @mousedown.prevent="selectPeriode(p)"
+                                    class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedPeriode === p.value
+                                        ? 'bg-blue-50 text-blue-700 font-medium'
+                                        : 'text-gray-700 hover:bg-gray-50'">
+                                    {{ p.label }}
+                                </li>
+                            </ul>
+                        </div>
+                    </Transition>
                 </div>
-                <div class="relative">
-                    <select v-model="selectedKelas" @change="onFilterChange"
-                        class="appearance-none pl-4 pr-9 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 cursor-pointer">
-                        <option value="">Semua Kelas</option>
-                        <option v-for="kelas in statisticsStore.kelasList" :key="kelas.id" :value="kelas.id">
-                            {{ kelas.name }}
-                        </option>
-                    </select>
-                    <ChevronDown class="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+
+                <!-- Kelas -->
+                <div class="relative" ref="kelasDropdownRef">
+                    <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors min-w-[160px]"
+                        :class="kelasDropdownOpen ? 'border-blue-400' : 'border-gray-300'">
+                        <input v-model="kelasSearchQuery" type="text" placeholder="Semua Kelas"
+                            class="flex-1 min-w-0 pl-4 pr-2 py-2 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-500"
+                            @click.stop="toggleKelasDropdown" @input="onKelasSearchInput" />
+                        <button type="button" @click.stop="toggleKelasDropdown"
+                            class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                            <ChevronDown class="h-4 w-4 transition-transform duration-200"
+                                :class="{ 'rotate-180': kelasDropdownOpen }" />
+                        </button>
+                    </div>
+                    <Transition enter-active-class="transition duration-100 ease-out"
+                        enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 -translate-y-1">
+                        <div v-if="kelasDropdownOpen"
+                            class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                            <ul ref="kelasListRef" class="custom-scroll max-h-52 overflow-y-auto py-1"
+                                @scroll="onKelasListScroll">
+                                <li @mousedown.prevent="resetAllFilters"
+                                    class="px-4 py-2 text-sm cursor-pointer transition-colors"
+                                    :class="!selectedKelas ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
+                                    Semua Kelas
+                                </li>
+                                <li v-if="kelasDropdownItems.length === 0 && !kelasFetching"
+                                    class="px-4 py-3 text-sm text-gray-400 text-center">Tidak ada hasil</li>
+                                <li v-for="kelas in kelasDropdownItems" :key="kelas.id"
+                                    @mousedown.prevent="selectKelasItem(kelas)"
+                                    class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedKelas === kelas.id
+                                        ? 'bg-blue-50 text-blue-700 font-medium'
+                                        : 'text-gray-700 hover:bg-gray-50'">
+                                    {{ kelas.name }}
+                                </li>
+                                <li v-if="kelasFetching" class="px-4 py-2.5 flex justify-center">
+                                    <span
+                                        class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                </li>
+                                <li v-else-if="!kelasHasMore && kelasDropdownItems.length > 0"
+                                    class="px-4 py-1.5 text-xs text-gray-400 text-center border-t border-gray-100 mt-1">
+                                    Semua data ditampilkan
+                                </li>
+                            </ul>
+                        </div>
+                    </Transition>
                 </div>
+
+                <!-- Hapus Filter -->
+                <button v-if="selectedKelas || selectedPeriode !== 'bulan'" type="button" @click="resetAllFilters"
+                    class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors">
+                    Hapus Filter
+                </button>
             </div>
         </div>
 
@@ -286,20 +347,45 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="relative">
-                        <select v-model="selectedGuru" @change="onGuruChange"
-                            class="appearance-none pl-3 pr-8 py-1.5 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 cursor-pointer">
-                            <option value="">{{ selectedKelas ? 'Semua Guru' : 'Top 5' }}</option>
-                            <option v-for="nama in statisticsStore.lineChart.guruList" :key="nama" :value="nama">
-                                {{ nama }}
-                            </option>
-                        </select>
-                        <ChevronDown class="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                    <div class="relative" ref="guruDropdownRef">
+                        <button type="button" @click.stop="toggleGuruDropdown"
+                            class="flex items-center justify-between gap-6 pl-3 pr-2.5 py-1.5 text-sm border rounded-sm bg-white min-w-[160px]"
+                            :class="guruDropdownOpen ? 'border-blue-400' : 'border-gray-300 hover:border-gray-400'">
+                            <span :class="selectedGuru ? 'text-gray-700' : 'text-gray-500'">
+                                {{ selectedGuru || (selectedKelas ? 'Semua Guru' : 'Top 5') }}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button v-if="selectedGuru" type="button" @mousedown.prevent="clearGuruFilter"
+                                    class="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <X class="h-3.5 w-3.5" />
+                                </button>
+                                <ChevronDown class="h-3.5 w-3.5 text-gray-400 transition-transform duration-200"
+                                    :class="{ 'rotate-180': guruDropdownOpen }" />
+                            </div>
+                        </button>
+                        <Transition enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                            <div v-if="guruDropdownOpen"
+                                class="absolute right-0 z-20 w-52 mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                                <ul class="custom-scroll max-h-52 overflow-y-auto py-1">
+                                    <li @mousedown.prevent="selectGuruItem('')"
+                                        class="px-3 py-2 text-sm cursor-pointer transition-colors"
+                                        :class="!selectedGuru ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
+                                        {{ selectedKelas ? 'Semua Guru' : 'Top 5' }}
+                                    </li>
+                                    <li v-for="nama in statisticsStore.lineChart.guruList" :key="nama"
+                                        @mousedown.prevent="selectGuruItem(nama)"
+                                        class="px-3 py-2 text-sm cursor-pointer transition-colors" :class="selectedGuru === nama
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-700 hover:bg-gray-50'">
+                                        {{ nama }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </Transition>
                     </div>
-                    <button v-if="selectedGuru" @click="clearGuruFilter"
-                        class="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">
-                        Reset
-                    </button>
                 </div>
             </div>
             <div class="px-6 py-6" style="height: 320px;">
@@ -320,13 +406,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Line, Bar } from 'vue-chartjs'
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
     PointElement, LineElement, BarElement, Tooltip, Legend, Filler
 } from 'chart.js'
-import { ChevronDown, Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-vue-next'
+import { ChevronDown, Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-vue-next'
 import { useStatisticsStore } from '@/stores/statistics'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler)
@@ -351,6 +437,119 @@ const selectedGuru = ref('')
 const searchGuru = ref('')
 const sortField = ref('pct_hadir')
 const sortDir = ref('desc')
+
+const PERIODE_LIST = [
+    { value: 'minggu', label: 'Minggu Ini' },
+    { value: 'bulan', label: 'Bulan Ini' },
+    { value: 'tahun', label: 'Tahun Ini' },
+]
+
+// ── Periode dropdown ──────────────────────────────────────
+const periodeDropdownOpen = ref(false)
+const periodeDropdownRef = ref(null)
+
+const togglePeriodeDropdown = () => { periodeDropdownOpen.value = !periodeDropdownOpen.value }
+const selectPeriode = async (p) => {
+    selectedPeriode.value = p.value
+    periodeDropdownOpen.value = false
+    await onFilterChange()
+}
+
+// ── Kelas dropdown (infinite scroll + search) ─────────────
+const KELAS_LIMIT = 10
+const kelasDropdownOpen = ref(false)
+const kelasSearchQuery = ref('')
+const kelasDropdownItems = ref([])
+const kelasPage = ref(1)
+const kelasHasMore = ref(true)
+const kelasFetching = ref(false)
+const kelasDropdownRef = ref(null)
+const kelasListRef = ref(null)
+const kelasNameCache = ref({})
+let kelasSearchTimer = null
+
+const fetchKelasDropdown = async (reset = false) => {
+    if (kelasFetching.value) return
+    if (!kelasHasMore.value && !reset) return
+    kelasFetching.value = true
+    if (reset) { kelasDropdownItems.value = []; kelasPage.value = 1; kelasHasMore.value = true }
+    try {
+        const result = await statisticsStore.getKelas({
+            page: kelasPage.value,
+            limit: KELAS_LIMIT,
+            search: kelasSearchQuery.value || undefined
+        })
+        if (result.success) {
+            const incoming = result.data.data || []
+            const p = result.data.pagination || {}
+            incoming.forEach(k => { kelasNameCache.value[k.id] = k.name })
+            kelasDropdownItems.value = reset
+                ? [...incoming]
+                : [...kelasDropdownItems.value, ...incoming]
+            kelasHasMore.value = kelasPage.value < (p.totalPages ?? 1)  // ← pakai pagination BE
+            if (!reset) kelasPage.value++
+            else kelasPage.value = 2
+        }
+    } catch (e) { console.error(e) }
+    finally { kelasFetching.value = false }
+}
+
+const toggleKelasDropdown = async () => {
+    if (kelasDropdownOpen.value) {
+        closeKelasDropdown()
+    } else {
+        kelasDropdownOpen.value = true
+        if (kelasDropdownItems.value.length === 0) await fetchKelasDropdown(true)
+    }
+}
+const closeKelasDropdown = () => {
+    kelasDropdownOpen.value = false
+    kelasSearchQuery.value = selectedKelas.value ? (kelasNameCache.value[selectedKelas.value] || '') : ''
+}
+const onKelasSearchInput = () => {
+    if (!kelasDropdownOpen.value) kelasDropdownOpen.value = true
+    clearTimeout(kelasSearchTimer)
+    kelasSearchTimer = setTimeout(() => fetchKelasDropdown(true), 350)
+}
+const onKelasListScroll = () => {
+    const el = kelasListRef.value
+    if (!el) return
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40 && kelasHasMore.value && !kelasFetching.value) fetchKelasDropdown()
+}
+const selectKelasItem = async (kelas) => {
+    selectedKelas.value = kelas.id
+    kelasNameCache.value[kelas.id] = kelas.name
+    kelasSearchQuery.value = kelas.name
+    kelasDropdownOpen.value = false
+    await onFilterChange()
+}
+const resetAllFilters = async () => {
+    selectedPeriode.value = 'bulan'
+    selectedKelas.value = ''
+    kelasSearchQuery.value = ''
+    kelasDropdownOpen.value = false
+    periodeDropdownOpen.value = false
+    await fetchKelasDropdown(true)
+    await statisticsStore.fetchAll('bulan', null, null)
+}
+
+// ── Guru dropdown ─────────────────────────────────────────
+const guruDropdownOpen = ref(false)
+const guruDropdownRef = ref(null)
+
+const toggleGuruDropdown = () => { guruDropdownOpen.value = !guruDropdownOpen.value }
+const selectGuruItem = async (nama) => {
+    selectedGuru.value = nama
+    guruDropdownOpen.value = false
+    await onGuruChange()
+}
+
+// ── Click outside handlers ────────────────────────────────
+const handleClickOutside = (e) => {
+    if (periodeDropdownRef.value && !periodeDropdownRef.value.contains(e.target)) periodeDropdownOpen.value = false
+    if (kelasDropdownRef.value && !kelasDropdownRef.value.contains(e.target)) closeKelasDropdown()
+    if (guruDropdownRef.value && !guruDropdownRef.value.contains(e.target)) guruDropdownOpen.value = false
+}
 
 const onFilterChange = async () => {
     selectedGuru.value = ''
@@ -404,6 +603,13 @@ const filteredPerforma = computed(() => {
 onMounted(async () => {
     await statisticsStore.getKelas()
     await statisticsStore.fetchAll('bulan', null, null)
+    await fetchKelasDropdown(true)
+    if (process.client) document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    clearTimeout(kelasSearchTimer)
+    if (process.client) document.removeEventListener('click', handleClickOutside)
 })
 
 // ========================
@@ -529,4 +735,26 @@ const lineChartOptions = {
 
 <style scoped>
 .overflow-y-auto::-webkit-scrollbar { display: none; }
+.custom-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 99px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+.custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
 </style>

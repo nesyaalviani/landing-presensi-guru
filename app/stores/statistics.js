@@ -28,7 +28,6 @@ export const useStatisticsStore = defineStore('statistics', {
         topTidakHadir: [],
         loadingTopTidakHadir: false,
 
-        // tabel performa per guru
         performaGuru: [],
         loadingPerforma: false,
 
@@ -40,19 +39,30 @@ export const useStatisticsStore = defineStore('statistics', {
     }),
 
     actions: {
-        async getKelas() {
+        async getKelas(params = {}) {
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const response = await $fetch('/kelas?all=true', {
+
+                const query = new URLSearchParams()
+                if (params.page) query.set('page', params.page)
+                if (params.limit) query.set('limit', params.limit)
+                if (params.search) query.set('search', params.search)
+                // Kalau tidak ada page/limit, fetch semua (untuk init kelasList global)
+                if (!params.page && !params.limit) query.set('all', 'true')
+
+                const response = await $fetch(`/kelas?${query}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
+
                 this.kelasList = response.data || []
+                return { success: true, data: response }
             } catch (err) {
                 console.error('Failed to fetch kelas:', err)
+                return { success: false }
             }
         },
 
