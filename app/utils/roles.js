@@ -36,7 +36,7 @@ export const ROLE_MENUS = {
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { type: 'divider', label: 'Reporting' },
     { path: '/reports', label: 'Laporan', icon: 'FileText' },
-    { path: '/teacher', label: 'Guru', icon: 'Users' }
+    { path: '/kalender', label: 'Kalender', icon: 'Calendar' }
   ]
 }
 
@@ -44,7 +44,7 @@ export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
-  [ROLES.KS]: ['/', 'reports', 'teacher', 'profile']
+  [ROLES.KS]: ['/', 'reports', 'kalender', 'profile']
 }
 
 export const ROLE_DEFAULT_ROUTES = {

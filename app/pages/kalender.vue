@@ -146,7 +146,7 @@
             <h3 class="text-xs sm:text-sm font-bold text-slate-700 truncate pr-2">
               {{ selectedDate ? formatDateLabel(selectedDate) : 'Pilih tanggal' }}
             </h3>
-            <button v-if="selectedDate && !isKM" @click="openAddModalForDate(selectedDate)"
+            <button v-if="selectedDate && !isReadOnly" @click="openAddModalForDate(selectedDate)"
               class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0">
               <Plus class="h-3.5 w-3.5" />
               <span class="hidden sm:inline">Tambah</span>
@@ -189,7 +189,7 @@
                   <p v-if="event.description" class="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">{{
                     event.description }}</p>
                 </div>
-                <div v-if="!isKM"
+                <div v-if="!isReadOnly"
                   class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button @click="openEditModal(event)"
                     class="p-1.5 rounded-sm hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors">
@@ -259,7 +259,7 @@
     <!-- Modal Tambah / Edit -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showModal && !isKM"
+        <div v-if="showModal && !isReadOnly"
           class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeModal"></div>
           <div
@@ -372,7 +372,7 @@
     <!-- Confirm Delete -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showDeleteConfirm && !isKM"
+        <div v-if="showDeleteConfirm && !isReadOnly"
           class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div class="fixed inset-0 bg-black/40 backdrop-blur-sm"
             @click="() => { showDeleteConfirm = false; deleteError = null }"></div>
@@ -412,7 +412,9 @@ import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, Chevr
 
 // ── Auth ─────────────────────────────────────────────────
 const authStore = useAuthStore()
-const isKM = computed(() => authStore.user?.role === 'km')
+const isReadOnly = computed(() =>
+  authStore.user?.role === 'km' || authStore.user?.role === 'ks'
+)
 
 // ── Kalender state ────────────────────────────────────────
 const today = new Date()
@@ -457,7 +459,7 @@ const showAutoAlert = async (type, message) => {
 
 onUnmounted(() => {
   clearTimeout(autoCloseTimer)
-  if (process.client) document.removeEventListener('click', handleCategoryClickOutside) // ← tambah
+  if (process.client) document.removeEventListener('click', handleCategoryClickOutside)
 })
 
 // ── Kategori ──────────────────────────────────────────────
@@ -708,14 +710,14 @@ const resetForm = () => {
   editingEvent.value = null
 }
 
-const openAddModal = () => { if (isKM.value) return; resetForm(); if (selectedDate.value) form.value.date = selectedDate.value; showModal.value = true }
-const openAddModalForDate = (dateStr) => { if (isKM.value) return; resetForm(); form.value.date = dateStr; showModal.value = true }
-const openEditModal = (event) => { if (isKM.value) return; resetForm(); editingEvent.value = event; form.value = { title: event.title, date: event.date, endDate: event.endDate || '', jamMulai: event.jamMulai || '', jamBerakhir: event.jamBerakhir || '', category: event.category, description: event.description || '' }; showModal.value = true }
+const openAddModal = () => { if (isReadOnly.value) return; resetForm(); if (selectedDate.value) form.value.date = selectedDate.value; showModal.value = true }
+const openAddModalForDate = (dateStr) => { if (isReadOnly.value) return; resetForm(); form.value.date = dateStr; showModal.value = true }
+const openEditModal = (event) => { if (isReadOnly.value) return; resetForm(); editingEvent.value = event; form.value = { title: event.title, date: event.date, endDate: event.endDate || '', jamMulai: event.jamMulai || '', jamBerakhir: event.jamBerakhir || '', category: event.category, description: event.description || '' }; showModal.value = true }
 const closeModal = () => { showModal.value = false; resetForm(); categoryDropdownOpen.value = false }
 
 onMounted(() => {
   fetchKalender()
-  if (process.client) document.addEventListener('click', handleCategoryClickOutside) // ← tambah
+  if (process.client) document.addEventListener('click', handleCategoryClickOutside)
 })
 
 // ── Save ──────────────────────────────────────────────────
@@ -729,7 +731,7 @@ const validateForm = () => {
 }
 
 const saveEvent = async () => {
-  if (isKM.value) return
+  if (isReadOnly.value) return
   if (!validateForm()) return
   loadingSubmit.value = true
 
@@ -784,14 +786,14 @@ const saveEvent = async () => {
 
 // ── Delete ────────────────────────────────────────────────
 const confirmDelete = (event) => {
-  if (isKM.value) return
+  if (isReadOnly.value) return
   deletingEvent.value = event
   deleteError.value = null
   showDeleteConfirm.value = true
 }
 
 const deleteEvent = async () => {
-  if (isKM.value) return
+  if (isReadOnly.value) return
   if (!deletingEvent.value) return
   loadingDelete.value = true
   deleteError.value = null
@@ -850,7 +852,6 @@ const deleteEvent = async () => {
   }
 }
 
-/* ✅ FIX: CSS variables untuk bar sekarang didefinisikan dari mobile-first */
 .bar-layer {
   top: 0;
   /* Mobile */
