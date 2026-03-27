@@ -391,6 +391,7 @@ import {
     FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX
 } from 'lucide-vue-next'
 import { useConfirm } from '~/composables/useConfirm'
+import { usePresensiSocket } from '~/composables/usePresensiSocket'
 
 const presensiStore = usePresensiStore()
 const classroomsStore = useClassroomsStore()
@@ -771,6 +772,33 @@ const statusLabel = (status) => {
 const getGuruName = (row) => row?.guru?.nama_guru || 'N/A'
 const getMapelName = (row) => row?.guru?.mapel?.nama_mapel || 'N/A'
 const formatTime = (time) => time ? time.substring(0, 5) : '-'
+
+usePresensiSocket({
+    onNew: async () => {
+        presensiStore.summary.pending++
+        presensiStore.summary.total++
+        presensiStore.tabLoaded['pending'] = false
+
+        if (activeTab.value === 'pending') {
+            await presensiStore.getPresensiTab('pending', getCurrentFilters())
+        }
+
+        showAlert('info', 'Ada presensi baru masuk!')
+        scrollToAlert()
+    },
+
+    onResubmit: async () => {
+        presensiStore.summary.pending++
+        presensiStore.tabLoaded['pending'] = false
+
+        if (activeTab.value === 'pending') {
+            await presensiStore.getPresensiTab('pending', getCurrentFilters())
+        }
+
+        showAlert('info', 'Ada presensi dikirim ulang!')
+        scrollToAlert()
+    }
+})
 
 // ─────────────────────────────────────────────
 // LIFECYCLE
