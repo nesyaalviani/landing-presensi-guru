@@ -28,7 +28,7 @@
             <div class="flex flex-col sm:flex-row gap-2 flex-wrap">
 
                 <!-- Search: dari API dengan debounce -->
-                <div class="relative flex-1">
+                <div class="relative flex-1 sm:max-w-sm">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                     <input v-model="searchQuery" type="text" placeholder="Cari guru atau mapel..."
                         class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50"
@@ -575,9 +575,7 @@ let searchTimer = null
 const onSearchInput = () => {
     clearTimeout(searchTimer)
     searchTimer = setTimeout(async () => {
-        // Search hanya re-fetch tab aktif (bukan semua tab)
-        // Tab lain di-invalidate agar tidak stale
-        presensiStore.resetTabCache()
+        presensiStore.resetTabCache()  // ← sudah ada, pastikan tetap ada
         loading.value = true
         await presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
         loading.value = false
