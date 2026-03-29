@@ -429,8 +429,8 @@ const KELAS_LIMIT = 10
 const kelasDropdownOpen = ref(false)
 const kelasDropdownRef = ref(null)
 const kelasListRef = ref(null)
-const kelasSearchQuery = ref('')        // teks di input dropdown
-const kelasNameCache = ref({})          // id → name, untuk restore label saat close
+const kelasSearchQuery = ref('')
+const kelasNameCache = ref({})
 const kelasDropdownItems = ref([])
 const kelasPage = ref(1)
 const kelasHasMore = ref(true)
@@ -456,7 +456,6 @@ const fetchKelasDropdown = async (reset = false) => {
         })
 
         if (result?.success !== false) {
-            // Support dua bentuk response: { data: [...], pagination } atau langsung array
             const incoming = Array.isArray(result)
                 ? result
                 : result?.data?.data || result?.data || []
@@ -472,7 +471,6 @@ const fetchKelasDropdown = async (reset = false) => {
             if (pagination) {
                 kelasHasMore.value = kelasPage.value < (pagination.totalPages ?? 1)
             } else {
-                // Kalau tidak ada pagination, anggap sudah selesai
                 kelasHasMore.value = incoming.length === KELAS_LIMIT
             }
 
@@ -499,7 +497,6 @@ const toggleKelasDropdown = async () => {
 
 const closeKelasDropdown = () => {
     kelasDropdownOpen.value = false
-    // Restore label ke nama kelas yang dipilih (atau kosong jika semua kelas)
     kelasSearchQuery.value = filterKelas.value
         ? (kelasNameCache.value[filterKelas.value] || '')
         : ''
@@ -534,7 +531,7 @@ const selectKelasItem = async (kelas) => {
 }
 
 // ─────────────────────────────────────────────
-// HAPUS FILTER — deteksi ada filter aktif
+// HAPUS FILTER
 // ─────────────────────────────────────────────
 const hasActiveFilter = computed(() => {
     return !!searchQuery.value || !!filterKelas.value || filterDate.value !== todayISO()
@@ -552,7 +549,7 @@ const resetAllFilters = async () => {
 }
 
 // ─────────────────────────────────────────────
-// TABS — count dari summary store
+// TABS
 // ─────────────────────────────────────────────
 const tabs = computed(() => [
     { key: 'pending', label: 'Menunggu', icon: Clock, count: presensiStore.summary.pending },
@@ -563,9 +560,8 @@ const tabs = computed(() => [
 
 const currentTab = computed(() => tabs.value.find(t => t.key === activeTab.value) || tabs.value[0])
 
-// Data tab aktif — langsung dari store, tanpa filter client-side
-// (search sudah diaplikasikan di API)
-const currentTabData = computed(() => presensiStore.presensiByTab[activeTab.value] || [])
+// Data tab aktif — langsung dari store
+const currentTabData = computed(() => presensiStore.presensiTab)
 
 // ─────────────────────────────────────────────
 // SEARCH — debounce → fetch dari API
@@ -575,7 +571,6 @@ let searchTimer = null
 const onSearchInput = () => {
     clearTimeout(searchTimer)
     searchTimer = setTimeout(async () => {
-        presensiStore.resetTabCache()  // ← sudah ada, pastikan tetap ada
         loading.value = true
         await presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
         loading.value = false
@@ -594,42 +589,30 @@ const getCurrentFilters = () => ({
 // ─────────────────────────────────────────────
 // FETCH
 // ─────────────────────────────────────────────
-
-// Dipanggil saat filter (tanggal / kelas) berubah
 const fetchWithFilters = async () => {
     loading.value = true
-    presensiStore.resetTabCache()
-
     await Promise.all([
         presensiStore.getPresensiSummary(getCurrentFilters()),
         presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
     ])
-
     loading.value = false
 }
 
-// Dipanggil setelah approve/reject
 const refreshAfterAction = async () => {
     loading.value = true
-    presensiStore.resetTabCache()
-
     await Promise.all([
         presensiStore.getPresensiSummary(getCurrentFilters()),
         presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
     ])
-
     loading.value = false
 }
 
 // ─────────────────────────────────────────────
-// TAB SWITCH — lazy load
+// TAB SWITCH — selalu fetch fresh
 // ─────────────────────────────────────────────
 const switchTab = async (key) => {
     activeTab.value = key
     closeRejectPanel()
-
-    if (presensiStore.tabLoaded[key]) return
-
     loading.value = true
     await presensiStore.getPresensiTab(key, getCurrentFilters())
     loading.value = false

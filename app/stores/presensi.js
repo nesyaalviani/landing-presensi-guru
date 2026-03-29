@@ -12,23 +12,10 @@ export const usePresensiStore = defineStore('presensi', {
         presensiApproved: [],
         presensiRejected: [],
 
-        // State baru — per-tab lazy loading
-        presensiByTab: {
-            pending: [],
-            approved: [],
-            rejected: [],
-            belum: []
-        },
-        tabLoaded: {
-            pending: false,
-            approved: false,
-            rejected: false,
-            belum: false
-        },
+        // State baru — data tab aktif
+        presensiTab: [],
 
         // Summary count semua tab (untuk badge & totalJadwal)
-        // Search TIDAK diaplikasikan ke summary agar badge count
-        // tetap mencerminkan total data, bukan hasil search
         summary: {
             pending: 0,
             approved: 0,
@@ -43,7 +30,7 @@ export const usePresensiStore = defineStore('presensi', {
 
     actions: {
         // ─────────────────────────────────────────────
-        // SUMMARY — fetch count semua tab sekaligus (ringan)
+        // SUMMARY — fetch count semua tab sekaligus
         // ─────────────────────────────────────────────
         async getPresensiSummary(filters = {}) {
             this.error = null
@@ -65,8 +52,6 @@ export const usePresensiStore = defineStore('presensi', {
                 })
 
                 this.summary = response
-                this.presensiPending = Array(response.pending).fill(null)
-
                 return { success: true, data: response }
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch summary'
@@ -75,7 +60,7 @@ export const usePresensiStore = defineStore('presensi', {
         },
 
         // ─────────────────────────────────────────────
-        // FETCH DATA 1 TAB (lazy)
+        // FETCH DATA TAB — selalu fetch fresh
         // filters: { tanggal, id_kelas, search }
         // tab: 'pending' | 'approved' | 'rejected' | 'belum'
         // ─────────────────────────────────────────────
@@ -105,62 +90,11 @@ export const usePresensiStore = defineStore('presensi', {
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
 
-                this.presensiByTab[tab] = response || []
-                this.tabLoaded[tab] = true
+                this.presensiTab = response || []
                 this.loading = false
                 return { success: true, data: response }
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch presensi tab'
-                this.loading = false
-                return {
-                    success: false,
-                    message: error.data?.message || 'Gagal mengambil data presensi.'
-                }
-            }
-        },
-
-        // ─────────────────────────────────────────────
-        // RESET CACHE SEMUA TAB
-        // Dipanggil saat filter (tanggal / kelas / search) berubah
-        // atau setelah approve/reject agar data fresh
-        // ─────────────────────────────────────────────
-        resetTabCache() {
-            this.presensiByTab = { pending: [], approved: [], rejected: [], belum: [] }
-            this.tabLoaded = { pending: false, approved: false, rejected: false, belum: false }
-        },
-
-        // ─────────────────────────────────────────────
-        // LEGACY: getAllPresensi (masih dipakai halaman lain)
-        // ─────────────────────────────────────────────
-        async getAllPresensi(filters = {}) {
-            this.loading = true
-            this.error = null
-            const config = useRuntimeConfig()
-
-            try {
-                const token = process.client ? localStorage.getItem('token') : null
-                const queryParams = new URLSearchParams()
-                if (filters.tanggal) queryParams.set('tanggal', filters.tanggal)
-                if (filters.id_kelas) queryParams.set('id_kelas', filters.id_kelas)
-
-                const qs = queryParams.toString()
-                const url = qs ? `/presensi?${qs}` : '/presensi'
-
-                const response = await $fetch(url, {
-                    method: 'GET',
-                    baseURL: config.public.apiBase,
-                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
-                })
-
-                this.presensiList = response || []
-                const sudahPresensi = this.presensiList.filter(p => p.id_presensi !== null)
-                this.presensiPending = sudahPresensi.filter(p => p.status_approve === 'Pending')
-                this.presensiApproved = sudahPresensi.filter(p => p.status_approve === 'Approved')
-                this.presensiRejected = sudahPresensi.filter(p => p.status_approve === 'Rejected')
-                this.loading = false
-                return { success: true, data: response }
-            } catch (error) {
-                this.error = error.data?.message || 'Failed to fetch presensi'
                 this.loading = false
                 return {
                     success: false,
@@ -204,6 +138,46 @@ export const usePresensiStore = defineStore('presensi', {
                 return {
                     success: false,
                     message: error.data?.message || 'Gagal memproses presensi.'
+                }
+            }
+        },
+
+        // ─────────────────────────────────────────────
+        // LEGACY: getAllPresensi (masih dipakai halaman lain)
+        // ─────────────────────────────────────────────
+        async getAllPresensi(filters = {}) {
+            this.loading = true
+            this.error = null
+            const config = useRuntimeConfig()
+
+            try {
+                const token = process.client ? localStorage.getItem('token') : null
+                const queryParams = new URLSearchParams()
+                if (filters.tanggal) queryParams.set('tanggal', filters.tanggal)
+                if (filters.id_kelas) queryParams.set('id_kelas', filters.id_kelas)
+
+                const qs = queryParams.toString()
+                const url = qs ? `/presensi?${qs}` : '/presensi'
+
+                const response = await $fetch(url, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+
+                this.presensiList = response || []
+                const sudahPresensi = this.presensiList.filter(p => p.id_presensi !== null)
+                this.presensiPending = sudahPresensi.filter(p => p.status_approve === 'Pending')
+                this.presensiApproved = sudahPresensi.filter(p => p.status_approve === 'Approved')
+                this.presensiRejected = sudahPresensi.filter(p => p.status_approve === 'Rejected')
+                this.loading = false
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Failed to fetch presensi'
+                this.loading = false
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal mengambil data presensi.'
                 }
             }
         },
