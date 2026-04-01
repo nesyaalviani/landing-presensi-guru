@@ -196,6 +196,43 @@ export const useUsersStore = defineStore('users', {
                     message: error.data?.message || 'Gagal menghapus user. Silakan coba lagi.'
                 }
             }
+        },
+
+        async importUser(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/users/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: formData
+                })
+
+                await this.getUsers({ page: 1, limit: this.perPage })
+
+                return {
+                    success: true,
+                    inserted: response.berhasil ?? 0,
+                    skipped: response.gagal ?? 0,
+                    errors: (response.skipped ?? []).map(s => s.reason ?? String(s))
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data user.'
+                }
+            }
         }
     },
 

@@ -55,7 +55,12 @@
                     </div>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="showImportModal = true"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/users/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
@@ -210,6 +215,7 @@
             </div>
         </div>
 
+        <!-- Action dropdown (teleport) -->
         <Teleport to="body">
             <Transition enter-active-class="transition ease-out duration-100"
                 enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
@@ -234,13 +240,32 @@
             </Transition>
         </Teleport>
 
+        <AppImportModal v-model="showImportModal" title="Import Data User"
+            :required-columns="['name', 'username', 'password', 'role']"
+            :preview-columns="['name', 'username', 'role', 'kelas']" :import-fn="usersStore.importUser"
+            @download-template="downloadTemplate" @imported="onImported">
+            <template #format-info>
+                Kolom yang diperlukan:
+                <span class="font-semibold">name</span>,
+                <span class="font-semibold">username</span>,
+                <span class="font-semibold">password</span>,
+                <span class="font-semibold">role</span>
+                (admin / km / piket),
+                <span class="font-semibold">kelas</span>
+                (nama kelas, wajib jika role = km — contoh: <code class="bg-blue-100 px-1 rounded">X A 1</code>)
+            </template>
+        </AppImportModal>
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical, Check } from 'lucide-vue-next'
+import {
+    Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2,
+    ChevronDown, MoreVertical, Check, Upload
+} from 'lucide-vue-next'
 import { useUsersStore } from '~/stores/users'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -248,6 +273,7 @@ const usersStore = useUsersStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
+// ===================== State =====================
 const searchQuery = ref('')
 const selectedRole = ref(null)
 const selectedRoleName = ref('')
@@ -256,10 +282,12 @@ const roleDropdownRef = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+const showImportModal = ref(false)
 
 let autoCloseTimer = null
 let searchTimeout = null
 
+// ===================== Role options =====================
 const roleOptions = [
     { value: '1', label: 'Admin' },
     { value: '2', label: 'KM' },
@@ -267,6 +295,7 @@ const roleOptions = [
     { value: '4', label: 'Kepala Sekolah' },
 ]
 
+// ===================== Computed =====================
 const users = computed(() => usersStore.users)
 const loading = computed(() => usersStore.loading)
 const error = computed(() => usersStore.error)
@@ -283,6 +312,7 @@ const visiblePages = computed(() => {
     return pages
 })
 
+// ===================== Fetch =====================
 const fetchUsers = (newPage = 1) => {
     const filters = { page: newPage }
     if (searchQuery.value) filters.search = searchQuery.value
@@ -295,6 +325,7 @@ const goToPage = (newPage) => {
     fetchUsers(newPage)
 }
 
+// ===================== Watchers =====================
 watch(searchQuery, () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => fetchUsers(1), 400)
@@ -304,6 +335,7 @@ watch(selectedRole, () => {
     fetchUsers(1)
 })
 
+// ===================== Role dropdown =====================
 const toggleRoleDropdown = () => {
     roleDropdownOpen.value = !roleDropdownOpen.value
 }
@@ -326,32 +358,13 @@ const handleRoleClickOutside = (event) => {
     }
 }
 
+// ===================== Action dropdown =====================
 const setButtonRef = (el, id) => {
     if (el) buttonRefs.value[id] = el
 }
 
 const getUserById = (id) => {
     return users.value.find(u => u.id === id)
-}
-
-const getRoleBadgeClass = (roleName) => {
-    const roleStyles = {
-        'admin': 'bg-purple-100 text-purple-800',
-        'km': 'bg-blue-100 text-blue-800',
-        'piket': 'bg-green-100 text-green-800',
-        'ks': 'bg-yellow-100 text-yellow-800'
-    }
-    return roleStyles[roleName] || 'bg-gray-100 text-gray-800'
-}
-
-const getRoleLabel = (roleName) => {
-    const roleLabels = {
-        'admin': 'Administrator',
-        'km': 'Ketua Murid',
-        'piket': 'Petugas Piket',
-        'ks': 'Kepala Sekolah'
-    }
-    return roleLabels[roleName] || roleName
 }
 
 const calculateDropdownPosition = (buttonEl) => {
@@ -384,12 +397,35 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+// ===================== Role helpers =====================
+const getRoleBadgeClass = (roleName) => {
+    const roleStyles = {
+        'admin': 'bg-purple-100 text-purple-800',
+        'km': 'bg-blue-100 text-blue-800',
+        'piket': 'bg-green-100 text-green-800',
+        'ks': 'bg-yellow-100 text-yellow-800'
+    }
+    return roleStyles[roleName] || 'bg-gray-100 text-gray-800'
+}
+
+const getRoleLabel = (roleName) => {
+    const roleLabels = {
+        'admin': 'Administrator',
+        'km': 'Ketua Murid',
+        'piket': 'Petugas Piket',
+        'ks': 'Kepala Sekolah'
+    }
+    return roleLabels[roleName] || roleName
+}
+
+// ===================== Alert =====================
 const showAutoAlert = (type, message) => {
     clearTimeout(autoCloseTimer)
     showAlert(type, message)
-    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+    autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
+// ===================== Delete =====================
 const handleDelete = async (user) => {
     if (!user) return
     const confirmed = await confirm({
@@ -400,6 +436,7 @@ const handleDelete = async (user) => {
         type: 'danger',
     })
     if (!confirmed) return
+    closeDropdown()
     const result = await usersStore.deleteUser(user.id)
     if (result.success) {
         showAutoAlert('success', `User ${user.name} berhasil dihapus.`)
@@ -408,6 +445,29 @@ const handleDelete = async (user) => {
     }
 }
 
+// ===================== Import =====================
+const onImported = (result) => {
+    showAutoAlert('success', `Berhasil mengimport ${result.total} data user.`)
+}
+
+const downloadTemplate = async () => {
+    try {
+        const XLSX = await import('xlsx')
+        const templateData = [
+            { name: 'Contoh Admin', username: 'admin01', password: 'password123', role: 'admin', kelas: '' },
+            { name: 'Contoh KM', username: 'km_xa1', password: 'password123', role: 'km', kelas: 'X A 1' },
+            { name: 'Contoh Piket', username: 'piket01', password: 'password123', role: 'piket', kelas: '' },
+        ]
+        const worksheet = XLSX.utils.json_to_sheet(templateData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Template User')
+        XLSX.writeFile(workbook, 'template_import_user.xlsx')
+    } catch (e) {
+        console.error('Gagal membuat template:', e)
+    }
+}
+
+// ===================== Click outside & scroll =====================
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
@@ -421,6 +481,7 @@ const handleScroll = () => {
     }
 }
 
+// ===================== Lifecycle =====================
 onMounted(async () => {
     await fetchUsers(1)
     if (process.client) {
