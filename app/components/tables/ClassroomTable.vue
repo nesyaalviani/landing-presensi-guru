@@ -82,14 +82,19 @@
                         </Transition>
                     </div>
 
-                    <!-- 1 tombol hapus filter -->
+                    <!-- Hapus filter -->
                     <button v-if="jurusanFilter || tingkatFilter" type="button" @click="clearAllFilters"
                         class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors self-center">
                         Hapus Filter
                     </button>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="showImportModal = true"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/classroom/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
@@ -240,6 +245,7 @@
             </div>
         </div>
 
+        <!-- Action dropdown (teleport) -->
         <Teleport to="body">
             <Transition enter-active-class="transition ease-out duration-100"
                 enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
@@ -264,13 +270,29 @@
             </Transition>
         </Teleport>
 
+        <AppImportModal v-model="showImportModal" title="Import Data Kelas"
+            :required-columns="['name', 'tingkat', 'jurusan']" :preview-columns="['name', 'tingkat', 'jurusan']"
+            :import-fn="classroomsStore.importClassroom" @download-template="downloadTemplate" @imported="onImported">
+            <template #format-info>
+                Kolom yang diperlukan:
+                <span class="font-semibold">name</span>,
+                <span class="font-semibold">tingkat</span>
+                (X / XI / XII),
+                <span class="font-semibold">jurusan</span>
+                (kode jurusan — contoh: <code class="bg-blue-100 px-1 rounded">RPL</code>)
+            </template>
+        </AppImportModal>
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical, Check } from 'lucide-vue-next'
+import {
+    Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2,
+    ChevronDown, MoreVertical, Check, Upload
+} from 'lucide-vue-next'
 import { useClassroomsStore } from '~/stores/classrooms'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -278,6 +300,7 @@ const classroomsStore = useClassroomsStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
+// ===================== State =====================
 const searchQuery = ref('')
 const jurusanFilter = ref(null)
 const tingkatFilter = ref(null)
@@ -285,10 +308,14 @@ const currentPage = ref(1)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+const showImportModal = ref(false)
 
 let searchTimer = null
 let autoCloseTimer = null
 
+const tingkatOptions = ['X', 'XI', 'XII']
+
+// ===================== Computed =====================
 const classrooms = computed(() => classroomsStore.classrooms)
 const jurusanList = computed(() => classroomsStore.jurusanList)
 const loading = computed(() => classroomsStore.loading)
@@ -316,12 +343,11 @@ const jurusanDropdownOpen = ref(false)
 const jurusanDropdownRef = ref(null)
 const selectedJurusanName = ref('')
 
-const tingkatOptions = ['X', 'XI', 'XII']
-
 // ===================== Tingkat dropdown =====================
 const tingkatDropdownOpen = ref(false)
 const tingkatDropdownRef = ref(null)
 
+// ===================== Fetch =====================
 const fetchClassrooms = () => {
     classroomsStore.getClassrooms({
         search: searchQuery.value || undefined,
@@ -439,12 +465,14 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+// ===================== Alert =====================
 const showAutoAlert = (type, message) => {
     clearTimeout(autoCloseTimer)
     showAlert(type, message)
-    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+    autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
+// ===================== Delete =====================
 const handleDelete = async (classroom) => {
     if (!classroom) return
     const confirmed = await confirm({
@@ -464,6 +492,29 @@ const handleDelete = async (classroom) => {
     }
 }
 
+// ===================== Import =====================
+const onImported = (result) => {
+    showAutoAlert('success', `Berhasil mengimport ${result.total} kelas.`)
+}
+
+const downloadTemplate = async () => {
+    try {
+        const XLSX = await import('xlsx')
+        const templateData = [
+            { name: 'X RPL 1', tingkat: 'X', jurusan: 'RPL' },
+            { name: 'XI TKJ 2', tingkat: 'XI', jurusan: 'TKJ' },
+            { name: 'XII MM 1', tingkat: 'XII', jurusan: 'MM' },
+        ]
+        const worksheet = XLSX.utils.json_to_sheet(templateData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Kelas')
+        XLSX.writeFile(workbook, 'template_import_kelas.xlsx')
+    } catch (e) {
+        console.error('Gagal membuat template:', e)
+    }
+}
+
+// ===================== Click outside & scroll =====================
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
@@ -476,6 +527,7 @@ const handleScroll = () => {
     }
 }
 
+// ===================== Lifecycle =====================
 onMounted(async () => {
     await Promise.all([
         fetchClassrooms(),
