@@ -235,6 +235,43 @@ export const useSubjectsStore = defineStore('subjects', {
 
                 return { success: false, message: errorMessage }
             }
+        },
+
+        async importSubject(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) {
+                    token = localStorage.getItem('token')
+                }
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/mapel/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: formData
+                })
+
+                await this.getSubjects({ page: 1, limit: this.perPage })
+
+                return {
+                    success: true,
+                    inserted: response.berhasil ?? 0,
+                    skipped: response.gagal ?? 0,
+                    errors: (response.skipped ?? []).map(s => s.reason ?? String(s))
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data mata pelajaran.'
+                }
+            }
         }
     },
 

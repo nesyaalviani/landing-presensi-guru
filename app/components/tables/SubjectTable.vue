@@ -54,7 +54,12 @@
                     </div>
                 </div>
 
-                <div class="flex items-center w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button @click="showImportModal = true"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-white border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                        <Upload class="h-4 w-4" />
+                        Import
+                    </button>
                     <NuxtLink to="/subjects/create"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 rounded-sm bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 hover:bg-blue-600 transition-all shadow-md">
                         <Plus class="h-4 w-4" />
@@ -202,6 +207,7 @@
             </div>
         </div>
 
+        <!-- Action dropdown (teleport) -->
         <Teleport to="body">
             <Transition enter-active-class="transition ease-out duration-100"
                 enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100"
@@ -226,13 +232,28 @@
             </Transition>
         </Teleport>
 
+        <AppImportModal v-model="showImportModal" title="Import Data Mata Pelajaran"
+            :required-columns="['nama_mapel', 'kode_mapel']" :preview-columns="['nama_mapel', 'kode_mapel', 'status']"
+            :import-fn="subjectsStore.importSubject" @download-template="downloadTemplate" @imported="onImported">
+            <template #format-info>
+                Kolom yang diperlukan:
+                <span class="font-semibold">nama_mapel</span>,
+                <span class="font-semibold">kode_mapel</span>,
+                <span class="font-semibold">status</span>
+                (aktif / nonaktif, opsional — default aktif)
+            </template>
+        </AppImportModal>
+
         <AppConfirm />
     </section>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2, ChevronDown, MoreVertical, Check } from 'lucide-vue-next'
+import {
+    Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2,
+    ChevronDown, MoreVertical, Check, Upload
+} from 'lucide-vue-next'
 import { useSubjectsStore } from '~/stores/subjects'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -240,6 +261,7 @@ const subjectsStore = useSubjectsStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
+// ===================== State =====================
 const searchQuery = ref('')
 const selectedStatus = ref(null)
 const selectedStatusName = ref('')
@@ -248,6 +270,7 @@ const statusDropdownRef = ref(null)
 const activeDropdown = ref(null)
 const dropdownStyle = ref({})
 const buttonRefs = ref({})
+const showImportModal = ref(false)
 
 let autoCloseTimer = null
 let searchTimeout = null
@@ -257,6 +280,7 @@ const statusOptions = [
     { value: 'nonaktif', label: 'Non-Aktif' },
 ]
 
+// ===================== Computed =====================
 const subjects = computed(() => subjectsStore.subjects)
 const loading = computed(() => subjectsStore.loading)
 const error = computed(() => subjectsStore.error)
@@ -273,6 +297,7 @@ const visiblePages = computed(() => {
     return pages
 })
 
+// ===================== Fetch =====================
 const fetchSubjects = (newPage = 1) => {
     const filters = { page: newPage }
     if (searchQuery.value) filters.search = searchQuery.value
@@ -285,6 +310,7 @@ const goToPage = (newPage) => {
     fetchSubjects(newPage)
 }
 
+// ===================== Watchers =====================
 watch(searchQuery, () => {
     clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => fetchSubjects(1), 400)
@@ -356,18 +382,19 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+// ===================== Alert =====================
 const showAutoAlert = (type, message) => {
     clearTimeout(autoCloseTimer)
     showAlert(type, message)
-    autoCloseTimer = setTimeout(() => clearAlert(), 1000)
+    autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
+// ===================== Delete =====================
 const handleDelete = async (subject) => {
     if (!subject) return
-    const subjectInfo = subject.nama_mapel
     const confirmed = await confirm({
         title: 'Hapus Mata Pelajaran',
-        message: `Apakah Anda yakin ingin menghapus mata pelajaran "${subjectInfo}"? Tindakan ini tidak dapat dibatalkan.`,
+        message: `Apakah Anda yakin ingin menghapus mata pelajaran "${subject.nama_mapel}"? Tindakan ini tidak dapat dibatalkan.`,
         confirmText: 'Hapus',
         cancelText: 'Batal',
         type: 'danger',
@@ -376,12 +403,35 @@ const handleDelete = async (subject) => {
     closeDropdown()
     const result = await subjectsStore.deleteSubject(subject.id_mapel)
     if (result.success) {
-        showAutoAlert('success', `Mata Pelajaran ${subjectInfo} berhasil dihapus.`)
+        showAutoAlert('success', `Mata Pelajaran ${subject.nama_mapel} berhasil dihapus.`)
     } else {
         showAutoAlert('error', result.message || 'Gagal menghapus mata pelajaran.')
     }
 }
 
+// ===================== Import =====================
+const onImported = (result) => {
+    showAutoAlert('success', `Berhasil mengimport ${result.total} mata pelajaran.`)
+}
+
+const downloadTemplate = async () => {
+    try {
+        const XLSX = await import('xlsx')
+        const templateData = [
+            { nama_mapel: 'Matematika', kode_mapel: 'MTK', status: 'aktif' },
+            { nama_mapel: 'Bahasa Indonesia', kode_mapel: 'BIND', status: 'aktif' },
+            { nama_mapel: 'Fisika', kode_mapel: 'FIS', status: 'nonaktif' },
+        ]
+        const worksheet = XLSX.utils.json_to_sheet(templateData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Mapel')
+        XLSX.writeFile(workbook, 'template_import_mapel.xlsx')
+    } catch (e) {
+        console.error('Gagal membuat template:', e)
+    }
+}
+
+// ===================== Click outside & scroll =====================
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
@@ -395,6 +445,7 @@ const handleScroll = () => {
     }
 }
 
+// ===================== Lifecycle =====================
 onMounted(async () => {
     await fetchSubjects(1)
     if (process.client) {
