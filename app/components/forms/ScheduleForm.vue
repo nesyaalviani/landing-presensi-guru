@@ -18,33 +18,27 @@
                             </div>
                             <div class="h-4 w-56 bg-gray-200 rounded animate-pulse mt-1.5"></div>
                         </div>
-
                         <div>
                             <div class="h-5 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
                             <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
                             <div class="h-4 w-48 bg-gray-200 rounded animate-pulse mt-1.5"></div>
                         </div>
-
                         <div>
                             <div class="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
                             <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
                             <div class="h-4 w-56 bg-gray-200 rounded animate-pulse mt-1.5"></div>
                         </div>
-
                         <div>
                             <div class="h-5 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
                             <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
                             <div class="h-4 w-32 bg-gray-200 rounded animate-pulse mt-1.5"></div>
                         </div>
-
                         <div>
                             <div class="h-5 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
                             <div class="h-10 w-full bg-gray-200 rounded-sm animate-pulse"></div>
                             <div class="h-4 w-40 bg-gray-200 rounded animate-pulse mt-1.5"></div>
                         </div>
-
                         <hr class="border-gray-200" />
-
                         <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
                             <div class="h-10 w-full sm:w-32 bg-gray-200 rounded-sm animate-pulse"></div>
                             <div class="h-10 w-full sm:w-32 bg-gray-200 rounded-sm animate-pulse"></div>
@@ -90,7 +84,7 @@
                             <p class="mt-1.5 text-xs text-gray-500">Pilih jam mulai dan jam selesai pelajaran</p>
                         </div>
 
-                        <!-- Kelas (infinite scroll + search) -->
+                        <!-- Kelas -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Kelas <span class="text-red-500">*</span>
@@ -129,7 +123,7 @@
                                             <li v-for="kelas in kelasDropdownItems" :key="kelas.id"
                                                 @mousedown.prevent="selectKelas(kelas)"
                                                 class="px-3 py-2 text-sm cursor-pointer transition-colors"
-                                                :class="formData.kelas === kelas.id
+                                                :class="Number(formData.kelas) === Number(kelas.id)
                                                     ? 'bg-blue-50 text-blue-700 font-medium'
                                                     : 'text-gray-700 hover:bg-gray-50'">
                                                 {{ kelas.name }} - {{ kelas.nama_jurusan }}
@@ -149,7 +143,7 @@
                             <p class="mt-1.5 text-xs text-gray-500">Pilih kelas yang akan mengikuti pelajaran</p>
                         </div>
 
-                        <!-- Mata Pelajaran (infinite scroll + search) -->
+                        <!-- Mata Pelajaran -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Mata Pelajaran <span class="text-red-500">*</span>
@@ -188,7 +182,7 @@
                                             <li v-for="mapel in mapelDropdownItems" :key="mapel.id_mapel"
                                                 @mousedown.prevent="selectMapel(mapel)"
                                                 class="px-3 py-2 text-sm cursor-pointer transition-colors"
-                                                :class="formData.mapel === mapel.id_mapel
+                                                :class="Number(formData.mapel) === Number(mapel.id_mapel)
                                                     ? 'bg-blue-50 text-blue-700 font-medium'
                                                     : 'text-gray-700 hover:bg-gray-50'">
                                                 {{ mapel.nama_mapel }}
@@ -208,7 +202,7 @@
                             <p class="mt-1.5 text-xs text-gray-500">Pilih mata pelajaran yang akan diajarkan</p>
                         </div>
 
-                        <!-- Guru (custom dropdown, fetch by mapel) -->
+                        <!-- Guru -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Guru <span class="text-red-500">*</span>
@@ -220,7 +214,7 @@
                                     :class="guruDropdownOpen ? 'border-blue-400' : 'border-gray-300 hover:border-gray-400'">
                                     <span :class="formData.guru ? 'text-gray-700' : 'text-gray-400'">
                                         {{ formData.guru
-                                            ? (guruNameCache[formData.guru] || 'Pilih Guru')
+                                            ? (selectedGuruName || 'Pilih Guru')
                                             : !formData.mapel
                                                 ? 'Pilih mata pelajaran terlebih dahulu'
                                                 : loadingGuru
@@ -231,7 +225,8 @@
                                     </span>
                                     <span v-if="loadingGuru"
                                         class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></span>
-                                    <ChevronDown v-else class="h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                                    <ChevronDown v-else
+                                        class="h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
                                         :class="{ 'rotate-180': guruDropdownOpen }" />
                                 </button>
                                 <Transition enter-active-class="transition duration-100 ease-out"
@@ -250,7 +245,7 @@
                                             <li v-for="guru in teachers" :key="guru.id_guru"
                                                 @mousedown.prevent="selectGuru(guru)"
                                                 class="px-3 py-2 text-sm cursor-pointer transition-colors"
-                                                :class="formData.guru === guru.id_guru
+                                                :class="Number(formData.guru) === Number(guru.id_guru)
                                                     ? 'bg-blue-50 text-blue-700 font-medium'
                                                     : 'text-gray-700 hover:bg-gray-50'">
                                                 {{ guru.nama_guru }}
@@ -266,7 +261,7 @@
                             </p>
                         </div>
 
-                        <!-- Hari (custom dropdown, static list) -->
+                        <!-- Hari -->
                         <div>
                             <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 Hari <span class="text-red-500">*</span>
@@ -278,7 +273,8 @@
                                     <span :class="formData.hari ? 'text-gray-700' : 'text-gray-400'">
                                         {{ formData.hari || 'Pilih Hari' }}
                                     </span>
-                                    <ChevronDown class="h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                                    <ChevronDown
+                                        class="h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
                                         :class="{ 'rotate-180': hariDropdownOpen }" />
                                 </button>
                                 <Transition enter-active-class="transition duration-100 ease-out"
@@ -313,7 +309,7 @@
                                 <Save class="h-4 w-4" />
                                 {{ loading ? (isEditMode ? 'Mengupdate...' : 'Menyimpan...') : (isEditMode ? 'Edit Jadwal' : 'Simpan') }}
                             </button>
-                            <NuxtLink to="/schedule"
+                            <NuxtLink :to="cancelRoute"
                                 class="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none transition-all">
                                 <X class="h-4 w-4" />
                                 Batal
@@ -406,7 +402,6 @@ const fetchGuruByMapel = async (mapelId) => {
     }
 
     loadingGuru.value = true
-    formData.value.guru = ''
 
     const result = await teachersStore.getTeachers({ id_mapel: mapelId, all: true })
     if (result.success) {
@@ -418,10 +413,14 @@ const fetchGuruByMapel = async (mapelId) => {
     loadingGuru.value = false
 }
 
+// ===================== Computed guru name =====================
+const selectedGuruName = computed(() =>
+    teachers.value.find(g => Number(g.id_guru) === Number(formData.value.guru))?.nama_guru || ''
+)
+
 // ===================== GURU dropdown =====================
 const guruDropdownOpen = ref(false)
 const guruDropdownRef = ref(null)
-const guruNameCache = ref({})
 
 const toggleGuruDropdown = () => {
     if (!formData.value.mapel || loadingGuru.value) return
@@ -433,8 +432,7 @@ const closeGuruDropdown = () => {
 }
 
 const selectGuru = (guru) => {
-    formData.value.guru = guru.id_guru
-    guruNameCache.value[guru.id_guru] = guru.nama_guru
+    formData.value.guru = Number(guru.id_guru)
     guruDropdownOpen.value = false
 }
 
@@ -480,7 +478,6 @@ const kelasHasMore = ref(true)
 const kelasFetching = ref(false)
 const kelasDropdownRef = ref(null)
 const kelasListRef = ref(null)
-const kelasNameCache = ref({})
 
 let kelasSearchTimer = null
 
@@ -505,10 +502,6 @@ const fetchKelasDropdown = async (reset = false) => {
         if (result.success) {
             const incoming = result.data.data || []
 
-            incoming.forEach(k => {
-                kelasNameCache.value[k.id] = `${k.name} - ${k.nama_jurusan}`
-            })
-
             kelasDropdownItems.value = reset
                 ? [...incoming]
                 : [...kelasDropdownItems.value, ...incoming]
@@ -525,12 +518,15 @@ const fetchKelasDropdown = async (reset = false) => {
     }
 }
 
+const cancelRoute = computed(() =>
+    formData.value.kelas ? `/schedule/${formData.value.kelas}` : '/schedule'
+)
+
 const toggleKelasDropdown = async () => {
     if (kelasDropdownOpen.value) {
         closeKelasDropdown()
     } else {
         kelasDropdownOpen.value = true
-        // kelasSearchQuery.value = ''
         if (kelasDropdownItems.value.length === 0) {
             await fetchKelasDropdown(true)
         }
@@ -539,9 +535,9 @@ const toggleKelasDropdown = async () => {
 
 const closeKelasDropdown = () => {
     kelasDropdownOpen.value = false
-    kelasSearchQuery.value = formData.value.kelas
-        ? (kelasNameCache.value[formData.value.kelas] || '')
-        : ''
+    if (!formData.value.kelas) {
+        kelasSearchQuery.value = ''
+    }
 }
 
 const onKelasSearchInput = () => {
@@ -559,8 +555,7 @@ const onKelasListScroll = () => {
 }
 
 const selectKelas = (kelas) => {
-    formData.value.kelas = kelas.id
-    kelasNameCache.value[kelas.id] = `${kelas.name} - ${kelas.nama_jurusan}`
+    formData.value.kelas = Number(kelas.id)
     kelasSearchQuery.value = `${kelas.name} - ${kelas.nama_jurusan}`
     kelasDropdownOpen.value = false
 }
@@ -588,7 +583,6 @@ const mapelHasMore = ref(true)
 const mapelFetching = ref(false)
 const mapelDropdownRef = ref(null)
 const mapelListRef = ref(null)
-const mapelNameCache = ref({})
 
 let mapelSearchTimer = null
 
@@ -612,13 +606,7 @@ const fetchMapelDropdown = async (reset = false) => {
 
         if (result.success) {
             const incoming = result.data.data || []
-
-            // Filter hanya mapel aktif
             const activeIncoming = incoming.filter(m => m.status === true)
-
-            activeIncoming.forEach(m => {
-                mapelNameCache.value[m.id_mapel] = m.nama_mapel
-            })
 
             mapelDropdownItems.value = reset
                 ? [...activeIncoming]
@@ -641,7 +629,6 @@ const toggleMapelDropdown = async () => {
         closeMapelDropdown()
     } else {
         mapelDropdownOpen.value = true
-        // mapelSearchQuery.value = ''
         if (mapelDropdownItems.value.length === 0) {
             await fetchMapelDropdown(true)
         }
@@ -650,9 +637,9 @@ const toggleMapelDropdown = async () => {
 
 const closeMapelDropdown = () => {
     mapelDropdownOpen.value = false
-    mapelSearchQuery.value = formData.value.mapel
-        ? (mapelNameCache.value[formData.value.mapel] || '')
-        : ''
+    if (!formData.value.mapel) {
+        mapelSearchQuery.value = ''
+    }
 }
 
 const onMapelSearchInput = () => {
@@ -670,12 +657,13 @@ const onMapelListScroll = () => {
 }
 
 const selectMapel = async (mapel) => {
-    formData.value.mapel = mapel.id_mapel
-    mapelNameCache.value[mapel.id_mapel] = mapel.nama_mapel
+    formData.value.mapel = Number(mapel.id_mapel)
+    formData.value.guru = ''
+    teachers.value = []
     mapelSearchQuery.value = mapel.nama_mapel
     mapelDropdownOpen.value = false
 
-    await fetchGuruByMapel(mapel.id_mapel)
+    await fetchGuruByMapel(Number(mapel.id_mapel))
 }
 
 const clearMapelSelection = () => {
@@ -692,6 +680,22 @@ const handleMapelClickOutside = (e) => {
     }
 }
 
+// ===================== Fetch kelas by ID =====================
+const fetchKelasById = async (id) => {
+    try {
+        const config = useRuntimeConfig()
+        const token = process.client ? localStorage.getItem('token') : null
+        const kelas = await $fetch(`/kelas/${id}`, {
+            baseURL: config.public.apiBase,
+            headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+        })
+        return kelas
+    } catch (e) {
+        console.error('Gagal fetch kelas by id:', e)
+        return null
+    }
+}
+
 // ===================== Load schedule data (edit mode) =====================
 const loadScheduleData = async () => {
     if (!isEditMode.value) return
@@ -702,43 +706,35 @@ const loadScheduleData = async () => {
 
     if (result.success && result.data) {
         const schedule = result.data
-        const mapelId = schedule.guru?.mapel?.id_mapel || ''
+        const mapelId = schedule.guru?.mapel?.id_mapel ? Number(schedule.guru.mapel.id_mapel) : ''
         const mapelNama = schedule.guru?.mapel?.nama_mapel || ''
+        const guruId = schedule.guru?.id_guru ? Number(schedule.guru.id_guru) : ''
 
+        // Set kelas dan mapel dulu (tanpa guru, karena fetchGuruByMapel akan reset)
         formData.value = {
             jamMulai: schedule.jam_mulai ? schedule.jam_mulai.substring(0, 5) : '',
             jamSelesai: schedule.jam_selesai ? schedule.jam_selesai.substring(0, 5) : '',
-            kelas: schedule.id_kelas || '',
+            kelas: schedule.id_kelas ? Number(schedule.id_kelas) : '',
             mapel: mapelId,
-            guru: schedule.guru?.id_guru || '',
+            guru: '',
             hari: schedule.hari || ''
         }
 
-        // Seed cache
+        // Seed display query dari response API
         if (schedule.id_kelas && schedule.nama_kelas) {
-            const displayName = schedule.nama_jurusan
+            kelasSearchQuery.value = schedule.nama_jurusan
                 ? `${schedule.nama_kelas} - ${schedule.nama_jurusan}`
                 : schedule.nama_kelas
-            kelasNameCache.value[schedule.id_kelas] = displayName
-            kelasSearchQuery.value = displayName
         }
         if (mapelId && mapelNama) {
-            mapelNameCache.value[mapelId] = mapelNama
             mapelSearchQuery.value = mapelNama
         }
-        if (schedule.hari) {
-            // hari langsung dari formData, tidak perlu seed query
-        }
 
-        // Fetch guru berdasarkan mapel yang sudah dipilih
+        // Fetch guru berdasarkan mapel, lalu restore id guru
         if (mapelId) {
             await fetchGuruByMapel(mapelId)
-            // Restore guru setelah fetch (fetchGuruByMapel mereset formData.guru)
-            formData.value.guru = schedule.guru?.id_guru || ''
-            const guruNama = schedule.guru?.nama_guru || ''
-            if (formData.value.guru && guruNama) {
-                guruNameCache.value[formData.value.guru] = guruNama
-            }
+            // Set guru setelah teachers sudah terisi
+            formData.value.guru = guruId
         }
     } else {
         showAlert('error', 'Gagal memuat data jadwal')
@@ -789,12 +785,12 @@ const handleSubmit = async () => {
     loading.value = true
 
     const payload = {
-        id_kelas: parseInt(formData.value.kelas),
+        id_kelas: Number(formData.value.kelas),
         hari: formData.value.hari,
         jam_mulai: formData.value.jamMulai,
         jam_selesai: formData.value.jamSelesai,
-        id_guru: parseInt(formData.value.guru),
-        id_mapel: parseInt(formData.value.mapel)
+        id_guru: Number(formData.value.guru),
+        id_mapel: Number(formData.value.mapel)
     }
 
     let result
@@ -809,7 +805,7 @@ const handleSubmit = async () => {
     if (result.success) {
         showAlert('success', isEditMode.value ? 'Jadwal berhasil diupdate!' : 'Jadwal berhasil ditambahkan!', {
             redirectDelay: 1500,
-            redirectFn: () => router.push('/schedule')
+            redirectFn: () => router.push(formData.value.kelas ? `/schedule/${formData.value.kelas}` : '/schedule')
         })
         scrollToAlert()
     } else {
@@ -824,16 +820,23 @@ onMounted(async () => {
         await import('clock-timepicker')
     }
 
-    // Pre-fetch dropdown data
     await Promise.all([
         fetchKelasDropdown(true),
         fetchMapelDropdown(true)
     ])
 
-    // Set kelas dari query param jika ada
+    // Set kelas dari query param (create mode dengan kelasId)
     const kelasIdFromQuery = route.query.kelasId
     if (kelasIdFromQuery) {
-        formData.value.kelas = parseInt(kelasIdFromQuery)
+        const id = Number(kelasIdFromQuery)
+        formData.value.kelas = id
+
+        const kelas = await fetchKelasById(id)
+        if (kelas) {
+            kelasSearchQuery.value = kelas.nama_jurusan
+                ? `${kelas.name} - ${kelas.nama_jurusan}`
+                : kelas.name
+        }
     }
 
     await loadScheduleData()
