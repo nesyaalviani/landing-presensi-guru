@@ -22,8 +22,8 @@
               src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png"
               alt="Logo Presensi Guru" />
             <div class="flex ml-3 flex-col">
-              <h3 class="font-medium">Presensi Guru</h3>
-              <p class="text-xs text-gray-500">Sistem Absensi</p>
+              <h3 class="font-medium">SMKN 1 Cisarua</h3>
+              <p class="text-xs text-gray-500">Sistem Presensi</p>
             </div>
           </NuxtLink>
         </div>
