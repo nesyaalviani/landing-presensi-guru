@@ -530,6 +530,7 @@ const toggleKelasDropdown = async () => {
         closeKelasDropdown()
     } else {
         kelasDropdownOpen.value = true
+        // kelasSearchQuery.value = ''
         if (kelasDropdownItems.value.length === 0) {
             await fetchKelasDropdown(true)
         }
@@ -640,6 +641,7 @@ const toggleMapelDropdown = async () => {
         closeMapelDropdown()
     } else {
         mapelDropdownOpen.value = true
+        // mapelSearchQuery.value = ''
         if (mapelDropdownItems.value.length === 0) {
             await fetchMapelDropdown(true)
         }
@@ -714,8 +716,11 @@ const loadScheduleData = async () => {
 
         // Seed cache
         if (schedule.id_kelas && schedule.nama_kelas) {
-            kelasNameCache.value[schedule.id_kelas] = schedule.nama_kelas
-            kelasSearchQuery.value = schedule.nama_kelas
+            const displayName = schedule.nama_jurusan
+                ? `${schedule.nama_kelas} - ${schedule.nama_jurusan}`
+                : schedule.nama_kelas
+            kelasNameCache.value[schedule.id_kelas] = displayName
+            kelasSearchQuery.value = displayName
         }
         if (mapelId && mapelNama) {
             mapelNameCache.value[mapelId] = mapelNama

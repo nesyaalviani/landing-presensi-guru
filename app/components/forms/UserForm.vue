@@ -293,6 +293,9 @@ const kelasNameCache = ref({})
 
 let kelasSearchTimer = null
 
+let savedKelas = ''
+let savedKelasQuery = ''
+
 const fetchKelasDropdown = async (reset = false) => {
     if (kelasFetching.value) return
     if (!kelasHasMore.value && !reset) return
@@ -405,18 +408,6 @@ const handleKelasClickOutside = (event) => {
     }
 }
 
-// ===================== Watch role change =====================
-watch(() => formData.value.id_role, (newRole) => {
-    if (newRole !== 2) {
-        formData.value.id_kelas = ''
-        kelasSearchQuery.value = ''
-    } else {
-        // Reset dan fetch ulang saat role KM dipilih
-        kelasDropdownItems.value = []
-        fetchKelasDropdown(true)
-    }
-})
-
 // ===================== Load user data (edit mode) =====================
 const loadUserData = async () => {
     if (!isEditMode.value) return
@@ -435,6 +426,7 @@ const loadUserData = async () => {
         // Seed cache jika ada kelas terpilih supaya input langsung tampil nama
         if (user.id_kelas && user.nama_kelas) {
             kelasNameCache.value[user.id_kelas] = user.nama_kelas
+            kelasSearchQuery.value = user.nama_kelas
         }
     } else {
         showAlert('error', 'Gagal memuat data user')
@@ -529,6 +521,8 @@ onMounted(async () => {
     if (isEditMode.value) {
         loadingData.value = true
     }
+
+    await fetchKelasDropdown(true) 
 
     await loadUserData()
 
