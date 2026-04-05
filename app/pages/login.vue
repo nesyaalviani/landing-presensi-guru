@@ -86,6 +86,8 @@ const {
 
 watchInputClearError(formData)
 
+useHead({ title: 'Login | SMKN 1 Cisarua' })
+
 const handleLogin = async () => {
     clearAlert()
     isLoading.value = true

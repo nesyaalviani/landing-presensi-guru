@@ -190,6 +190,10 @@ const pageTitle = computed(() => {
   return matched.length ? titles[matched[0]] : 'Dashboard'
 })
 
+useHead(computed(() => ({
+  title: `${pageTitle.value} | SMKN 1 Cisarua`
+})))
+
 const isActive = (path) => {
   if (path === '/') {
     return route.path === '/'
