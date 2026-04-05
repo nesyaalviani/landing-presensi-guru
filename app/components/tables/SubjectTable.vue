@@ -87,6 +87,10 @@
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Guru Pengampu
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th scope="col"
@@ -105,6 +109,12 @@
                                         <div class="h-5 w-48 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                                            <div class="h-5 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-5 w-20 bg-gray-200 rounded-full animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -115,7 +125,7 @@
 
                             <template v-else-if="error">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12">
+                                    <td colspan="5" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
                                             <button @click="fetchSubjects()"
@@ -129,7 +139,7 @@
 
                             <template v-else-if="subjects.length === 0">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12">
+                                    <td colspan="5" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-gray-500">Tidak ada data mata pelajaran</p>
                                         </div>
@@ -146,6 +156,53 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         {{ subject.nama_mapel }}
                                     </td>
+
+                                    <!-- Kolom Guru Pengampu -->
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        <div class="flex flex-wrap gap-1 items-center">
+                                            <template v-if="subject.guru_list && subject.guru_list.length > 0">
+
+                                                <!-- Badge individual maks 2, masing-masing punya tooltip -->
+                                                <div v-for="guru in subject.guru_list.slice(0, 2)" :key="guru.id_guru"
+                                                    class="relative group">
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap cursor-default">
+                                                        {{ guru.nama_guru }}
+                                                    </span>
+                                                    <div
+                                                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
+                                                        <div
+                                                            class="bg-gray-800 text-white text-xs rounded-md px-3 py-1.5 whitespace-nowrap">
+                                                            {{ guru.nama_guru }}
+                                                        </div>
+                                                        <div class="w-2 h-2 bg-gray-800 rotate-45 mx-auto -mt-1"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Chip +N dengan tooltip list, muncul kalau guru lebih dari 2 -->
+                                                <div v-if="subject.guru_list.length > 2" class="relative group">
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 cursor-default select-none">
+                                                        +{{ subject.guru_list.length - 2 }} lainnya
+                                                    </span>
+                                                    <div
+                                                        class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 pointer-events-none">
+                                                        <div
+                                                            class="bg-gray-800 text-white text-xs rounded-md px-3 py-2 min-w-max">
+                                                            <p v-for="g in subject.guru_list.slice(2)" :key="g.id_guru"
+                                                                class="py-0.5 whitespace-nowrap">
+                                                                {{ g.nama_guru }}
+                                                            </p>
+                                                        </div>
+                                                        <div class="w-2 h-2 bg-gray-800 rotate-45 ml-3 -mt-1"></div>
+                                                    </div>
+                                                </div>
+
+                                            </template>
+                                            <span v-else class="text-gray-400 text-xs italic">-</span>
+                                        </div>
+                                    </td>
+
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         <span v-if="subject.status"
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
