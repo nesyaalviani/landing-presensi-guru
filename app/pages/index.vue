@@ -231,7 +231,19 @@ onMounted(() => {
 
 // ── Auth ────────────────────────────────────────────────
 // Ganti dengan auth store saat integrasi penuh
-const userName = ref('Admin')
+const userName = ref('')
+
+onMounted(() => {
+  const raw = localStorage.getItem('user')
+  if (raw) {
+    try {
+      const user = JSON.parse(raw)
+      userName.value = user.name || 'Admin'
+    } catch {
+      userName.value = 'Admin'
+    }
+  }
+})
 
 // ── State dashboard ─────────────────────────────────────
 const loading = ref(true)
