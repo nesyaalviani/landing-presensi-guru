@@ -2,89 +2,98 @@
     <div class="max-w-7xl space-y-4 sm:space-y-5">
 
       <div class="bg-white rounded-sm border border-gray-200 px-6 py-4">
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="text-sm font-medium text-gray-600">Filter:</span>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-sm font-medium text-gray-600">Filter:</span>
 
-                <!-- Periode -->
-                <div class="relative" ref="periodeDropdownRef">
-                    <button type="button" @click.stop="togglePeriodeDropdown"
-                        class="flex items-center justify-between gap-6 pl-4 pr-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 min-w-[120px]"
-                        :class="periodeDropdownOpen ? 'border-blue-400' : 'border-gray-300 hover:border-gray-400'">
-                        <span>{{PERIODE_LIST.find(p => p.value === selectedPeriode)?.label}}</span>
-                        <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
-                            :class="{ 'rotate-180': periodeDropdownOpen }" />
-                    </button>
-                    <Transition enter-active-class="transition duration-100 ease-out"
-                        enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
-                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-y-0"
-                        leave-to-class="opacity-0 -translate-y-1">
-                        <div v-if="periodeDropdownOpen"
-                            class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
-                            <ul class="py-1">
-                                <li v-for="p in PERIODE_LIST" :key="p.value" @mousedown.prevent="selectPeriode(p)"
-                                    class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedPeriode === p.value
-                                        ? 'bg-blue-50 text-blue-700 font-medium'
-                                        : 'text-gray-700 hover:bg-gray-50'">
-                                    {{ p.label }}
-                                </li>
-                            </ul>
-                        </div>
-                    </Transition>
-                </div>
-
-                <!-- Kelas -->
-                <div class="relative" ref="kelasDropdownRef">
-                    <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors min-w-[160px]"
-                        :class="kelasDropdownOpen ? 'border-blue-400' : 'border-gray-300'">
-                        <input v-model="kelasSearchQuery" type="text" placeholder="Semua Kelas"
-                            class="flex-1 min-w-0 pl-4 pr-2 py-2 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-500"
-                            @click.stop="toggleKelasDropdown" @input="onKelasSearchInput" />
-                        <button type="button" @click.stop="toggleKelasDropdown"
-                            class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
-                            <ChevronDown class="h-4 w-4 transition-transform duration-200"
-                                :class="{ 'rotate-180': kelasDropdownOpen }" />
+                    <!-- Periode -->
+                    <div class="relative" ref="periodeDropdownRef">
+                        <button type="button" @click.stop="togglePeriodeDropdown"
+                            class="flex items-center justify-between gap-6 pl-4 pr-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 min-w-[120px]"
+                            :class="periodeDropdownOpen ? 'border-blue-400' : 'border-gray-300 hover:border-gray-400'">
+                            <span>{{PERIODE_LIST.find(p => p.value === selectedPeriode)?.label}}</span>
+                            <ChevronDown class="h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                                :class="{ 'rotate-180': periodeDropdownOpen }" />
                         </button>
+                        <Transition enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                            <div v-if="periodeDropdownOpen"
+                                class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                                <ul class="py-1">
+                                    <li v-for="p in PERIODE_LIST" :key="p.value" @mousedown.prevent="selectPeriode(p)"
+                                        class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedPeriode === p.value
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-700 hover:bg-gray-50'">
+                                        {{ p.label }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </Transition>
                     </div>
-                    <Transition enter-active-class="transition duration-100 ease-out"
-                        enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
-                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-y-0"
-                        leave-to-class="opacity-0 -translate-y-1">
-                        <div v-if="kelasDropdownOpen"
-                            class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
-                            <ul ref="kelasListRef" class="custom-scroll max-h-52 overflow-y-auto py-1"
-                                @scroll="onKelasListScroll">
-                                <li @mousedown.prevent="resetAllFilters"
-                                    class="px-4 py-2 text-sm cursor-pointer transition-colors"
-                                    :class="!selectedKelas ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
-                                    Semua Kelas
-                                </li>
-                                <li v-if="kelasDropdownItems.length === 0 && !kelasFetching"
-                                    class="px-4 py-3 text-sm text-gray-400 text-center">Tidak ada hasil</li>
-                                <li v-for="kelas in kelasDropdownItems" :key="kelas.id"
-                                    @mousedown.prevent="selectKelasItem(kelas)"
-                                    class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedKelas === kelas.id
-                                        ? 'bg-blue-50 text-blue-700 font-medium'
-                                        : 'text-gray-700 hover:bg-gray-50'">
-                                    {{ kelas.name }}
-                                </li>
-                                <li v-if="kelasFetching" class="px-4 py-2.5 flex justify-center">
-                                    <span
-                                        class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
-                                </li>
-                                <li v-else-if="!kelasHasMore && kelasDropdownItems.length > 0"
-                                    class="px-4 py-1.5 text-xs text-gray-400 text-center border-t border-gray-100 mt-1">
-                                    Semua data ditampilkan
-                                </li>
-                            </ul>
+
+                    <!-- Kelas -->
+                    <div class="relative" ref="kelasDropdownRef">
+                        <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors min-w-[160px]"
+                            :class="kelasDropdownOpen ? 'border-blue-400' : 'border-gray-300'">
+                            <input v-model="kelasSearchQuery" type="text" placeholder="Semua Kelas"
+                                class="flex-1 min-w-0 pl-4 pr-2 py-2 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-500"
+                                @click.stop="toggleKelasDropdown" @input="onKelasSearchInput" />
+                            <button type="button" @click.stop="toggleKelasDropdown"
+                                class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                                <ChevronDown class="h-4 w-4 transition-transform duration-200"
+                                    :class="{ 'rotate-180': kelasDropdownOpen }" />
+                            </button>
                         </div>
-                    </Transition>
+                        <Transition enter-active-class="transition duration-100 ease-out"
+                            enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                            leave-active-class="transition duration-75 ease-in"
+                            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                            <div v-if="kelasDropdownOpen"
+                                class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
+                                <ul ref="kelasListRef" class="custom-scroll max-h-52 overflow-y-auto py-1"
+                                    @scroll="onKelasListScroll">
+                                    <li @mousedown.prevent="resetAllFilters"
+                                        class="px-4 py-2 text-sm cursor-pointer transition-colors"
+                                        :class="!selectedKelas ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
+                                        Semua Kelas
+                                    </li>
+                                    <li v-if="kelasDropdownItems.length === 0 && !kelasFetching"
+                                        class="px-4 py-3 text-sm text-gray-400 text-center">Tidak ada hasil</li>
+                                    <li v-for="kelas in kelasDropdownItems" :key="kelas.id"
+                                        @mousedown.prevent="selectKelasItem(kelas)"
+                                        class="px-4 py-2 text-sm cursor-pointer transition-colors" :class="selectedKelas === kelas.id
+                                            ? 'bg-blue-50 text-blue-700 font-medium'
+                                            : 'text-gray-700 hover:bg-gray-50'">
+                                        {{ kelas.name }}
+                                    </li>
+                                    <li v-if="kelasFetching" class="px-4 py-2.5 flex justify-center">
+                                        <span
+                                            class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                    </li>
+                                    <li v-else-if="!kelasHasMore && kelasDropdownItems.length > 0"
+                                        class="px-4 py-1.5 text-xs text-gray-400 text-center border-t border-gray-100 mt-1">
+                                        Semua data ditampilkan
+                                    </li>
+                                </ul>
+                            </div>
+                        </Transition>
+                    </div>
+
+                    <!-- Hapus Filter -->
+                    <button v-if="selectedKelas || selectedPeriode !== 'bulan'" type="button" @click="resetAllFilters"
+                        class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors">
+                        Hapus Filter
+                    </button>
                 </div>
 
-                <!-- Hapus Filter -->
-                <button v-if="selectedKelas || selectedPeriode !== 'bulan'" type="button" @click="resetAllFilters"
-                    class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors">
-                    Hapus Filter
-                </button>
+                <!-- Tombol Export -->
+                <NuxtLink to="/statistics/preview"
+                    class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors flex-shrink-0 w-full sm:w-auto">
+                    <FileDown class="h-4 w-4" />
+                    Export PDF
+                </NuxtLink>
             </div>
         </div>
 
@@ -412,7 +421,7 @@ import {
     Chart as ChartJS, CategoryScale, LinearScale,
     PointElement, LineElement, BarElement, Tooltip, Legend, Filler
 } from 'chart.js'
-import { ChevronDown, Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-vue-next'
+import { ChevronDown, Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown, X, FileDown } from 'lucide-vue-next'
 import { useStatisticsStore } from '@/stores/statistics'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler)

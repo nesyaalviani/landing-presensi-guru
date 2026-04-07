@@ -15,6 +15,7 @@
     "chart.js": "^4.5.1",
     "clock-timepicker": "^1.0.7",
     "daisyui": "^5.5.14",
+    "html2pdf.js": "^0.14.0",
     "lucide-vue-next": "^0.563.0",
     "nuxt": "^4.3.0",
     "pinia": "^3.0.4",
