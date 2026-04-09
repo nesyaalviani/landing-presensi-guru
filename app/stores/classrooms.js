@@ -213,6 +213,39 @@ export const useClassroomsStore = defineStore('classrooms', {
                 this.loading = false
                 return { success: false, message: error.data?.message || 'Gagal menghapus kelas.' }
             }
+        },
+
+        async importClassroom(file) {
+            const config = useRuntimeConfig()
+
+            try {
+                let token = null
+                if (process.client) token = localStorage.getItem('token')
+
+                const formData = new FormData()
+                formData.append('file', file)
+
+                const response = await $fetch('/kelas/import', {
+                    method: 'POST',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+                    body: formData
+                })
+
+                await this.getClassrooms({ page: 1, limit: this.perPage })
+
+                return {
+                    success: true,
+                    inserted: response.berhasil ?? 0,
+                    skipped: response.gagal ?? 0,
+                    errors: (response.skipped ?? []).map(s => s.reason ?? String(s))
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.data?.message || 'Gagal import data kelas.'
+                }
+            }
         }
     }
 })

@@ -5,6 +5,7 @@
             <div class="mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
+                    <!-- Search guru -->
                     <div class="relative w-full sm:w-80">
                         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input type="text" v-model="searchQuery" placeholder="Cari berdasarkan nama guru..."
@@ -12,17 +13,78 @@
                             @input="onSearchInput" />
                     </div>
 
-                    <div class="relative w-full sm:w-50">
-                        <select v-model="selectedMapel"
-                            class="w-full px-3 py-2 text-sm border border-gray-500 rounded-sm outline-none appearance-none bg-white pr-8"
-                            @change="onFilterChange">
-                            <option :value="null">Semua Mata Pelajaran</option>
-                            <option v-for="mapel in mapels" :key="mapel.id_mapel" :value="mapel.id_mapel">
-                                {{ mapel.nama_mapel }}
-                            </option>
-                        </select>
-                        <ChevronDown
-                            class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <!-- Combobox mapel -->
+                    <div class="flex items-center gap-3 w-full sm:w-auto" ref="mapelDropdownRef">
+                        <div class="relative w-full sm:w-56">
+                            <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors"
+                                :class="mapelDropdownOpen ? 'border-blue-400' : 'border-gray-500'">
+
+                                <!-- Input sekaligus trigger -->
+                                <input ref="mapelInputRef" v-model="mapelSearchQuery" type="text"
+                                    :placeholder="selectedMapelName || 'Semua Mata Pelajaran'" :class="[
+                                        'flex-1 min-w-0 pl-3 pr-2 py-2 text-sm outline-none bg-transparent',
+                                        selectedMapel && !mapelSearchQuery
+                                            ? 'text-gray-900 placeholder-gray-900'
+                                            : 'text-gray-700 placeholder-gray-400'
+                                    ]" @click.stop="toggleMapelDropdown" @input="onMapelSearchInput" />
+
+                                <!-- Chevron -->
+                                <button type="button" @click.stop="toggleMapelDropdown"
+                                    class="px-2 py-2 text-gray-400 hover:text-gray-500 flex-shrink-0 transition-colors">
+                                    <ChevronDown class="h-3.5 w-3.5 transition-transform duration-200"
+                                        :class="{ 'rotate-180': mapelDropdownOpen }" />
+                                </button>
+                            </div>
+
+                            <!-- Dropdown panel -->
+                            <Transition enter-active-class="transition duration-100 ease-out"
+                                enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
+                                leave-active-class="transition duration-75 ease-in"
+                                leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
+                                <div v-if="mapelDropdownOpen"
+                                    class="absolute z-[10] mt-1 w-full bg-white border border-gray-200 rounded-sm shadow-lg">
+                                    <ul ref="mapelListRef" class="mapel-scroll max-h-48 overflow-y-auto py-1"
+                                        @scroll="onMapelListScroll">
+
+                                        <!-- Empty state -->
+                                        <li v-if="mapelDropdownItems.length === 0 && !mapelFetching"
+                                            class="px-3 py-3 text-sm text-gray-400 text-center">
+                                            Tidak ada hasil
+                                        </li>
+
+                                        <!-- Items -->
+                                        <li v-for="mapel in mapelDropdownItems" :key="mapel.id_mapel"
+                                            @mousedown.prevent="selectMapel(mapel)"
+                                            class="px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2"
+                                            :class="selectedMapel === mapel.id_mapel
+                                                ? 'bg-blue-50 text-blue-700 font-medium'
+                                                : 'text-gray-700 hover:bg-gray-50'">
+                                            <span class="flex-1">{{ mapel.nama_mapel }}</span>
+                                            <Check v-if="selectedMapel === mapel.id_mapel"
+                                                class="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                        </li>
+
+                                        <!-- Loading spinner -->
+                                        <li v-if="mapelFetching" class="px-3 py-2.5 flex justify-center">
+                                            <span
+                                                class="inline-block h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                        </li>
+
+                                        <!-- End of list -->
+                                        <li v-else-if="!mapelHasMore && mapelDropdownItems.length > 0"
+                                            class="px-3 py-1.5 text-xs text-gray-400 text-center border-t border-gray-100 mt-1">
+                                            Semua data ditampilkan
+                                        </li>
+                                    </ul>
+                                </div>
+                            </Transition>
+                        </div>
+
+                        <!-- Hapus filter — teks, di luar input -->
+                        <button v-if="selectedMapel" type="button" @mousedown.prevent="clearMapelFilter"
+                            class="text-xs text-red-500 hover:text-red-600 whitespace-nowrap flex-shrink-0 transition-colors">
+                            Hapus Filter
+                        </button>
                     </div>
                 </div>
 
@@ -139,6 +201,7 @@
                 </div>
             </div>
 
+            <!-- Pagination -->
             <div class="bg-white py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 flex justify-between sm:hidden">
@@ -175,6 +238,7 @@
             </div>
         </div>
 
+        <!-- Action dropdown (teleport) -->
         <Teleport to="body">
             <div v-if="activeDropdown !== null" :style="dropdownStyle"
                 class="fixed w-48 rounded-sm shadow-lg bg-white ring-1 ring-gray-200 z-50">
@@ -213,7 +277,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import {
     Search, ChevronRight, ChevronLeft, Plus, Pencil, Trash2,
-    ChevronDown, MoreVertical, Upload
+    ChevronDown, MoreVertical, Upload, Check
 } from 'lucide-vue-next'
 import { useTeachersStore } from '~/stores/teachers'
 import { useConfirm } from '~/composables/useConfirm'
@@ -222,6 +286,7 @@ const teachersStore = useTeachersStore()
 const { confirm } = useConfirm()
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 
+// ===================== Teacher table state =====================
 const searchQuery = ref('')
 const selectedMapel = ref(null)
 const activeDropdown = ref(null)
@@ -233,7 +298,6 @@ let searchTimer = null
 let autoCloseTimer = null
 
 const teachers = computed(() => teachersStore.teachers)
-const mapels = computed(() => teachersStore.mapels)
 const loading = computed(() => teachersStore.loading)
 const error = computed(() => teachersStore.error)
 const page = computed(() => teachersStore.page)
@@ -276,7 +340,126 @@ const goToPage = (p) => {
 
 const getTeacherById = (id) => teachers.value.find(t => t.id_guru === id)
 
-// ===================== Dropdown =====================
+// ===================== Mapel combobox =====================
+const MAPEL_LIMIT = 10
+
+const mapelDropdownOpen = ref(false)
+const mapelSearchQuery = ref('')
+const mapelDropdownItems = ref([])
+const mapelPage = ref(1)
+const mapelHasMore = ref(true)
+const mapelFetching = ref(false)
+const mapelDropdownRef = ref(null)
+const mapelInputRef = ref(null)
+const mapelListRef = ref(null)
+// Simpan nama mapel terpilih supaya placeholder tetap tampil saat input kosong
+const selectedMapelName = ref('')
+
+let mapelSearchTimer = null
+
+const fetchMapelDropdown = async (reset = false) => {
+    if (mapelFetching.value) return
+    if (!mapelHasMore.value && !reset) return
+
+    mapelFetching.value = true
+
+    if (reset) {
+        mapelDropdownItems.value = []
+        mapelPage.value = 1
+        mapelHasMore.value = true
+    }
+
+    try {
+        const config = useRuntimeConfig()
+        const token = process.client ? localStorage.getItem('token') : null
+
+        const params = new URLSearchParams({
+            page: mapelPage.value,
+            limit: MAPEL_LIMIT,
+        })
+        if (mapelSearchQuery.value) params.set('search', mapelSearchQuery.value)
+
+        const res = await $fetch(`/mapel?${params}`, {
+            baseURL: config.public.apiBase,
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+
+        const incoming = res.data || []
+        mapelDropdownItems.value = reset
+            ? incoming
+            : [...mapelDropdownItems.value, ...incoming]
+
+        const pagination = res.pagination
+        if (pagination) {
+            mapelHasMore.value = mapelPage.value < pagination.totalPages
+            mapelPage.value++
+        } else {
+            mapelHasMore.value = false
+        }
+    } catch (e) {
+        console.error('Gagal fetch mapel dropdown:', e)
+    } finally {
+        mapelFetching.value = false
+    }
+}
+
+const toggleMapelDropdown = async () => {
+    if (mapelDropdownOpen.value) {
+        closeMapelDropdown()
+    } else {
+        mapelDropdownOpen.value = true
+        if (mapelDropdownItems.value.length === 0) {
+            await fetchMapelDropdown(true)
+        }
+    }
+}
+
+const closeMapelDropdown = () => {
+    mapelDropdownOpen.value = false
+}
+
+const onMapelSearchInput = () => {
+    if (!mapelDropdownOpen.value) mapelDropdownOpen.value = true
+    clearTimeout(mapelSearchTimer)
+    mapelSearchTimer = setTimeout(() => fetchMapelDropdown(true), 350)
+}
+
+const onMapelListScroll = () => {
+    const el = mapelListRef.value
+    if (!el) return
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 40
+    if (nearBottom && mapelHasMore.value && !mapelFetching.value) {
+        fetchMapelDropdown()
+    }
+}
+
+// pakai mousedown.prevent supaya input tidak blur sebelum selectMapel dieksekusi
+const selectMapel = (mapel) => {
+    selectedMapel.value = mapel.id_mapel
+    selectedMapelName.value = mapel.nama_mapel
+    mapelSearchQuery.value = ''
+    mapelDropdownOpen.value = false
+    onFilterChange()
+}
+
+const clearMapelFilter = () => {
+    selectedMapel.value = null
+    selectedMapelName.value = ''
+    mapelSearchQuery.value = ''
+    mapelDropdownItems.value = []
+    mapelHasMore.value = true
+    mapelPage.value = 1
+    mapelDropdownOpen.value = false
+    onFilterChange()
+}
+
+const handleMapelClickOutside = (event) => {
+    if (mapelDropdownRef.value && !mapelDropdownRef.value.contains(event.target)) {
+        closeMapelDropdown()
+    }
+}
+
+// ===================== Action dropdown =====================
 const setButtonRef = (el, id) => {
     if (el) buttonRefs.value[id] = el
 }
@@ -310,12 +493,14 @@ const closeDropdown = () => {
     dropdownStyle.value = {}
 }
 
+// ===================== Alert =====================
 const showAutoAlert = (type, message) => {
     clearTimeout(autoCloseTimer)
     showAlert(type, message)
     autoCloseTimer = setTimeout(() => clearAlert(), 3000)
 }
 
+// ===================== Delete =====================
 const handleDelete = async (teacher) => {
     if (!teacher) return
 
@@ -340,6 +525,7 @@ const handleDelete = async (teacher) => {
     }
 }
 
+// ===================== Import =====================
 const onImported = (result) => {
     showAutoAlert('success', `Berhasil mengimport ${result.total} data guru.`)
 }
@@ -360,6 +546,7 @@ const downloadTemplate = async () => {
     }
 }
 
+// ===================== Click outside & scroll =====================
 const handleClickOutside = (event) => {
     const isDropdown = event.target.closest('.fixed.w-48')
     const isButton = Object.values(buttonRefs.value).some(btn => btn?.contains(event.target))
@@ -372,10 +559,12 @@ const handleScroll = () => {
     }
 }
 
+// ===================== Lifecycle =====================
 onMounted(async () => {
-    await Promise.all([fetchTeachers(1), teachersStore.getMapels()])
+    await fetchTeachers(1)
     if (process.client) {
         document.addEventListener('click', handleClickOutside)
+        document.addEventListener('click', handleMapelClickOutside)
         window.addEventListener('scroll', handleScroll, true)
         window.addEventListener('resize', handleScroll)
     }
@@ -384,10 +573,39 @@ onMounted(async () => {
 onUnmounted(() => {
     clearTimeout(searchTimer)
     clearTimeout(autoCloseTimer)
+    clearTimeout(mapelSearchTimer)
     if (process.client) {
         document.removeEventListener('click', handleClickOutside)
+        document.removeEventListener('click', handleMapelClickOutside)
         window.removeEventListener('scroll', handleScroll, true)
         window.removeEventListener('resize', handleScroll)
     }
 })
 </script>
+
+<style scoped>
+/* ── Custom scrollbar list mapel ── */
+.mapel-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mapel-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.mapel-scroll::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 99px;
+}
+
+.mapel-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+/* Firefox */
+.mapel-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+</style>

@@ -1,367 +1,279 @@
 <template>
-  <!-- Stat Cards -->
-  <section>
-    <div class="mx-auto max-w-7xl">
-      <div class="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="px-4 py-6 shadow-lg shadow-blue-100 bg-white rounded-sm">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-500">Jumlah Guru</p>
-              <p class="mt-2 text-3xl font-semibold text-gray-800">25</p>
-            </div>
-            <div
-              class="h-12 w-12 rounded-xl bg-blue-50 p-2.5 text-blue-400 flex items-center justify-center flex-shrink-0">
-              <CircleUserRound class="h-7 w-7" />
-            </div>
-          </div>
-        </div>
+  <div class="space-y-5">
 
-        <div class="px-4 py-6 shadow-lg shadow-green-100 bg-white rounded-sm">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-500">Presensi Masuk</p>
-              <p class="mt-2 text-3xl font-semibold text-gray-800">35</p>
-            </div>
-            <div
-              class="h-12 w-12 rounded-xl bg-green-50 p-2.5 text-green-400 flex items-center justify-center flex-shrink-0">
-              <UserCheck class="h-7 w-7" />
-            </div>
-          </div>
-        </div>
-
-        <div class="px-4 py-6 shadow-lg shadow-rose-100 bg-white rounded-sm">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-500">Belum Presensi</p>
-              <p class="mt-2 text-3xl font-semibold text-gray-800">10</p>
-            </div>
-            <div
-              class="h-12 w-12 rounded-xl bg-rose-50 p-2.5 text-rose-400 flex items-center justify-center flex-shrink-0">
-              <UserX class="h-7 w-7" />
-            </div>
-          </div>
-        </div>
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900">{{ greeting }}, {{ userName }}</h1>
+        <p class="text-sm text-gray-400 mt-0.5">{{ todayLabel }}</p>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-sm flex-shrink-0">
+        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+        <span class="text-sm font-mono text-gray-500">{{ serverTime }}</span>
       </div>
     </div>
-  </section>
 
-  <!-- Charts Section -->
-  <section class="mt-6">
-    <div class="mx-auto max-w-7xl">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+    <!-- Banner kalender — tampil kalau ada kegiatan/libur hari ini -->
+    <div v-if="kalenderHariIni" class="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-sm">
+      <CalendarDays class="h-4 w-4 text-blue-500 flex-shrink-0" />
+      <p class="text-sm text-blue-800">
+        <span class="font-semibold">Hari ini:</span>
+        {{ kalenderHariIni.keterangan }}
+        <span v-if="kalenderHariIni.jam" class="text-blue-600">
+          ({{ kalenderHariIni.jam }})
+        </span>
+      </p>
+    </div>
 
-        <!-- Donut Chart: Presensi Hari Ini -->
-        <div class="bg-white rounded-sm shadow-lg shadow-gray-100 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 mb-1">Presensi Hari Ini</h2>
-          <p class="text-xs text-gray-400 mb-4">Proporsi kehadiran guru</p>
-          <div class="flex items-center justify-center" style="height: 200px;">
-            <Doughnut :data="donutData" :options="donutOptions" />
-          </div>
-          <div class="mt-4 flex justify-center gap-6 text-xs text-gray-500">
-            <span class="flex items-center gap-1.5">
-              <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-400"></span>
-              Hadir (35)
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-400"></span>
-              Belum (10)
-            </span>
-          </div>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white rounded-sm border border-gray-200 px-5 py-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-medium text-gray-400">Total Jadwal</p>
+          <CalendarDays class="h-4 w-4 text-gray-300" />
         </div>
-
-        <!-- Bar Chart: Tren Presensi Mingguan -->
-        <div class="bg-white rounded-sm shadow-lg shadow-gray-100 p-5 lg:col-span-2">
-          <h2 class="text-sm font-semibold text-gray-700 mb-1">Tren Presensi Minggu Ini</h2>
-          <p class="text-xs text-gray-400 mb-4">Perbandingan hadir vs tidak hadir per hari</p>
-          <div style="height: 220px;">
-            <Bar :data="barData" :options="barOptions" />
-          </div>
-        </div>
-
+        <p class="text-2xl font-bold text-gray-900">{{ summary.total }}</p>
+        <p class="text-xs text-gray-400 mt-1">hari ini</p>
       </div>
 
-      <!-- Line Chart: Rekap Bulanan -->
-      <div class="mt-4 sm:mt-5 bg-white rounded-sm shadow-lg shadow-gray-100 p-5">
-        <h2 class="text-sm font-semibold text-gray-700 mb-1">Rekap Kehadiran Bulanan</h2>
-        <p class="text-xs text-gray-400 mb-4">Tren kehadiran guru sepanjang tahun</p>
-        <div style="height: 240px;">
-          <Line :data="lineData" :options="lineOptions" />
+      <div class="bg-white rounded-sm border border-yellow-100 px-5 py-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-medium text-gray-400">Menunggu</p>
+          <Clock class="h-4 w-4 text-yellow-300" />
         </div>
+        <p class="text-2xl font-bold text-yellow-500">{{ summary.pending }}</p>
+        <p class="text-xs text-gray-400 mt-1">pending approval</p>
+      </div>
+
+      <div class="bg-white rounded-sm border border-green-100 px-5 py-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-medium text-gray-400">Disetujui</p>
+          <CheckCircle class="h-4 w-4 text-green-300" />
+        </div>
+        <p class="text-2xl font-bold text-green-600">{{ summary.approved }}</p>
+        <p class="text-xs text-gray-400 mt-1">dari {{ summary.total }} jadwal</p>
+      </div>
+
+      <div class="bg-white rounded-sm border border-red-100 px-5 py-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-medium text-gray-400">Belum Presensi</p>
+          <AlertCircle class="h-4 w-4 text-red-300" />
+        </div>
+        <p class="text-2xl font-bold text-red-500">{{ summary.belum }}</p>
+        <p class="text-xs text-gray-400 mt-1">jam sudah lewat</p>
       </div>
     </div>
-  </section>
 
-  <!-- Tabel Monitoring -->
-  <section class="mt-8">
-    <div class="mx-auto max-w-7xl">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Monitoring Presensi Guru Hari Ini</h1>
-      </div>
+    <!-- 2 Kolom Utama -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-      <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div class="relative w-full sm:max-w-md">
-          <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input type="text" placeholder="Cari berdasarkan nama guru..."
-            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
-        </div>
-      </div>
-
-      <div class="bg-white rounded-sm shadow overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-100">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Jam
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kelas
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Guru
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Verifikasi
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="guru in guruList" :key="guru.id" class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ guru.jam }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {{ guru.kelas }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ guru.nama }}</div>
-                  <div class="text-sm text-gray-500">{{ guru.jabatan }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                    guru.status === 'Hadir'
-                      ? 'bg-green-100 text-green-800'
-                      : guru.status === 'Izin'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-rose-100 text-rose-800'
-                  ]">
-                    {{ guru.status }}
-                  </span>
-                </td>
-                <td class="whitespace-no-wrap py-4 text-sm font-normal text-gray-500 px-6">
-                  <div :class="[
-                    'inline-flex items-center rounded-full py-2 px-3 text-xs text-white',
-                    guru.verifikasi === 'Disetujui' ? 'bg-blue-600' : 'bg-gray-400'
-                  ]">
-                    {{ guru.verifikasi }}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- Kiri: Guru hadir / tidak hadir hari ini -->
+      <div class="bg-white rounded-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">Kehadiran Guru Hari Ini</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Berdasarkan presensi yang sudah disetujui</p>
+          </div>
+          <NuxtLink to="/approval"
+            class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:text-blue-700 flex-shrink-0">
+            Kelola
+            <ChevronRight class="h-3.5 w-3.5" />
+          </NuxtLink>
         </div>
 
-        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 flex justify-between sm:hidden">
-              <button
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Previous
-              </button>
-              <button
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Next
-              </button>
+        <!-- Tab hadir / tidak hadir -->
+        <div class="flex border-b border-gray-100">
+          <button @click="activeTab = 'hadir'" :class="[
+            'flex-1 py-2.5 text-xs font-semibold transition-colors',
+            activeTab === 'hadir'
+              ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
+              : 'text-gray-400 hover:text-gray-600'
+          ]">
+            Hadir ({{ hadirList.length }})
+          </button>
+          <button @click="activeTab = 'tidakHadir'" :class="[
+            'flex-1 py-2.5 text-xs font-semibold transition-colors',
+            activeTab === 'tidakHadir'
+              ? 'text-red-500 border-b-2 border-red-400 bg-red-50'
+              : 'text-gray-400 hover:text-gray-600'
+          ]">
+            Tidak Hadir ({{ tidakHadirList.length }})
+          </button>
+        </div>
+
+        <div class="overflow-y-auto" style="max-height: 280px; scrollbar-width: none;">
+          <template v-if="activeTab === 'hadir'">
+            <!-- Loading state -->
+            <div v-if="loading" class="px-5 py-8 text-center text-sm text-gray-400">
+              Memuat data...
             </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div></div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <ChevronLeft class="h-5 w-5" />
-                  </button>
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
-                    1
-                  </button>
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    2
-                  </button>
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    3
-                  </button>
-                  <button
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <ChevronRight class="h-5 w-5" />
-                  </button>
-                </nav>
+            <div v-else-if="hadirList.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
+              Belum ada presensi yang disetujui
+            </div>
+            <div v-for="item in hadirList" :key="item.id"
+              class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+              <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-xs font-bold text-green-600">{{ item.inisial }}</span>
               </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ item.guru }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ item.mapel }} · {{ item.kelas }}</p>
+              </div>
+              <p class="text-xs text-gray-400 flex-shrink-0">{{ item.jam }}</p>
             </div>
-          </div>
+          </template>
+
+          <template v-else>
+            <div v-if="loading" class="px-5 py-8 text-center text-sm text-gray-400">
+              Memuat data...
+            </div>
+            <div v-else-if="tidakHadirList.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
+              Tidak ada guru yang tidak hadir hari ini
+            </div>
+            <div v-for="item in tidakHadirList" :key="item.id"
+              class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+              <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-xs font-bold text-red-500">{{ item.inisial }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ item.guru }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ item.mapel }} · {{ item.kelas }}</p>
+              </div>
+              <span class="text-xs flex-shrink-0 px-2 py-0.5 rounded-full"
+                :class="item.tugas ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'">
+                {{ item.tugas ? 'Ada Tugas' : 'Tanpa Tugas' }}
+              </span>
+            </div>
+          </template>
         </div>
       </div>
+
+      <!-- Kanan: Jadwal belum dipresensi -->
+      <div class="bg-white rounded-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">Jadwal Belum Dipresensi</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Jam sudah lewat — perlu follow up ke KM</p>
+          </div>
+          <span v-if="belumPresensiList.length > 0"
+            class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full flex-shrink-0">
+            {{ belumPresensiList.length }}
+          </span>
+        </div>
+
+        <div class="overflow-y-auto" style="max-height: 320px; scrollbar-width: none;">
+          <!-- Loading state -->
+          <div v-if="loading" class="px-5 py-10 text-center text-sm text-gray-400">
+            Memuat data...
+          </div>
+          <div v-else-if="belumPresensiList.length === 0" class="px-5 py-10 text-center">
+            <CheckCircle class="h-8 w-8 text-green-300 mx-auto mb-2" />
+            <p class="text-sm text-gray-500 font-medium">Semua jadwal sudah dipresensi</p>
+          </div>
+          <div v-for="item in belumPresensiList" :key="item.id"
+            class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+            <div class="w-1.5 h-8 rounded-full bg-red-200 flex-shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ item.guru }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ item.mapel }} · {{ item.kelas }}</p>
+            </div>
+            <p class="text-xs text-gray-400 flex-shrink-0 bg-gray-100 px-2 py-1 rounded-sm font-mono">
+              {{ item.jam }}
+            </p>
+          </div>
+        </div>
+
+        <div v-if="belumPresensiList.length > 0" class="px-5 py-3 bg-red-50 border-t border-red-100">
+          <p class="text-xs text-red-600">
+            <span class="font-semibold">{{ belumPresensiList.length }} jadwal</span>
+            perlu tindak lanjut ke KM kelas masing-masing
+          </p>
+        </div>
+      </div>
+
     </div>
-  </section>
+
+  </div>
 </template>
 
 <script setup>
-import { CircleUserRound, UserCheck, UserX, Search, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { Doughnut, Bar, Line } from 'vue-chartjs'
+import { ref, computed, onMounted } from 'vue'
 import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Filler
-} from 'chart.js'
+  CalendarDays, Clock, CheckCircle, AlertCircle, ChevronRight
+} from 'lucide-vue-next'
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Filler
-)
+const config = useRuntimeConfig()
+const activeTab = ref('hadir')
 
-// --- Data Tabel ---
-const guruList = [
-  { id: 1, jam: '07:15 - 16:30 WIB', kelas: 'XII RPL 1', nama: 'Siti Nurhaliza', jabatan: 'Guru Senior', status: 'Hadir', verifikasi: 'Disetujui' },
-  { id: 2, jam: '07:15 - 16:30 WIB', kelas: 'XI TKJ 2', nama: 'Budi Santoso', jabatan: 'Guru Madya', status: 'Hadir', verifikasi: 'Disetujui' },
-  { id: 3, jam: '07:15 - 16:30 WIB', kelas: 'X MM 1', nama: 'Dewi Rahayu', jabatan: 'Guru Muda', status: 'Izin', verifikasi: 'Menunggu' },
-  { id: 4, jam: '07:15 - 16:30 WIB', kelas: 'XII AKL 1', nama: 'Ahmad Fauzi', jabatan: 'Guru Senior', status: 'Hadir', verifikasi: 'Disetujui' },
-  { id: 5, jam: '07:15 - 16:30 WIB', kelas: 'XI OTKP 1', nama: 'Rina Marlina', jabatan: 'Guru Muda', status: 'Tidak Hadir', verifikasi: 'Menunggu' },
-]
+// ── Waktu & tanggal ─────────────────────────────────────
+const serverTime = ref('--:--:--')
 
-// --- Donut Chart ---
-const donutData = {
-  labels: ['Hadir', 'Belum Presensi'],
-  datasets: [{
-    data: [35, 10],
-    backgroundColor: ['#4ade80', '#fb7185'],
-    borderWidth: 0,
-    hoverOffset: 6
-  }]
-}
+const todayLabel = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+})
 
-const donutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: '72%',
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (ctx) => ` ${ctx.label}: ${ctx.parsed} guru`
-      }
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 11) return 'Selamat Pagi'
+  if (h < 15) return 'Selamat Siang'
+  if (h < 18) return 'Selamat Sore'
+  return 'Selamat Malam'
+})
+
+// Tick jam lokal setiap detik
+onMounted(() => {
+  const tick = () => {
+    serverTime.value = new Date().toLocaleTimeString('id-ID', { hour12: false })
+  }
+  tick()
+  setInterval(tick, 1000)
+})
+
+// ── Auth ────────────────────────────────────────────────
+// Ganti dengan auth store saat integrasi penuh
+const userName = ref('')
+
+onMounted(() => {
+  const raw = localStorage.getItem('user')
+  if (raw) {
+    try {
+      const user = JSON.parse(raw)
+      userName.value = user.name || 'Admin'
+    } catch {
+      userName.value = 'Admin'
     }
+  }
+})
+
+// ── State dashboard ─────────────────────────────────────
+const loading = ref(true)
+const kalenderHariIni = ref(null)
+const summary = ref({ total: 0, pending: 0, approved: 0, belum: 0 })
+const hadirList = ref([])
+const tidakHadirList = ref([])
+const belumPresensiList = ref([])
+
+// ── Fetch ────────────────────────────────────────────────
+async function fetchDashboard() {
+  try {
+    const token = process.client ? localStorage.getItem('token') : null
+    const data = await $fetch('/guru/dashboard-today', {
+      method: 'GET',
+      baseURL: config.public.apiBase,
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+    })
+
+    kalenderHariIni.value = data.kalenderHariIni
+    summary.value = data.summary
+    hadirList.value = data.hadirList
+    tidakHadirList.value = data.tidakHadirList
+    belumPresensiList.value = data.belumPresensiList
+  } catch (err) {
+    console.error('Dashboard fetch error:', err)
+  } finally {
+    loading.value = false
   }
 }
 
-// --- Bar Chart ---
-const barData = {
-  labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
-  datasets: [
-    {
-      label: 'Hadir',
-      data: [38, 35, 40, 37, 35],
-      backgroundColor: '#60a5fa',
-      borderRadius: 4,
-      borderSkipped: false
-    },
-    {
-      label: 'Tidak Hadir',
-      data: [7, 10, 5, 8, 10],
-      backgroundColor: '#fca5a5',
-      borderRadius: 4,
-      borderSkipped: false
-    }
-  ]
-}
-
-const barOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: { font: { size: 11 }, usePointStyle: true, pointStyleWidth: 8 }
-    }
-  },
-  scales: {
-    x: { grid: { display: false } },
-    y: {
-      beginAtZero: true,
-      grid: { color: '#f3f4f6' },
-      ticks: { stepSize: 10 }
-    }
-  }
-}
-
-// --- Line Chart ---
-const lineData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'],
-  datasets: [
-    {
-      label: 'Hadir',
-      data: [180, 165, 190, 175, 185, 178, 192, 188, 170, 195, 182, 178],
-      borderColor: '#34d399',
-      backgroundColor: 'rgba(52, 211, 153, 0.08)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBackgroundColor: '#34d399'
-    },
-    {
-      label: 'Tidak Hadir',
-      data: [45, 60, 35, 50, 40, 47, 33, 37, 55, 30, 43, 47],
-      borderColor: '#f87171',
-      backgroundColor: 'rgba(248, 113, 113, 0.08)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBackgroundColor: '#f87171'
-    }
-  ]
-}
-
-const lineOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  interaction: {
-    mode: 'index',
-    intersect: false
-  },
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: { font: { size: 11 }, usePointStyle: true, pointStyleWidth: 8 }
-    }
-  },
-  scales: {
-    x: { grid: { display: false } },
-    y: {
-      beginAtZero: true,
-      grid: { color: '#f3f4f6' },
-      ticks: { stepSize: 50 }
-    }
-  }
-}
+onMounted(fetchDashboard)
 </script>

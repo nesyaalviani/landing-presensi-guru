@@ -54,7 +54,7 @@
                 </form>
 
                 <div class="text-center pt-6">
-                    <p class="text-xs text-gray-500">Sistem Absensi Guru &copy; 2024</p>
+                    <p class="text-xs text-gray-500">SMKN 1 Cisarua &copy; {{ new Date().getFullYear() }}</p>
                 </div>
 
             </div>
@@ -85,6 +85,8 @@ const {
 } = useAlert()
 
 watchInputClearError(formData)
+
+useHead({ title: 'Login | SMKN 1 Cisarua' })
 
 const handleLogin = async () => {
     clearAlert()

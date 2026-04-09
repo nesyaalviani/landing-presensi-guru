@@ -17,5 +17,14 @@ export default defineNuxtConfig({
     }
   },
 
+  app: {
+    head: {
+      title: 'SMKN 1 Cisarua',
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ]
+    }
+  },
+
   ssr: false
 })

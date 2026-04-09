@@ -10,41 +10,80 @@ export const useStatisticsStore = defineStore('statistics', {
     state: () => ({
         kelasList: [],
 
-        // 1. bar — hadir vs tidak hadir (total)
-        barChart: { labels: [], data: [] },
+        summaryStats: {
+            total: 0, hadir: 0, tidak_hadir_tugas: 0, tidak_hadir: 0,
+            pct_hadir: 0, pct_tidak_hadir: 0, trend: 0
+        },
+        loadingSummary: false,
+
+        barChart: { labels: [], data: [], percentages: [], total: 0 },
         loadingBar: false,
 
-        // 2. tren keseluruhan — time series
-        trenChart: { labels: [], hadir: [], tidakHadir: [] },
+        trenChart: { labels: [], hadir: [], tidakHadirTugas: [], tidakHadir: [] },
         loadingTren: false,
 
-        // 3. top 10 hadir
         topHadir: [],
         loadingTopHadir: false,
 
-        // 4. top 10 tidak hadir
         topTidakHadir: [],
         loadingTopTidakHadir: false,
 
-        // 5. line chart per guru
-        lineChart: { labels: [], datasets: [] },
+        performaGuru: [],
+        loadingPerforma: false,
+
+        lineChart: { labels: [], datasets: [], guruList: [] },
         loadingLine: false,
+
+        unpresensiStats: { total_belum: 0 },
+        loadingUnpresensi: false,
     }),
 
     actions: {
-        async getKelas() {
+        async getKelas(params = {}) {
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const response = await $fetch('/kelas?all=true', {
+
+                const query = new URLSearchParams()
+                if (params.page) query.set('page', params.page)
+                if (params.limit) query.set('limit', params.limit)
+                if (params.search) query.set('search', params.search)
+                // Kalau tidak ada page/limit, fetch semua (untuk init kelasList global)
+                if (!params.page && !params.limit) query.set('all', 'true')
+
+                const response = await $fetch(`/kelas?${query}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
+
                 this.kelasList = response.data || []
+                return { success: true, data: response }
             } catch (err) {
                 console.error('Failed to fetch kelas:', err)
+                return { success: false }
+            }
+        },
+
+        async getSummaryStats(range = 'bulan', id_kelas = null) {
+            this.loadingSummary = true
+            const config = useRuntimeConfig()
+            try {
+                let token = null
+                if (process.client) token = localStorage.getItem('token')
+                const params = new URLSearchParams({ range })
+                if (id_kelas) params.set('id_kelas', id_kelas)
+                const response = await $fetch(`/guru/summary-stats?${params}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+                this.summaryStats = response
+            } catch (err) {
+                console.error('Summary stats error:', err)
+            } finally {
+                this.loadingSummary = false
             }
         },
 
@@ -63,7 +102,9 @@ export const useStatisticsStore = defineStore('statistics', {
                 })
                 this.barChart = {
                     labels: response.labels || [],
-                    data: response.data || []
+                    data: response.data || [],
+                    percentages: response.percentages || [],
+                    total: response.total || 0
                 }
             } catch (err) {
                 console.error('Bar chart error:', err)
@@ -88,6 +129,7 @@ export const useStatisticsStore = defineStore('statistics', {
                 this.trenChart = {
                     labels: response.labels || [],
                     hadir: response.hadir || [],
+                    tidakHadirTugas: response.tidakHadirTugas || [],
                     tidakHadir: response.tidakHadir || []
                 }
             } catch (err) {
@@ -97,13 +139,15 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getTopHadir(range = 'bulan') {
+        async getTopHadir(range = 'bulan', id_kelas = null) {
             this.loadingTopHadir = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const response = await $fetch(`/guru/top-hadir?range=${range}`, {
+                const params = new URLSearchParams({ range })
+                if (id_kelas) params.set('id_kelas', id_kelas)
+                const response = await $fetch(`/guru/top-hadir?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
@@ -116,13 +160,15 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getTopTidakHadir(range = 'bulan') {
+        async getTopTidakHadir(range = 'bulan', id_kelas = null) {
             this.loadingTopTidakHadir = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const response = await $fetch(`/guru/top-tidak-hadir?range=${range}`, {
+                const params = new URLSearchParams({ range })
+                if (id_kelas) params.set('id_kelas', id_kelas)
+                const response = await $fetch(`/guru/top-tidak-hadir?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
@@ -135,7 +181,28 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getLinePerGuru(range = 'bulan', id_kelas = null) {
+        async getPerformaGuru(range = 'bulan', id_kelas = null) {
+            this.loadingPerforma = true
+            const config = useRuntimeConfig()
+            try {
+                let token = null
+                if (process.client) token = localStorage.getItem('token')
+                const params = new URLSearchParams({ range })
+                if (id_kelas) params.set('id_kelas', id_kelas)
+                const response = await $fetch(`/guru/performa-guru?${params}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+                this.performaGuru = response.data || []
+            } catch (err) {
+                console.error('Performa guru error:', err)
+            } finally {
+                this.loadingPerforma = false
+            }
+        },
+
+        async getLinePerGuru(range = 'bulan', id_kelas = null, nama_guru = null) {
             this.loadingLine = true
             const config = useRuntimeConfig()
             try {
@@ -143,6 +210,7 @@ export const useStatisticsStore = defineStore('statistics', {
                 if (process.client) token = localStorage.getItem('token')
                 const params = new URLSearchParams({ range })
                 if (id_kelas) params.set('id_kelas', id_kelas)
+                if (nama_guru) params.set('nama_guru', nama_guru)
                 const response = await $fetch(`/guru/line?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -153,7 +221,8 @@ export const useStatisticsStore = defineStore('statistics', {
                     datasets: (response.datasets || []).map((d, i) => ({
                         ...d,
                         color: CHART_COLORS[i % CHART_COLORS.length]
-                    }))
+                    })),
+                    guruList: response.guruList || []
                 }
             } catch (err) {
                 console.error('Line chart error:', err)
@@ -162,14 +231,37 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        // Fetch semua sekaligus saat filter berubah
-        async fetchAll(range = 'bulan', id_kelas = null) {
+        async getUnpresensiStats(range = 'bulan', id_kelas = null) {
+            this.loadingUnpresensi = true
+            const config = useRuntimeConfig()
+            try {
+                let token = null
+                if (process.client) token = localStorage.getItem('token')
+                const params = new URLSearchParams({ range })
+                if (id_kelas) params.set('id_kelas', id_kelas)
+                const response = await $fetch(`/guru/unpresensi-stats?${params}`, {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+                this.unpresensiStats = { total_belum: response.total_belum || 0 }
+            } catch (err) {
+                console.error('Unpresensi stats error:', err)
+            } finally {
+                this.loadingUnpresensi = false
+            }
+        },
+
+        async fetchAll(range = 'bulan', id_kelas = null, nama_guru = null) {
             await Promise.all([
+                this.getSummaryStats(range, id_kelas),
                 this.getBarHadirVsTidak(range, id_kelas),
                 this.getTrenKeseluruhan(range, id_kelas),
-                this.getTopHadir(range),
-                this.getTopTidakHadir(range),
-                this.getLinePerGuru(range, id_kelas),
+                this.getTopHadir(range, id_kelas),
+                this.getTopTidakHadir(range, id_kelas),
+                this.getPerformaGuru(range, id_kelas),
+                this.getLinePerGuru(range, id_kelas, nama_guru),
+                this.getUnpresensiStats(range, id_kelas),
             ])
         }
     }

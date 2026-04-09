@@ -5,41 +5,45 @@
     <!-- Sidebar -->
     <div class="fixed left-0 top-0 h-screen w-64 z-30 transition-transform duration-300"
       :class="isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'">
-      <div class="flex h-full flex-col overflow-y-auto bg-white pt-4 shadow-md relative">
-        <button v-if="isMobile" @click="closeSidebar"
-          class="absolute top-[0.3rem] right-1 p-2 text-gray-600 rounded-sm transition-colors lg:hidden z-10"
-          aria-label="Close sidebar">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+      <div class="flex h-full flex-col bg-white shadow-md relative">
 
-        <NuxtLink to="/" class="flex mt-2 items-center px-4 pb-3 cursor-pointer" @click="closeSidebar">
-          <img class="h-12 w-auto max-w-full align-middle"
-            src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png"
-            alt="Logo Presensi Guru" />
-          <div class="flex ml-3 flex-col">
-            <h3 class="font-medium">Presensi Guru</h3>
-            <p class="text-xs text-gray-500">Sistem Absensi</p>
-          </div>
-        </NuxtLink>
+        <!-- Logo sticky -->
+        <div class="sticky top-0 bg-white z-10 pt-4">
+          <button v-if="isMobile" @click="closeSidebar"
+            class="absolute top-[0.3rem] right-1 p-2 text-gray-600 rounded-sm transition-colors lg:hidden z-10"
+            aria-label="Close sidebar">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-        <div class="flex mt-4 flex-1 flex-col pb-10">
-          <div class="">
-            <nav class="flex-1">
-              <template v-for="(item, index) in menuItems" :key="index">
-                <span v-if="item.type === 'divider'" class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
-                  {{ item.label }}
-                </span>
-
-                <NuxtLink v-else :to="item.path" :class="getLinkClass(item.path)" @click="closeSidebar">
-                  <component :is="iconComponents[item.icon]" class="mr-4 h-5 w-5 align-middle" />
-                  {{ item.label }}
-                </NuxtLink>
-              </template>
-            </nav>
-          </div>
+          <NuxtLink to="/" class="flex mt-2 items-center px-4 pb-6 cursor-pointer" @click="closeSidebar">
+            <img class="h-12 w-auto max-w-full align-middle"
+              src="https://media.cake.me/image/upload/s--T4D1SVbM--/c_pad,fl_png8,h_400,w_400/v1696135770/z1d2uzgbr1faa8rzwaye.png"
+              alt="Logo Presensi Guru" />
+            <div class="flex ml-3 flex-col">
+              <h3 class="font-medium">SMKN 1 Cisarua</h3>
+              <p class="text-xs text-gray-500">Sistem Presensi</p>
+            </div>
+          </NuxtLink>
         </div>
+
+        <!-- Nav scrollable -->
+        <div class="flex flex-1 flex-col pb-10 overflow-y-auto scrollbar-hidden">
+          <nav class="flex-1">
+            <template v-for="(item, index) in menuItems" :key="index">
+              <span v-if="item.type === 'divider'" class="ml-3 mt-4 mb-2 block text-xs font-semibold text-gray-500">
+                {{ item.label }}
+              </span>
+
+              <NuxtLink v-else :to="item.path" :class="getLinkClass(item.path)" @click="closeSidebar">
+                <component :is="iconComponents[item.icon]" class="mr-4 h-5 w-5 align-middle" />
+                {{ item.label }}
+              </NuxtLink>
+            </template>
+          </nav>
+        </div>
+
       </div>
     </div>
 
@@ -163,13 +167,14 @@ const pageTitle = computed(() => {
     '/teacher': 'Data Guru',
     '/teacher/create': 'Tambah Guru',
     '/teacher/edit': 'Edit Guru',
-    '/approval': 'Absensi',
+    '/approval': 'Presensi',
     '/reports': 'Laporan',
     '/presensi': 'Presensi',
     '/presensi/create': 'Buat Presensi',
     '/riwayat-presensi': 'Riwayat Presensi',
     '/profile': 'Profil Saya',
     '/kalender': 'Kalender Akademik',
+    '/statistics': 'Statistik'
   }
 
   if (route.path === '/presensi/create' && route.query.mode === 'resubmit') {
@@ -184,6 +189,10 @@ const pageTitle = computed(() => {
 
   return matched.length ? titles[matched[0]] : 'Dashboard'
 })
+
+useHead(computed(() => ({
+  title: `${pageTitle.value} | SMKN 1 Cisarua`
+})))
 
 const isActive = (path) => {
   if (path === '/') {
@@ -281,3 +290,14 @@ watch(() => route.path, () => {
   isDropdownOpen.value = false
 })
 </script>
+
+<style scoped>
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+</style>
