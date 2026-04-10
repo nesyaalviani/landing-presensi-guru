@@ -150,8 +150,9 @@
                 <div v-else class="flex-1"></div>
 
                 <!-- Tombol aksi -->
-                <div class="flex-shrink-0">
-                  <button v-if="schedule.status === 'belum' && schedule.timeStatus === 'sedang_berlangsung'"
+               <div class="flex-shrink-0">
+                  <button
+                    v-if="schedule.status === 'belum' && (schedule.timeStatus === 'sedang_berlangsung' || schedule.timeStatus === 'sudah_selesai')"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-lg shadow-sm transition-all"
                     @click="handlePresensi(schedule)">
                     <Plus class="w-4 h-4" /> Presensi
@@ -163,14 +164,7 @@
                     <Lock class="w-3.5 h-3.5" /> Belum Dibuka
                   </button>
 
-                  <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'sudah_selesai'"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed"
-                    disabled>
-                    <XCircle class="w-3.5 h-3.5" /> Sesi Berakhir
-                  </button>
-
-                  <button v-else-if="schedule.status === 'Rejected'"
-                    :disabled="isBandingExpired(schedule)"
+                  <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all shadow-sm"
                     :class="isBandingExpired(schedule)
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -396,7 +390,7 @@ const getCountdown = (jamMulai) => {
   return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
 }
 const handlePresensi = (schedule) => {
-  if (schedule.timeStatus !== 'sedang_berlangsung') return
+  if (schedule.timeStatus === 'belum_dimulai') return
   router.push({ path: '/presensi/create', query: { jadwalId: schedule.id } })
 }
 const handleResubmit = (schedule) => {

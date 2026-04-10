@@ -398,7 +398,7 @@ onMounted(async () => {
       return
     }
 
-    if (scheduleToday && scheduleToday.timeStatus !== 'sedang_berlangsung') {
+    if (scheduleToday && scheduleToday.timeStatus === 'belum_dimulai') {
       router.push('/presensi')
       return
     }
