@@ -42,7 +42,6 @@
             </div>
           </div>
 
-          <!-- Loading skeleton kalender grid -->
           <div v-if="loadingFetch">
             <div v-for="week in 6" :key="'skel-week-' + week" class="grid grid-cols-7">
               <div v-for="cell in 7" :key="'skel-cell-' + cell"
@@ -89,7 +88,6 @@
                     </span>
                   </div>
 
-                  <!-- Desktop: chip events -->
                   <div v-if="cell.date && cell.isCurrentMonth" class="hidden sm:block space-y-0.5 lg:space-y-1">
                     <div v-for="_ in getSpanBarCountForCell(cell.date, wIdx)" :key="_" class="h-[20px]"></div>
                     <div v-for="(event, eIdx) in getSingleDayEventsForDate(cell.date).slice(0, 2)" :key="eIdx"
@@ -106,7 +104,6 @@
                     </div>
                   </div>
 
-                  <!-- Mobile: placeholder baris + dot indicator -->
                   <div v-if="cell.date && cell.isCurrentMonth" class="sm:hidden">
                     <div v-for="_ in getSpanBarCountForCell(cell.date, wIdx)" :key="'ph-' + _" class="h-[14px]"></div>
                     <div v-if="getSingleDayEventsForDate(cell.date).length > 0" class="flex flex-wrap gap-0.5 mt-0.5">
@@ -118,7 +115,6 @@
                 </div>
               </div>
 
-             <!-- Span bar layer -->
               <div class="bar-layer absolute inset-x-0 pointer-events-none">
                 <div v-for="(bar, bIdx) in getSpanBarsForWeek(wIdx)" :key="bIdx"
                   class="absolute flex items-center overflow-hidden pointer-events-auto cursor-pointer hover:opacity-80 transition-opacity"
@@ -140,7 +136,6 @@
 
       <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-3 sm:space-y-4">
 
-        <!-- Panel Tanggal -->
         <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700 truncate pr-2">
@@ -186,6 +181,11 @@
                     class="text-[10px] sm:text-xs text-slate-400 mt-0.5">
                     {{ formatDateShort(event.date) }} – {{ formatDateShort(event.endDate) }}
                   </p>
+                  <p v-if="event.targetLabel"
+                    class="text-[10px] sm:text-xs mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
+                    <Users class="h-2.5 w-2.5" />
+                    {{ event.targetLabel }}
+                  </p>
                   <p v-if="event.description" class="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">{{
                     event.description }}</p>
                 </div>
@@ -205,7 +205,6 @@
           </div>
         </div>
 
-        <!-- Kegiatan Mendatang -->
         <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100">
             <h3 class="text-xs sm:text-sm font-bold text-slate-700">Kegiatan Mendatang</h3>
@@ -256,7 +255,6 @@
       </div>
     </div>
 
-    <!-- Modal Tambah / Edit -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showModal && !isReadOnly"
@@ -347,6 +345,89 @@
                 </div>
                 <p v-if="formErrors.category" class="text-xs text-red-500 mt-1">{{ formErrors.category }}</p>
               </div>
+
+              <div class="border border-slate-200 rounded-sm p-3 space-y-3 bg-slate-50">
+                <div class="flex items-center gap-2">
+                  <Users class="h-3.5 w-3.5 text-slate-500" />
+                  <label class="text-xs font-semibold text-slate-600">Target Sasaran <span class="text-red-500">*</span></label>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    v-for="tt in targetTypes"
+                    :key="tt.value"
+                    type="button"
+                    @click="selectTargetType(tt.value)"
+                    class="py-2 px-2 text-xs font-semibold rounded-sm border transition-colors"
+                    :class="form.targetType === tt.value
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600'"
+                  >
+                    {{ tt.label }}
+                  </button>
+                </div>
+                <p v-if="formErrors.targetType" class="text-xs text-red-500">{{ formErrors.targetType }}</p>
+
+                <div v-if="form.targetType">
+                  <p class="text-[10px] text-slate-500 mb-2">
+                    Pilih {{ targetTypeMeta.label }} yang akan mendapat kegiatan ini (bisa lebih dari satu):
+                  </p>
+                  <div v-if="form.targetType === 'tingkat'" class="flex flex-wrap gap-2">
+                    <button
+                      v-for="t in targetOptions.tingkat"
+                      :key="t"
+                      type="button"
+                      @click="toggleTargetValue(t)"
+                      class="px-3 py-1.5 text-xs font-semibold rounded-sm border transition-colors"
+                      :class="form.targetValue.includes(t)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400'"
+                    >
+                      Kelas {{ t }}
+                    </button>
+                  </div>
+                  <div v-else-if="form.targetType === 'jurusan'" class="space-y-1.5">
+                    <div v-if="loadingJurusan" class="flex items-center gap-2 py-2">
+                      <span class="inline-block h-3 w-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                      <span class="text-xs text-slate-400">Memuat daftar jurusan...</span>
+                    </div>
+                    <button
+                      v-else
+                      v-for="j in jurusanList"
+                      :key="j"
+                      type="button"
+                      @click="toggleTargetValue(j)"
+                      class="w-full text-left px-3 py-2 text-xs font-medium rounded-sm border transition-colors"
+                      :class="form.targetValue.includes(j)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400'"
+                    >
+                      {{ j }}
+                    </button>
+                  </div>
+                  <div v-else-if="form.targetType === 'kelas'">
+                    <div v-if="loadingKelas" class="flex items-center gap-2 py-2">
+                      <span class="inline-block h-3 w-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                      <span class="text-xs text-slate-400">Memuat daftar kelas...</span>
+                    </div>
+                    <div v-else class="flex flex-wrap gap-2">
+                      <button
+                        v-for="kelas in kelasList"
+                        :key="kelas.id"
+                        type="button"
+                        @click="toggleTargetValue(kelas.id)"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-sm border transition-colors"
+                        :class="form.targetValue.includes(kelas.id)
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400'"
+                      >
+                        {{ kelas.name }}
+                      </button>
+                    </div>
+                  </div>
+                  <p v-if="formErrors.targetValue" class="text-xs text-red-500 mt-1.5">{{ formErrors.targetValue }}</p>
+                </div>
+              </div>
+
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Keterangan</label>
                 <textarea v-model="form.description" rows="3" placeholder="Tambahkan keterangan kegiatan (opsional)..."
@@ -354,8 +435,7 @@
               </div>
             </div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 flex gap-3 flex-shrink-0">
-              <p v-if="formErrors.api" class="w-full text-xs text-red-500 text-center -mt-2 pb-1">{{ formErrors.api }}
-              </p>
+              <p v-if="formErrors.api" class="w-full text-xs text-red-500 text-center -mt-2 pb-1">{{ formErrors.api }}</p>
               <button @click="closeModal"
                 class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-sm transition-colors">Batal</button>
               <button @click="saveEvent" :disabled="loadingSubmit"
@@ -369,7 +449,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Confirm Delete -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showDeleteConfirm && !isReadOnly"
@@ -383,8 +462,7 @@
             </div>
             <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-1">Hapus Kegiatan?</h3>
             <p class="text-xs sm:text-sm text-slate-500 mb-5">
-              Kegiatan <span class="font-semibold text-slate-700">"{{ deletingEvent?.title }}"</span> akan dihapus
-              permanen.
+              Kegiatan <span class="font-semibold text-slate-700">"{{ deletingEvent?.title }}"</span> akan dihapus permanen.
             </p>
             <p v-if="deleteError" class="text-xs text-red-500 mb-3">{{ deleteError }}</p>
             <div class="flex gap-3">
@@ -408,13 +486,41 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, ChevronDown } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, ChevronDown, Users } from 'lucide-vue-next'
 
 // ── Auth ─────────────────────────────────────────────────
 const authStore = useAuthStore()
 const isReadOnly = computed(() =>
   authStore.user?.role === 'km' || authStore.user?.role === 'ks'
 )
+
+const userTingkat = computed(() => authStore.user?.tingkat || null)       
+const userJurusan = computed(() => authStore.user?.jurusan || null)     
+const userKelasId = computed(() => authStore.user?.kelas_id ?? null)     
+
+const isEventVisibleForUser = (event) => {
+  if (!isReadOnly.value) return true
+
+  if (!event.targetType || !event.targetValue || event.targetValue.length === 0) return true
+
+  const tv = event.targetValue
+
+  if (event.targetType === 'tingkat') {
+    return userTingkat.value ? tv.includes(userTingkat.value) : false
+  }
+
+  if (event.targetType === 'jurusan') {
+    return userJurusan.value ? tv.includes(userJurusan.value) : false
+  }
+
+  if (event.targetType === 'kelas') {
+    return userKelasId.value != null
+      ? tv.map(String).includes(String(userKelasId.value))
+      : false
+  }
+
+  return true
+}
 
 // ── Kalender state ────────────────────────────────────────
 const today = new Date()
@@ -427,14 +533,24 @@ const showDeleteConfirm = ref(false)
 const editingEvent = ref(null)
 const deletingEvent = ref(null)
 
-const form = ref({ title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '', category: '', description: '' })
+const form = ref({
+  title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '',
+  category: '', description: '',
+  targetType: 'tingkat',
+  targetValue: ['X', 'XI', 'XII'],
+})
 const formErrors = ref({})
 
 const loadingFetch = ref(false)
 const loadingSubmit = ref(false)
 const loadingDelete = ref(false)
+const loadingKelas = ref(false)
+const loadingJurusan = ref(false)
 const fetchError = ref(null)
 const deleteError = ref(null)
+
+const kelasList = ref([])
+const jurusanList = ref([])
 
 const { alertType, alertMessage, showAlert, clearAlert } = useAlert()
 const alertRef = ref(null)
@@ -488,6 +604,36 @@ const barTextMap = {
 }
 const getBarTextClass = (cat) => barTextMap[cat] || 'text-slate-700'
 
+const targetTypes = [
+  { value: 'tingkat', label: 'Tingkat' },
+  { value: 'jurusan', label: 'Jurusan' },
+  { value: 'kelas', label: 'Kelas' },
+]
+
+const targetOptions = {
+  tingkat: ['X', 'XI', 'XII'],
+  jurusan: [
+  ],
+}
+
+const targetTypeMeta = computed(() =>
+  targetTypes.find(t => t.value === form.value.targetType) || targetTypes[0]
+)
+
+const formatTargetLabel = (event) => {
+  if (!event.targetType || !event.targetValue?.length) return null
+  if (event.targetType === 'tingkat') return `Kelas ${event.targetValue.join(', ')}`
+  if (event.targetType === 'jurusan') return event.targetValue.join(', ')
+  if (event.targetType === 'kelas') {
+    const names = event.targetValue.map(id => {
+      const found = kelasList.value.find(k => k.id === id)
+      return found ? found.name : String(id)
+    })
+    return names.join(', ')
+  }
+  return null
+}
+
 // ── Data & fetch ──────────────────────────────────────────
 const events = ref([])
 const pad = (n) => String(n).padStart(2, '0')
@@ -506,6 +652,9 @@ const mapFromApi = (item) => ({
   jamBerakhir: item.jam_selesai?.substring(0, 5) || '',
   category: item.tipe || 'lainnya',
   description: item.keterangan || '',
+  targetType: item.target_type || null,
+  targetValue: item.target_value || [],
+  get targetLabel() { return formatTargetLabel(this) },
 })
 
 const fetchKalender = async () => {
@@ -522,13 +671,56 @@ const fetchKalender = async () => {
       headers: { ...(token && { Authorization: `Bearer ${token}` }) },
     })
 
-    events.value = (response.data || []).map(mapFromApi)
+    const allEvents = (response.data || []).map(mapFromApi)
+    events.value = allEvents.filter(isEventVisibleForUser)
   } catch (err) {
     fetchError.value = err.data?.message || 'Gagal mengambil data kalender.'
   } finally {
     loadingFetch.value = false
   }
 }
+
+const fetchKelasList = async () => {
+  if (kelasList.value.length > 0) return
+  loadingKelas.value = true
+  try {
+    const config = useRuntimeConfig()
+    let token = null
+    if (process.client) token = localStorage.getItem('token')
+
+    const response = await $fetch('/kelas', {
+      method: 'GET',
+      baseURL: config.public.apiBase,
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    })
+    kelasList.value = (response.data || []).map(k => ({ id: k.id, name: k.name || k.nama_kelas || String(k.id) }))
+  } catch (err) {
+    console.error('Gagal memuat daftar kelas:', err)
+  } finally {
+    loadingKelas.value = false
+  }
+}
+
+const fetchJurusanList = async () => {
+  if (jurusanList.value.length > 0) return
+  loadingJurusan.value = true
+  try {
+    const config = useRuntimeConfig()
+    let token = null
+    if (process.client) token = localStorage.getItem('token')
+
+    const response = await $fetch('/kelas/jurusan', {
+      method: 'GET',
+      baseURL: config.public.apiBase,
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    })
+    jurusanList.value = (response.data || []).map(j => j.nama_jurusan)  // ← ambil nama saja
+  } catch (err) {
+    console.error('Gagal memuat daftar jurusan:', err)
+  } finally {
+    loadingJurusan.value = false
+  }
+} 
 
 // ── Kalender grid ─────────────────────────────────────────
 const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
@@ -703,17 +895,71 @@ const handleCategoryClickOutside = (e) => {
   }
 }
 
+const selectTargetType = (type) => {
+  form.value.targetType = type
+  form.value.targetValue = []
+  if (type === 'kelas') fetchKelasList()
+  if (type === 'jurusan') fetchJurusanList() 
+}
+const toggleTargetValue = (val) => {
+  const idx = form.value.targetValue.indexOf(val)
+  if (idx === -1) {
+    form.value.targetValue = [...form.value.targetValue, val]
+  } else {
+    form.value.targetValue = form.value.targetValue.filter(v => v !== val)
+  }
+}
+
 // ── Modal helpers ─────────────────────────────────────────
 const resetForm = () => {
-  form.value = { title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '', category: '', description: '' }
+  form.value = {
+    title: '', date: '', endDate: '', jamMulai: '', jamBerakhir: '',
+    category: '', description: '',
+    targetType: 'tingkat',
+    targetValue: ['X', 'XI', 'XII'],
+  }
   formErrors.value = {}
   editingEvent.value = null
 }
 
-const openAddModal = () => { if (isReadOnly.value) return; resetForm(); if (selectedDate.value) form.value.date = selectedDate.value; showModal.value = true }
-const openAddModalForDate = (dateStr) => { if (isReadOnly.value) return; resetForm(); form.value.date = dateStr; showModal.value = true }
-const openEditModal = (event) => { if (isReadOnly.value) return; resetForm(); editingEvent.value = event; form.value = { title: event.title, date: event.date, endDate: event.endDate || '', jamMulai: event.jamMulai || '', jamBerakhir: event.jamBerakhir || '', category: event.category, description: event.description || '' }; showModal.value = true }
-const closeModal = () => { showModal.value = false; resetForm(); categoryDropdownOpen.value = false }
+const openAddModal = () => {
+  if (isReadOnly.value) return
+  resetForm()
+  if (selectedDate.value) form.value.date = selectedDate.value
+  showModal.value = true
+}
+const openAddModalForDate = (dateStr) => {
+  if (isReadOnly.value) return
+  resetForm()
+  form.value.date = dateStr
+  showModal.value = true
+}
+
+const openEditModal = (event) => {
+  if (isReadOnly.value) return
+  resetForm()
+  editingEvent.value = event
+  form.value = {
+    title: event.title,
+    date: event.date,
+    endDate: event.endDate || '',
+    jamMulai: event.jamMulai || '',
+    jamBerakhir: event.jamBerakhir || '',
+    category: event.category,
+    description: event.description || '',
+    targetType: event.targetType || 'tingkat',
+    targetValue: event.targetValue ? [...event.targetValue] : ['X', 'XI', 'XII'],
+  }
+  if (form.value.targetType === 'kelas') fetchKelasList()
+  if (form.value.targetType === 'jurusan') fetchJurusanList() 
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  resetForm()
+  categoryDropdownOpen.value = false
+}
 
 onMounted(() => {
   fetchKalender()
@@ -726,6 +972,9 @@ const validateForm = () => {
   if (!form.value.title.trim()) errors.title = 'Nama kegiatan wajib diisi.'
   if (!form.value.date) errors.date = 'Tanggal mulai wajib diisi.'
   if (!form.value.category) errors.category = 'Kategori wajib dipilih.'
+  if (!form.value.targetType) errors.targetType = 'Tipe target wajib dipilih.'
+  if (!form.value.targetValue || form.value.targetValue.length === 0)
+    errors.targetValue = 'Minimal pilih satu target sasaran.'
   formErrors.value = errors
   return Object.keys(errors).length === 0
 }
@@ -749,6 +998,8 @@ const saveEvent = async () => {
       jam_selesai: form.value.jamBerakhir ? `${form.value.jamBerakhir}:00` : null,
       tipe: form.value.category,
       keterangan: form.value.title,
+      target_type: form.value.targetType,
+      target_value: form.value.targetValue,
     }
 
     if (editingEvent.value) {
@@ -854,7 +1105,6 @@ const deleteEvent = async () => {
 
 .bar-layer {
   top: 0;
-  /* Mobile */
   --bar-offset: 22px;
   --bar-h: 10px;
   --bar-row-h: 13px;
