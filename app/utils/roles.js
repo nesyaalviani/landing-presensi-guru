@@ -19,6 +19,8 @@ export const ROLE_MENUS = {
     { type: 'divider', label: 'User Management' },
     { path: '/users', label: 'User', icon: 'User' },
     { path: '/teacher', label: 'Data Guru', icon: 'Users' },
+    { path: '/settings', label: 'Pengaturan', icon: 'Settings' },
+
   ],
 
   [ROLES.KM]: [
@@ -42,7 +44,7 @@ export const ROLE_MENUS = {
 }
 
 export const ROLE_PERMISSIONS = {
-  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval'],
+  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
   [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile']
