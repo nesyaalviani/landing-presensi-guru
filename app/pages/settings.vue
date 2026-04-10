@@ -9,11 +9,11 @@
       </div>
 
       <!-- Settings Grid -->
-      <div class="space-y-5 sm:space-y-6">
+      <div class="space-y-5 sm:space-y-8">
 
         <!-- Section: Manajemen Persetujuan -->
         <section>
-          <div class="flex items-center gap-2 mb-3 sm:mb-4">
+          <div class="flex items-center gap-2 mb-3 mt-8 sm:mb-4">
             <div class="h-px flex-1 bg-slate-200"></div>
             <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">Manajemen Persetujuan</span>
             <div class="h-px flex-1 bg-slate-200"></div>
