@@ -2,7 +2,8 @@ export const ROLES = {
   ADMIN: 'admin',
   KM: 'km',
   PIKET: 'piket',
-  KS: 'ks'
+  KS: 'ks',
+  PENGAWAS: 'pengawas'
 }
 
 export const ROLE_MENUS = {
@@ -40,6 +41,13 @@ export const ROLE_MENUS = {
     { path: '/statistics', label: 'Statistik Presensi', icon: 'ChartLine' },
     { path: '/kalender', label: 'Kalender', icon: 'Calendar' },
     
+  ],
+
+  [ROLES.PENGAWAS]: [
+    { path: '/', label: 'Dashboard', icon: 'Home' },
+    { type: 'divider', label: 'Reporting' },
+    { path: '/statistics', label: 'Statistik Presensi', icon: 'ChartLine' },
+    { path: '/kalender', label: 'Kalender', icon: 'Calendar' },
   ]
 }
 
@@ -47,21 +55,24 @@ export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
-  [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile']
+  [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile'],
+  [ROLES.PENGAWAS]: ['/', 'statistics', 'kalender', 'profile']
 }
 
 export const ROLE_DEFAULT_ROUTES = {
   [ROLES.ADMIN]: '/',
   [ROLES.KM]: '/presensi',
   [ROLES.PIKET]: '/',
-  [ROLES.KS]: '/'
+  [ROLES.KS]: '/',
+  [ROLES.PENGAWAS]: '/'
 }
 
 export const ROLE_LABELS = {
   [ROLES.ADMIN]: 'Administrator',
   [ROLES.KM]: 'Ketua Murid',
   [ROLES.PIKET]: 'Petugas Piket',
-  [ROLES.KS]: 'Kepala Sekolah'
+  [ROLES.KS]: 'Kepala Sekolah',
+  [ROLES.PENGAWAS]: 'Pengawas'
 }
 
 export function getMenuByRole(role) {
