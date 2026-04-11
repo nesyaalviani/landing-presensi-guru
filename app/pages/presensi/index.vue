@@ -291,7 +291,8 @@ const formattedDate = computed(() =>
 const formattedTime = computed(() => {
   const h = String(now.value.getHours()).padStart(2, '0')
   const m = String(now.value.getMinutes()).padStart(2, '0')
-  const s = String(now.value.getSeconds()).padStart(2, '0') 
+  const s = String(now.value.getSeconds()).padStart(2, '0')
+  return `${h}:${m}:${s}`
 })
 
 const emptyStateType = computed(() => {
