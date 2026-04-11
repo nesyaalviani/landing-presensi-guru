@@ -494,34 +494,6 @@ const isReadOnly = computed(() =>
   authStore.user?.role === 'km' || authStore.user?.role === 'ks'
 )
 
-const userTingkat = computed(() => authStore.user?.tingkat || null)       
-const userJurusan = computed(() => authStore.user?.jurusan || null)     
-const userKelasId = computed(() => authStore.user?.kelas_id ?? null)     
-
-const isEventVisibleForUser = (event) => {
-  if (!isReadOnly.value) return true
-
-  if (!event.targetType || !event.targetValue || event.targetValue.length === 0) return true
-
-  const tv = event.targetValue
-
-  if (event.targetType === 'tingkat') {
-    return userTingkat.value ? tv.includes(userTingkat.value) : false
-  }
-
-  if (event.targetType === 'jurusan') {
-    return userJurusan.value ? tv.includes(userJurusan.value) : false
-  }
-
-  if (event.targetType === 'kelas') {
-    return userKelasId.value != null
-      ? tv.map(String).includes(String(userKelasId.value))
-      : false
-  }
-
-  return true
-}
-
 // ── Kalender state ────────────────────────────────────────
 const today = new Date()
 const currentMonth = ref(today.getMonth())
@@ -604,6 +576,7 @@ const barTextMap = {
 }
 const getBarTextClass = (cat) => barTextMap[cat] || 'text-slate-700'
 
+// ── Target ────────────────────────────────────────────────
 const targetTypes = [
   { value: 'tingkat', label: 'Tingkat' },
   { value: 'jurusan', label: 'Jurusan' },
@@ -612,8 +585,6 @@ const targetTypes = [
 
 const targetOptions = {
   tingkat: ['X', 'XI', 'XII'],
-  jurusan: [
-  ],
 }
 
 const targetTypeMeta = computed(() =>
@@ -671,8 +642,7 @@ const fetchKalender = async () => {
       headers: { ...(token && { Authorization: `Bearer ${token}` }) },
     })
 
-    const allEvents = (response.data || []).map(mapFromApi)
-    events.value = allEvents.filter(isEventVisibleForUser)
+    events.value = (response.data || []).map(mapFromApi)
   } catch (err) {
     fetchError.value = err.data?.message || 'Gagal mengambil data kalender.'
   } finally {
@@ -714,13 +684,13 @@ const fetchJurusanList = async () => {
       baseURL: config.public.apiBase,
       headers: { ...(token && { Authorization: `Bearer ${token}` }) },
     })
-    jurusanList.value = (response.data || []).map(j => j.nama_jurusan)  // ← ambil nama saja
+    jurusanList.value = (response.data || []).map(j => j.nama_jurusan)
   } catch (err) {
     console.error('Gagal memuat daftar jurusan:', err)
   } finally {
     loadingJurusan.value = false
   }
-} 
+}
 
 // ── Kalender grid ─────────────────────────────────────────
 const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
@@ -836,7 +806,6 @@ const getSpanBarsForWeek = (wIdx) => {
       row++
     }
     for (let c = colStart; c <= colEnd; c++) rowOccupied[`${row}-${c}`] = true
-
     bars.push({ event, colStart, colEnd, row })
   })
 
@@ -877,29 +846,27 @@ const formatDateShort = (dateStr) => {
 const formatDayNum = (dateStr) => dateStr.split('-')[2]
 const formatMonthShort = (dateStr) => monthNames[Number(dateStr.split('-')[1]) - 1].slice(0, 3)
 
+// ── Dropdown kategori ─────────────────────────────────────
 const categoryDropdownOpen = ref(false)
 const categoryDropdownRef = ref(null)
 
-const toggleCategoryDropdown = () => {
-  categoryDropdownOpen.value = !categoryDropdownOpen.value
-}
-
+const toggleCategoryDropdown = () => { categoryDropdownOpen.value = !categoryDropdownOpen.value }
 const selectCategory = (cat) => {
   form.value.category = cat.value
   categoryDropdownOpen.value = false
 }
-
 const handleCategoryClickOutside = (e) => {
   if (categoryDropdownRef.value && !categoryDropdownRef.value.contains(e.target)) {
     categoryDropdownOpen.value = false
   }
 }
 
+// ── Target helpers ────────────────────────────────────────
 const selectTargetType = (type) => {
   form.value.targetType = type
   form.value.targetValue = []
   if (type === 'kelas') fetchKelasList()
-  if (type === 'jurusan') fetchJurusanList() 
+  if (type === 'jurusan') fetchJurusanList()
 }
 const toggleTargetValue = (val) => {
   const idx = form.value.targetValue.indexOf(val)
@@ -922,12 +889,6 @@ const resetForm = () => {
   editingEvent.value = null
 }
 
-const openAddModal = () => {
-  if (isReadOnly.value) return
-  resetForm()
-  if (selectedDate.value) form.value.date = selectedDate.value
-  showModal.value = true
-}
 const openAddModalForDate = (dateStr) => {
   if (isReadOnly.value) return
   resetForm()
@@ -951,7 +912,7 @@ const openEditModal = (event) => {
     targetValue: event.targetValue ? [...event.targetValue] : ['X', 'XI', 'XII'],
   }
   if (form.value.targetType === 'kelas') fetchKelasList()
-  if (form.value.targetType === 'jurusan') fetchJurusanList() 
+  if (form.value.targetType === 'jurusan') fetchJurusanList()
   showModal.value = true
 }
 
@@ -961,6 +922,7 @@ const closeModal = () => {
   categoryDropdownOpen.value = false
 }
 
+// ── Lifecycle ─────────────────────────────────────────────
 onMounted(() => {
   fetchKalender()
   if (process.client) document.addEventListener('click', handleCategoryClickOutside)

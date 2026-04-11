@@ -288,18 +288,16 @@ const formattedDate = computed(() =>
   new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 )
 
-// [CHANGED] Tambah detik (ss) agar terasa seperti jam digital aktif
 const formattedTime = computed(() => {
   const h = String(now.value.getHours()).padStart(2, '0')
   const m = String(now.value.getMinutes()).padStart(2, '0')
-  const s = String(now.value.getSeconds()).padStart(2, '0') // [ADDED]
-  return `${h}:${m}:${s}` // [CHANGED] sebelumnya hanya h:m
+  const s = String(now.value.getSeconds()).padStart(2, '0') 
 })
 
 const emptyStateType = computed(() => {
   const msg = (presensiStore.error || '').toLowerCase()
   if (msg.includes('weekend') || msg.includes('sabtu') || msg.includes('minggu')) return 'weekend'
-  if (msg.includes('tidak tersedia saat ini')) return 'kegiatan'
+  if (msg.includes('tidak tersedia saat ini') || msg.includes('sedang ujian') || msg.includes('sedang')) return 'kegiatan' // [FIX]
   if (msg.includes('tidak ada kbm')) return 'libur'
   return 'kosong'
 })
