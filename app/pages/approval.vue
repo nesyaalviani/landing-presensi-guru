@@ -85,9 +85,52 @@
                     </Transition>
                 </div>
 
-                <!-- Date filter -->
-                <input v-model="filterDate" type="date" @change="fetchWithFilters"
-                    class="px-3 py-2 text-xs border border-slate-200 rounded-sm focus:ring-2 focus:ring-blue-500 bg-slate-50 outline-none transition" />
+                <!-- Date range filter -->
+                <div class="flex items-center border border-slate-200 rounded-sm bg-slate-50 overflow-hidden">
+                    <!-- Shortcut buttons -->
+                    <div class="flex gap-0.5 p-1 border-r border-slate-200">
+                        <button type="button" @click="setDateShortcut('today')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'today'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            Hari ini
+                        </button>
+                        <button type="button" @click="setDateShortcut('week')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'week'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            7 hari
+                        </button>
+                        <button type="button" @click="setDateShortcut('month')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'month'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            Bulan ini
+                        </button>
+                        <button type="button" @click="toggleCustomDate"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors flex items-center gap-1"
+                            :class="activeDateShortcut === 'custom'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            <CalendarDays class="h-3 w-3" />
+                            Kustom
+                        </button>
+                    </div>
+
+                    <!-- Custom range inputs — muncul saat klik Kustom -->
+                    <div v-if="activeDateShortcut === 'custom'" class="flex items-center gap-1.5 px-3">
+                        <input v-model="filterDateRange[0]" type="date" @change="fetchWithFilters"
+                            class="text-[11px] border-none bg-transparent text-slate-700 outline-none py-1 w-[82px]" />
+                        <span class="text-slate-300 text-xs leading-none">–</span>
+                        <input v-model="filterDateRange[1]" type="date" @change="fetchWithFilters"
+                            class="text-[11px] border-none bg-transparent text-slate-700 outline-none py-1 w-[82px]" />
+                    </div>
+
+                    <!-- Label range aktif — tampil saat bukan custom -->
+                    <div v-else class="px-3 text-[11px] text-slate-400">
+                        {{ formatDateRangeLabel }}
+                    </div>
+                </div>
 
                 <!-- Hapus Filter -->
                 <button v-if="hasActiveFilter" type="button" @click="resetAllFilters"
@@ -439,7 +482,7 @@ import { useSettingsStore } from '~/stores/settings'
 import { useClassroomsStore } from '~/stores/classrooms'
 import {
     Clock, CheckCircle, XCircle, Search, X,
-    FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX, Unlock
+    FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX, Unlock, CalendarDays
 } from 'lucide-vue-next'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -459,9 +502,36 @@ const filterKelas = ref('')
 const activeTab = ref('pending')
 
 const todayISO = () => new Date().toLocaleDateString('sv-SE')
-const filterDate = ref(todayISO())
+const filterDateRange = ref([todayISO(), todayISO()])
+const activeDateShortcut = ref('today')
+const setDateShortcut = async (type) => {
+    activeDateShortcut.value = type
+    const end = new Date()
+    const start = new Date()
+    if (type === 'week') start.setDate(start.getDate() - 6)
+    if (type === 'month') start.setDate(1)
+    filterDateRange.value = [
+        start.toLocaleDateString('sv-SE'),
+        end.toLocaleDateString('sv-SE')
+    ]
+    await fetchWithFilters()
+}
+
+const toggleCustomDate = () => {
+    activeDateShortcut.value = 'custom'
+}
+
+const formatDateRangeLabel = computed(() => {
+    const [start, end] = filterDateRange.value
+    if (!start || !end) return ''
+    if (start === end) return new Date(start + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    return `${new Date(start + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} – ${new Date(end + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`
+})
 // Apakah filter tanggal yang sedang aktif adalah hari lalu?
-const isPastFilterDate = computed(() => filterDate.value < todayISO())
+const isPastFilterDate = computed(() => {
+    if (!filterDateRange.value?.[1]) return false
+    return filterDateRange.value[1] < todayISO()
+})
 
 // ID jadwal yang sedang dalam proses dibuka (untuk disable tombol)
 const openingId = ref(null)
@@ -622,13 +692,14 @@ const selectKelasItem = async (kelas) => {
 // HAPUS FILTER
 // ─────────────────────────────────────────────
 const hasActiveFilter = computed(() => {
-    return !!searchQuery.value || !!filterKelas.value || filterDate.value !== todayISO()
+    return !!searchQuery.value || !!filterKelas.value || activeDateShortcut.value !== 'today'
 })
 
 const resetAllFilters = async () => {
     searchQuery.value = ''
     filterKelas.value = ''
-    filterDate.value = todayISO()
+    filterDateRange.value = [todayISO(), todayISO()]
+    activeDateShortcut.value = 'today'
     kelasSearchQuery.value = ''
     kelasDropdownOpen.value = false
     clearTimeout(searchTimer)
@@ -667,7 +738,8 @@ const onSearchInput = () => {
 // HELPERS FILTER
 // ─────────────────────────────────────────────
 const getCurrentFilters = () => ({
-    tanggal: filterDate.value || undefined,
+    tanggal_mulai: filterDateRange.value?.[0] || todayISO(),
+    tanggal_selesai: filterDateRange.value?.[1] || todayISO(),
     id_kelas: filterKelas.value || undefined,
     search: searchQuery.value.trim() || undefined
 })
@@ -802,12 +874,12 @@ const handleBulkApprove = async () => {
 }
 
 const handleOpenPresensi = async (row) => {
+    const tanggal = row.tanggal_slot || filterDateRange.value[0]
     openingId.value = row.id_jadwal
-    const result = await presensiStore.openPresensi(row.id_jadwal, filterDate.value)
+    const result = await presensiStore.openPresensi(row.id_jadwal, tanggal)
     openingId.value = null
 
     if (result.success) {
-        // Refresh data tab belum supaya tombol langsung berubah jadi "Sudah Dibuka"
         loading.value = true
         await presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
         loading.value = false
@@ -942,5 +1014,19 @@ onUnmounted(() => {
 .kelas-scroll {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+input[type="date"] {
+    padding-right: 0;
 }
 </style>
