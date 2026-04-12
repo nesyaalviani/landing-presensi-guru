@@ -11,6 +11,7 @@ export const ROLE_MENUS = {
     { path: '/', label: 'Dashboard', icon: 'Home' },
     { type: 'divider', label: 'Presensi' },
     { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' },
+    { path: '/requests', label: 'Request Presensi', icon: 'Send' },
     { path: '/statistics', label: 'Statistik', icon: 'ChartLine' },
     { path: '/kalender', label: 'Kalender Akademik', icon: 'CalendarCog' },
     { type: 'divider', label: 'Classroom Management' },
@@ -33,7 +34,8 @@ export const ROLE_MENUS = {
 
   [ROLES.PIKET]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
-    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' }
+    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' },
+    { path: '/requests', label: 'Request Presensi', icon: 'Send' },
   ],
 
   [ROLES.KS]: [
@@ -55,7 +57,7 @@ export const ROLE_MENUS = {
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings', 'requests'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
-  [ROLES.PIKET]: ['/', 'approval', 'profile'],
+  [ROLES.PIKET]: ['/', 'approval', 'requests', 'profile'],
   [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile'],
   [ROLES.PENGAWAS]: ['/', 'statistics', 'kalender', 'profile']
 }

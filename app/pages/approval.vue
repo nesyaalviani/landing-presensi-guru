@@ -161,12 +161,12 @@
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
                 <div class="flex items-center gap-1.5">
                     <div class="h-2.5 w-2.5 rounded-sm bg-blue-500 flex-shrink-0"></div>
-                    <span class="text-[11px] text-slate-500">Sudah absen</span>
+                    <span class="text-[11px] text-slate-500">Sudah presensi</span>
                     <span class="text-[11px] font-semibold text-slate-700">{{ presensiMasuk }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <div class="h-2.5 w-2.5 rounded-sm bg-slate-200 flex-shrink-0"></div>
-                    <span class="text-[11px] text-slate-400">Belum absen</span>
+                    <span class="text-[11px] text-slate-400">Belum presensi</span>
                     <span class="text-[11px] font-semibold text-slate-400">{{ presensiStore.summary.belum }}</span>
                 </div>
             </div>
@@ -440,7 +440,7 @@
 
                         <span v-else
                             class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
-                            Belum diabsen
+                            Belum dipresensi
                         </span>
                     </div>
                 </div>
