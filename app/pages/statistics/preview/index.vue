@@ -1729,4 +1729,15 @@ onUnmounted(() => {
     padding: 16px 8px;
   }
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+  cursor: pointer;
+  margin-left: -8px;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
+}
 </style>

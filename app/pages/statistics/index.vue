@@ -33,6 +33,19 @@
                         </Transition>
                     </div>
 
+                    <Transition enter-active-class="transition duration-100 ease-out"
+                        enter-from-class="opacity-0 -translate-x-1" enter-to-class="opacity-100 translate-x-0"
+                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-x-0"
+                        leave-to-class="opacity-0 -translate-x-1">
+                        <div v-if="selectedPeriode === 'custom'" class="flex items-center gap-2">
+                            <input v-model="dateFrom" type="date" :max="dateTo || undefined"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 outline-none focus:border-blue-400 w-[130px]" />
+                            <span class="text-gray-400 text-sm">—</span>
+                            <input v-model="dateTo" type="date" :min="dateFrom || undefined"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 outline-none focus:border-blue-400 w-[130px]" />
+                        </div>
+                    </Transition>
+
                     <!-- Kelas -->
                     <div class="relative" ref="kelasDropdownRef">
                         <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors min-w-[160px]"
@@ -110,13 +123,15 @@
                 <div v-if="statisticsStore.loadingSummary" class="h-8 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
                 <div v-else class="flex items-end gap-2">
                     <p class="text-2xl font-bold text-emerald-600">{{ statisticsStore.summaryStats.pct_hadir }}%</p>
-                    <span v-if="statisticsStore.summaryStats.trend !== 0"
+                    <span v-if="statisticsStore.summaryStats.trend !== 0 && selectedPeriode !== 'custom'"
                         :class="['text-xs font-medium mb-1', statisticsStore.summaryStats.trend > 0 ? 'text-emerald-500' : 'text-red-400']">
                         {{ statisticsStore.summaryStats.trend > 0 ? '▲' : '▼' }}
                         {{ Math.abs(statisticsStore.summaryStats.trend) }}%
                     </span>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">vs periode sebelumnya</p>
+                <p class="text-xs text-gray-400 mt-1">
+                    {{ selectedPeriode === 'custom' ? 'dari total presensi' : 'vs periode sebelumnya' }}
+                </p>
             </div>
             <div class="bg-white rounded-sm border border-gray-200 px-5 py-4">
                 <p class="text-xs text-gray-400 mb-1">Tingkat Ketidakhadiran</p>
@@ -415,7 +430,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Line, Bar } from 'vue-chartjs'
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
@@ -443,11 +458,14 @@ const selectedGuru = ref('')
 const searchGuru = ref('')
 const sortField = ref('pct_hadir')
 const sortDir = ref('desc')
+const dateFrom = ref('')
+const dateTo = ref('')
 
 const PERIODE_LIST = [
     { value: 'minggu', label: 'Minggu Ini' },
     { value: 'bulan', label: 'Bulan Ini' },
     { value: 'tahun', label: 'Tahun Ini' },
+    { value: 'custom', label: 'Rentang Tanggal' },
 ]
 
 // ── Periode dropdown ──────────────────────────────────────
@@ -458,7 +476,11 @@ const togglePeriodeDropdown = () => { periodeDropdownOpen.value = !periodeDropdo
 const selectPeriode = async (p) => {
     selectedPeriode.value = p.value
     periodeDropdownOpen.value = false
-    await onFilterChange()
+    if (p.value !== 'custom') {
+        dateFrom.value = ''
+        dateTo.value = ''
+        await onFilterChange()
+    }
 }
 
 // ── Kelas dropdown (infinite scroll + search) ─────────────
@@ -545,6 +567,8 @@ const resetAllFilters = async () => {
     kelasSearchQuery.value = ''
     kelasDropdownOpen.value = false
     periodeDropdownOpen.value = false
+    dateFrom.value = ''
+    dateTo.value = ''
     await fetchKelasDropdown(true)
     await statisticsStore.fetchAll('bulan', null, null)
 }
@@ -571,20 +595,34 @@ const handleClickOutside = (e) => {
 const onFilterChange = async () => {
     selectedGuru.value = ''
     guruDropdownOpen.value = false
-    await statisticsStore.fetchAll(selectedPeriode.value, selectedKelas.value || null, null)
+    await statisticsStore.fetchAll(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+    )
 }
 
 const onGuruChange = async () => {
     await statisticsStore.getLinePerGuru(
         selectedPeriode.value,
         selectedKelas.value || null,
-        selectedGuru.value || null
+        selectedGuru.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
     )
 }
 
 const clearGuruFilter = async () => {
     selectedGuru.value = ''
-    await statisticsStore.getLinePerGuru(selectedPeriode.value, selectedKelas.value || null, null)
+    await statisticsStore.getLinePerGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+    )
 }
 
 const sortBy = (field) => {
@@ -749,6 +787,12 @@ const lineChartOptions = {
         y: { grid: { color: '#f1f5f9' }, border: { display: false }, beginAtZero: true, ticks: { font: { size: 12 }, color: '#94a3b8', stepSize: 1 } }
     }
 }
+
+watch([dateFrom, dateTo], async () => {
+    if (selectedPeriode.value === 'custom' && dateFrom.value && dateTo.value) {
+        await onFilterChange()
+    }
+})
 </script>
 
 <style scoped>
@@ -774,5 +818,20 @@ const lineChartOptions = {
 .custom-scroll {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+input[type="date"] {
+    padding-right: 8px;
 }
 </style>
