@@ -30,6 +30,7 @@ export const useStatisticsStore = defineStore('statistics', {
 
         performaGuru: [],
         loadingPerforma: false,
+        performaTotal: 0,
 
         lineChart: { labels: [], datasets: [], guruList: [] },
         loadingLine: false,
@@ -183,23 +184,34 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getPerformaGuru(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
-            this.loadingPerforma = true
-            const config = useRuntimeConfig()
+        async getPerformaGuru(range = 'bulan', id_kelas = null, date_from = null, date_to = null, { search = '', limit = 20, offset = 0 } = {}) {
+            this.loadingPerforma = true;
+            const config = useRuntimeConfig();
             try {
-                let token = null
-                if (process.client) token = localStorage.getItem('token')
-                const params = this._buildParams(range, id_kelas, date_from, date_to)
+                let token = null;
+                if (process.client) token = localStorage.getItem('token');
+                const params = this._buildParams(range, id_kelas, date_from, date_to);
+                if (search) params.set('search', search);
+                if (limit === 'all') params.set('limit', 'all');
+                else {
+                    params.set('limit', limit);
+                    params.set('offset', offset);
+                }
                 const response = await $fetch(`/guru/performa-guru?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
-                })
-                this.performaGuru = response.data || []
+                });
+                if (offset === 0 || limit === 'all') {
+                    this.performaGuru = response.data || [];
+                } else {
+                    this.performaGuru = [...this.performaGuru, ...(response.data || [])];
+                }
+                this.performaTotal = response.total || 0;
             } catch (err) {
-                console.error('Performa guru error:', err)
+                console.error('Performa guru error:', err);
             } finally {
-                this.loadingPerforma = false
+                this.loadingPerforma = false;
             }
         },
 

@@ -257,7 +257,7 @@
                 </div>
                 <div class="relative w-full sm:w-56">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                    <input v-model="searchGuru" type="text" placeholder="Cari nama guru..."
+                    <input v-model="searchGuru" type="text" placeholder="Cari nama guru..." @input="onSearchGuruInput"
                         class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-sm outline-none focus:border-blue-500" />
                 </div>
             </div>
@@ -351,6 +351,20 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">
+                            Menampilkan {{ statisticsStore.performaGuru.length }} dari {{ statisticsStore.performaTotal
+                            }} guru
+                        </p>
+                        <button v-if="performaHasMore" type="button" @click="loadAllPerforma"
+                            :disabled="performaLoadingAll"
+                            class="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors">
+                            <Loader2 v-if="performaLoadingAll" class="h-3.5 w-3.5 animate-spin" />
+                            <span>{{ performaLoadingAll ? 'Memuat...' : `Tampilkan semua
+                                (${statisticsStore.performaTotal})` }}</span>
+                        </button>
+                        <span v-else class="text-xs text-gray-400">Semua data ditampilkan</span>
+                    </div>
                 </div>
                 <div v-else class="px-6 py-10 text-center text-sm text-gray-400">
                     {{ searchGuru ? `Tidak ada guru dengan nama "${searchGuru}"` : 'Belum ada data untuk periode ini' }}
@@ -455,7 +469,6 @@ const statisticsStore = useStatisticsStore()
 const selectedPeriode = ref('bulan')
 const selectedKelas = ref('')
 const selectedGuru = ref('')
-const searchGuru = ref('')
 const sortField = ref('pct_hadir')
 const sortDir = ref('desc')
 const dateFrom = ref('')
@@ -569,6 +582,7 @@ const resetAllFilters = async () => {
     periodeDropdownOpen.value = false
     dateFrom.value = ''
     dateTo.value = ''
+    searchGuru.value = ''   // ← tambah ini
     await fetchKelasDropdown(true)
     await statisticsStore.fetchAll('bulan', null, null)
 }
@@ -595,6 +609,7 @@ const handleClickOutside = (e) => {
 const onFilterChange = async () => {
     selectedGuru.value = ''
     guruDropdownOpen.value = false
+    searchGuru.value = ''   // ← tambah ini
     await statisticsStore.fetchAll(
         selectedPeriode.value,
         selectedKelas.value || null,
@@ -634,27 +649,55 @@ const sortBy = (field) => {
     }
 }
 
+const searchGuru = ref('')
+const performaLoadingAll = ref(false)
+let searchGuruTimer = null
+
+const performaHasMore = computed(() =>
+    statisticsStore.performaGuru.length < statisticsStore.performaTotal
+)
+
+// sort tetap client-side karena data sudah dari server
 const filteredPerforma = computed(() => {
-    let data = [...statisticsStore.performaGuru]
-
-    if (searchGuru.value.trim()) {
-        const q = searchGuru.value.toLowerCase()
-        data = data.filter(g => g.nama_guru.toLowerCase().includes(q))
-    }
-
+    const data = [...statisticsStore.performaGuru]
     data.sort((a, b) => {
         const aVal = a[sortField.value]
         const bVal = b[sortField.value]
         if (typeof aVal === 'string') {
-            return sortDir.value === 'asc'
-                ? aVal.localeCompare(bVal)
-                : bVal.localeCompare(aVal)
+            return sortDir.value === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
         }
         return sortDir.value === 'asc' ? aVal - bVal : bVal - aVal
     })
-
     return data
 })
+
+const onSearchGuruInput = () => {
+    clearTimeout(searchGuruTimer)
+    searchGuruTimer = setTimeout(() => fetchPerforma(true), 350)
+}
+
+const fetchPerforma = async (reset = false) => {
+    const offset = reset ? 0 : statisticsStore.performaGuru.length
+    await statisticsStore.getPerformaGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+        { search: searchGuru.value, limit: 20, offset }
+    )
+}
+
+const loadAllPerforma = async () => {
+    performaLoadingAll.value = true
+    await statisticsStore.getPerformaGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+        { search: searchGuru.value, limit: 'all', offset: 0 }
+    )
+    performaLoadingAll.value = false
+}
 
 onMounted(async () => {
     await statisticsStore.getKelas()
