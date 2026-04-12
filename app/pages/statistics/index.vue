@@ -230,14 +230,24 @@
                             <div :class="[
                                 'flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
                                 guru.rank === 1 ? 'bg-red-100 text-red-500' :
-                                guru.rank === 2 ? 'bg-orange-100 text-orange-500' :
-                                guru.rank === 3 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-50 text-gray-400'
+                                    guru.rank === 2 ? 'bg-orange-100 text-orange-500' :
+                                        guru.rank === 3 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-50 text-gray-400'
                             ]">{{ guru.rank }}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate">{{ guru.nama_guru }}</p>
-                                <p class="text-xs text-gray-400">{{ guru.total_tidak_hadir }} kali tidak hadir</p>
+                                <!-- Tambah breakdown di sini -->
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-xs text-red-400">
+                                        {{ guru.total_tidak_hadir_murni }}x murni
+                                    </span>
+                                    <span class="text-gray-200 text-xs">·</span>
+                                    <span class="text-xs text-amber-400">
+                                        {{ guru.total_tidak_hadir_tugas }}x + tugas
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex-shrink-0 text-sm font-semibold text-red-400">{{ guru.total_tidak_hadir }}x</div>
+                            <div class="flex-shrink-0 text-sm font-semibold text-red-400">{{ guru.total_tidak_hadir }}x
+                            </div>
                         </div>
                     </div>
                     <div v-else class="px-6 py-10 text-center text-sm text-gray-400">Belum ada data untuk periode ini</div>

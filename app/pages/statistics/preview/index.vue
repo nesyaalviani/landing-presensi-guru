@@ -224,6 +224,7 @@
                       </tbody>
                     </table>
                   </div>
+                  <!-- BARU -->
                   <div class="section">
                     <div class="section-title red-title">IV. TOP 10 KETIDAKHADIRAN</div>
                     <table class="rank-table">
@@ -231,17 +232,21 @@
                         <tr>
                           <th>#</th>
                           <th>Nama Guru</th>
-                          <th>Jml</th>
+                          <th>Murni</th>
+                          <th>+ Tugas</th>
+                          <th>Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="g in previewData.top_tidak_hadir" :key="g.nama_guru">
                           <td class="tc gray">{{ g.rank }}</td>
                           <td>{{ g.nama_guru }}</td>
+                          <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir_murni }}x</td>
+                          <td class="tc orange-txt">{{ g.total_tidak_hadir_tugas }}x</td>
                           <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir }}x</td>
                         </tr>
                         <tr v-if="previewData.top_tidak_hadir.length === 0">
-                          <td colspan="3" class="tc muted" style="padding:10px">—</td>
+                          <td colspan="5" class="tc muted" style="padding:10px">—</td>
                         </tr>
                       </tbody>
                     </table>
@@ -413,6 +418,7 @@
                     </tbody>
                   </table>
                 </div>
+                <!-- GANTI BAGIAN INI di dalam template v-if="totalPages === 1" -->
                 <div class="section">
                   <div class="section-title red-title">IV. TOP 10 KETIDAKHADIRAN</div>
                   <table class="rank-table">
@@ -420,17 +426,21 @@
                       <tr>
                         <th>#</th>
                         <th>Nama Guru</th>
-                        <th>Jml</th>
+                        <th>Murni</th>
+                        <th>+ Tugas</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="g in previewData.top_tidak_hadir" :key="g.nama_guru">
                         <td class="tc gray">{{ g.rank }}</td>
                         <td>{{ g.nama_guru }}</td>
+                        <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir_murni }}x</td>
+                        <td class="tc orange-txt">{{ g.total_tidak_hadir_tugas }}x</td>
                         <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir }}x</td>
                       </tr>
                       <tr v-if="previewData.top_tidak_hadir.length === 0">
-                        <td colspan="3" class="tc muted" style="padding:10px">—</td>
+                        <td colspan="5" class="tc muted" style="padding:10px">—</td>
                       </tr>
                     </tbody>
                   </table>
@@ -677,6 +687,15 @@ async function fetchPreviewData() {
     if (selectedKelas.value) params.id_kelas = selectedKelas.value
     const data = await apiFetch('/guru/preview-data', params)
     previewData.value = data
+
+    // ========== TAMBAHKAN CONSOLE LOG INI ==========
+    console.log('=== VUE PREVIEW DATA ===');
+    console.log('performa length:', data.performa.length);
+    console.log('ROWS_P1_FULL:', ROWS_P1_FULL);
+    console.log('totalGuru:', data.performa.length);
+    console.log('isSinglePage:', data.performa.length <= ROWS_P1_FULL);
+    // ==============================================
+
   } catch (err_) {
     error.value = err_.message || 'Gagal memuat data. Silakan coba lagi.'
     previewData.value = { ...EMPTY_DATA }
@@ -684,7 +703,6 @@ async function fetchPreviewData() {
     loading.value = false
   }
 }
-
 // ─────────────────────────────────────────────
 // Kelas — infinite scroll
 // ─────────────────────────────────────────────
