@@ -185,6 +185,13 @@
                       <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                       <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
                         {{ g.tidak_dipresensi }}
+                        <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+                          style="font-size:8px; color:#dc2626;">
+                          (semua ditolak)
+                        </span>
+                        <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+                          ({{ g.ditolak }} ditolak)
+                        </span>
                       </td>
                       <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                       <td class="tc">
@@ -328,8 +335,15 @@
                         <td class="tc orange-txt">{{ g.tidak_hadir_tugas }}</td>
                         <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                         <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
-                          {{ g.tidak_dipresensi }}
-                        </td>
+  {{ g.tidak_dipresensi }}
+  <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+    style="font-size:8px; color:#dc2626;">
+    (semua ditolak)
+  </span>
+  <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+    ({{ g.ditolak }} ditolak)
+  </span>
+</td>
                         <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                         <td class="tc">
                           <span class="badge" :class="badgeClass(g.pct_hadir)">{{ badgeLabel(g.pct_hadir) }}</span>
@@ -384,6 +398,13 @@
                       <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                       <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
                         {{ g.tidak_dipresensi }}
+                        <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+                          style="font-size:8px; color:#dc2626;">
+                          (semua ditolak)
+                        </span>
+                        <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+                          ({{ g.ditolak }} ditolak)
+                        </span>
                       </td>
                       <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                       <td class="tc">

@@ -35,7 +35,7 @@ export const useStatisticsStore = defineStore('statistics', {
         lineChart: { labels: [], datasets: [], guruList: [] },
         loadingLine: false,
 
-        unpresensiStats: { total_belum: 0 },
+        unpresensiStats: { total_belum: 0, total_ditolak: 0 },
         loadingUnpresensi: false,
     }),
 
@@ -255,7 +255,10 @@ export const useStatisticsStore = defineStore('statistics', {
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
-                this.unpresensiStats = { total_belum: response.total_belum || 0 }
+                this.unpresensiStats = {
+                    total_belum: response.total_belum || 0,
+                    total_ditolak: response.total_ditolak || 0
+                }
             } catch (err) {
                 console.error('Unpresensi stats error:', err)
             } finally {

@@ -141,9 +141,16 @@
             </div>
             <div class="bg-amber-50 rounded-sm border border-amber-200 px-5 py-4">
                 <p class="text-xs text-amber-500 mb-1">Belum Dipresensi</p>
-                <div v-if="statisticsStore.loadingUnpresensi" class="h-8 w-20 bg-amber-200 rounded animate-pulse mt-1"></div>
-                <p v-else class="text-2xl font-bold text-amber-700">{{ statisticsStore.unpresensiStats.total_belum }}</p>
-                <p class="text-xs text-amber-500 mt-1">slot jadwal terlewat</p>
+                <div v-if="statisticsStore.loadingUnpresensi" class="h-8 w-20 bg-amber-200 rounded animate-pulse mt-1">
+                </div>
+                <p v-else class="text-2xl font-bold text-amber-700">{{ statisticsStore.unpresensiStats.total_belum }}
+                </p>
+                <p class="text-xs text-amber-500 mt-1">
+                    slot jadwal terlewat
+                    <span v-if="statisticsStore.unpresensiStats.total_ditolak > 0" class="text-red-400">
+                        · {{ statisticsStore.unpresensiStats.total_ditolak }} ditolak
+                    </span>
+                </p>
             </div>
         </div>
 
@@ -342,6 +349,13 @@
                                         guru.tidak_dipresensi > 0 ? 'text-amber-500' : 'text-gray-300'
                                     ]">
                                         {{ guru.tidak_dipresensi }}
+                                        <span v-if="guru.ditolak > 0 && guru.ditolak === guru.tidak_dipresensi"
+                                            class="text-xs text-red-400 font-normal">
+                                            (semua ditolak)
+                                        </span>
+                                        <span v-else-if="guru.ditolak > 0" class="text-xs text-red-400 font-normal">
+                                            ({{ guru.ditolak }} ditolak)
+                                        </span>
                                     </span>
                                 </td>
                                 <td class="px-4 py-3.5">
