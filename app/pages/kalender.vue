@@ -491,7 +491,7 @@ import { ChevronLeft, ChevronRight, Plus, X, Pencil, Trash2, CalendarDays, Chevr
 // ── Auth ─────────────────────────────────────────────────
 const authStore = useAuthStore()
 const isReadOnly = computed(() =>
-  authStore.user?.role === 'km' || authStore.user?.role === 'ks'
+  authStore.user?.role === 'km' || authStore.user?.role === 'ks' || authStore.user?.role === 'piket'
 )
 
 // ── Kalender state ────────────────────────────────────────
