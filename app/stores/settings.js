@@ -4,7 +4,8 @@ export const useSettingsStore = defineStore('settings', {
     state: () => ({
         bulkApprovalEnabled: false,
         loading: false,
-        error: null
+        error: null,
+        activityLogs: []
     }),
 
     actions: {
@@ -12,7 +13,6 @@ export const useSettingsStore = defineStore('settings', {
             this.loading = true
             this.error = null
             const config = useRuntimeConfig()
-
             try {
                 const token = process.client ? localStorage.getItem('token') : null
                 const response = await $fetch('/settings/bulk-approval', {
@@ -34,7 +34,6 @@ export const useSettingsStore = defineStore('settings', {
             this.loading = true
             this.error = null
             const config = useRuntimeConfig()
-
             try {
                 const token = process.client ? localStorage.getItem('token') : null
                 const response = await $fetch('/settings/bulk-approval', {
@@ -53,6 +52,22 @@ export const useSettingsStore = defineStore('settings', {
                 return { success: false, message: this.error }
             } finally {
                 this.loading = false
+            }
+        },
+
+        async fetchActivityLogs() {
+            const config = useRuntimeConfig()
+            try {
+                const token = process.client ? localStorage.getItem('token') : null
+                const response = await $fetch('/settings/activity-logs', {
+                    method: 'GET',
+                    baseURL: config.public.apiBase,
+                    headers: { ...(token && { Authorization: `Bearer ${token}` }) }
+                })
+                this.activityLogs = response
+                return { success: true }
+            } catch (error) {
+                return { success: false }
             }
         }
     }
