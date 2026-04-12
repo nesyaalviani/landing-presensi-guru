@@ -128,6 +128,50 @@
             </Transition>
         </div>
 
+                <!-- Progress Bar Presensi -->
+        <div class="bg-white rounded-sm border border-slate-200 px-4 py-3">
+
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <TrendingUp class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                    <span class="text-xs font-semibold text-slate-700">Tingkat pengisian presensi</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] text-slate-400">
+                        {{ presensiMasuk }} dari {{ presensiStore.summary.total }} jadwal
+                    </span>
+                    <span class="text-xs font-bold"
+                        :class="presensiPct >= 80
+                            ? 'text-emerald-600'
+                            : presensiPct >= 50
+                                ? 'text-amber-600'
+                                : 'text-rose-500'">
+                        {{ presensiPct }}%
+                    </span>
+                </div>
+            </div>
+
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                    class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
+                    :style="{ width: presensiPct + '%' }">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                <div class="flex items-center gap-1.5">
+                    <div class="h-2.5 w-2.5 rounded-sm bg-blue-500 flex-shrink-0"></div>
+                    <span class="text-[11px] text-slate-500">Sudah absen</span>
+                    <span class="text-[11px] font-semibold text-slate-700">{{ presensiMasuk }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="h-2.5 w-2.5 rounded-sm bg-slate-200 flex-shrink-0"></div>
+                    <span class="text-[11px] text-slate-400">Belum absen</span>
+                    <span class="text-[11px] font-semibold text-slate-400">{{ presensiStore.summary.belum }}</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Filters -->
         <div class="bg-white rounded-sm border border-slate-200 p-3">
             <div class="flex flex-col sm:flex-row gap-2 flex-wrap">
@@ -243,50 +287,6 @@
                     Hapus Filter
                 </button>
 
-            </div>
-        </div>
-
-        <!-- Progress Bar Presensi -->
-        <div class="bg-white rounded-sm border border-slate-200 px-4 py-3">
-
-            <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                    <TrendingUp class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                    <span class="text-xs font-semibold text-slate-700">Tingkat pengisian presensi</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-[11px] text-slate-400">
-                        {{ presensiMasuk }} dari {{ presensiStore.summary.total }} jadwal
-                    </span>
-                    <span class="text-xs font-bold"
-                        :class="presensiPct >= 80
-                            ? 'text-emerald-600'
-                            : presensiPct >= 50
-                                ? 'text-amber-600'
-                                : 'text-rose-500'">
-                        {{ presensiPct }}%
-                    </span>
-                </div>
-            </div>
-
-            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div
-                    class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
-                    :style="{ width: presensiPct + '%' }">
-                </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                <div class="flex items-center gap-1.5">
-                    <div class="h-2.5 w-2.5 rounded-sm bg-blue-500 flex-shrink-0"></div>
-                    <span class="text-[11px] text-slate-500">Sudah absen</span>
-                    <span class="text-[11px] font-semibold text-slate-700">{{ presensiMasuk }}</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <div class="h-2.5 w-2.5 rounded-sm bg-slate-200 flex-shrink-0"></div>
-                    <span class="text-[11px] text-slate-400">Belum absen</span>
-                    <span class="text-[11px] font-semibold text-slate-400">{{ presensiStore.summary.belum }}</span>
-                </div>
             </div>
         </div>
 
