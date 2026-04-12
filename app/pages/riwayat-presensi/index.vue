@@ -174,6 +174,90 @@
                   {{ isBandingExpired(history) ? 'Kedaluwarsa' : 'Kirim Ulang' }}
                 </button>
               </div>
+                <!-- Blok ini menggantikan/ditambahkan setelah action yang ada -->
+
+                <!-- Kondisi 1: Bisa request (belum presensi, sudah lewat, belum dibuka admin) -->
+                <div v-if="isRequestable(history)" class="flex justify-end mt-2">
+
+                  <!-- Belum ada request -->
+                  <template v-if="!getRequestInfo(history)">
+                    <button
+                      :disabled="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`"
+                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all shadow-sm"
+                      :class="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'bg-violet-600 hover:bg-violet-700 active:scale-95 text-white'" @click="handleSendRequest(history)">
+                      <Loader2
+                        v-if="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`"
+                        class="w-3.5 h-3.5 animate-spin" />
+                      <Send v-else class="w-3.5 h-3.5" />
+                      {{ requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`
+                        ? 'Mengirim...'
+                        : 'Request Presensi' }}
+                    </button>
+                  </template>
+
+                  <!-- Request Pending -->
+                  <template v-else-if="getRequestInfo(history)?.status === 'Pending'">
+                    <span
+                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
+                      <Clock class="w-3.5 h-3.5" />
+                      Menunggu Persetujuan Admin
+                    </span>
+                  </template>
+
+                  <!-- Request Approved → seharusnya presensi muncul di Jadwal Hari Ini,
+         tapi kalau user belum isi dalam 24 jam, tampilkan info -->
+                  <template v-else-if="getRequestInfo(history)?.status === 'Approved'">
+                    <span
+                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700">
+                      <CheckCircle2 class="w-3.5 h-3.5" />
+                      Disetujui — Isi di Jadwal Hari Ini
+                    </span>
+                  </template>
+
+                  <!-- Request Rejected → bisa request ulang + lihat alasan -->
+                  <template v-else-if="getRequestInfo(history)?.status === 'Rejected'">
+                    <div class="flex flex-col items-end gap-2">
+                      <!-- Info alasan reject -->
+                      <div class="flex gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 max-w-xs">
+                        <AlertCircle class="w-3.5 h-3.5 text-red-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p class="text-[11px] font-bold text-red-600 mb-0.5 uppercase tracking-wide">Request Ditolak
+                          </p>
+                          <p class="text-xs text-red-600 leading-relaxed">{{ getRequestInfo(history)?.alasan_reject }}
+                          </p>
+                        </div>
+                      </div>
+                      <!-- Tombol request ulang -->
+                      <button
+                        :disabled="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all shadow-sm"
+                        :class="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`
+                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          : 'bg-orange-500 hover:bg-orange-600 active:scale-95 text-white'" @click="handleSendRequest(history)">
+                        <Loader2
+                          v-if="requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`"
+                          class="w-3.5 h-3.5 animate-spin" />
+                        <RotateCcw v-else class="w-3.5 h-3.5" />
+                        {{ requestingId === `${history.jadwal?.id_jadwal}_${String(history.tanggal).substring(0, 10)}`
+                          ? 'Mengirim...'
+                          : 'Request Ulang' }}
+                      </button>
+                    </div>
+                  </template>
+
+                </div>
+
+                <!-- Kondisi 2: Sudah dibuka manual oleh admin → info saja (tombol request tidak muncul) -->
+                <div v-else-if="!history.id_presensi && history.is_opened_by_admin" class="flex justify-end mt-2">
+                  <span
+                    class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-blue-50 border border-blue-100 text-blue-600">
+                    <Unlock class="w-3 h-3" />
+                    Dibuka Admin — Isi di Jadwal Hari Ini
+                  </span>
+                </div>
+
 
             </div>
 
@@ -243,6 +327,7 @@
     </div>
 
   </div>
+  <AppConfirm />
 </template>
 
 <script setup>
@@ -251,11 +336,15 @@ import {
   ChevronRight, ChevronLeft, Clock, User, RotateCcw,
   CheckCircle2, XCircle, AlertCircle, MessageSquare,
   ClipboardList, Calendar, FileText, Image as ImageIcon,
-  X, ShieldX
+  X, ShieldX, Send, Unlock, Loader2,   
 } from 'lucide-vue-next'
 import { usePresensiStore } from '@/stores/presensi'
 import { useRouter } from 'vue-router'
+import { usePresensiRequestStore } from '@/stores/presensiRequest'
+import { useConfirm } from '@/composables/useConfirm'
+const { confirm } = useConfirm()
 
+const presensiRequestStore = usePresensiRequestStore()
 const presensiStore = usePresensiStore()
 const router = useRouter()
 
@@ -272,6 +361,7 @@ const totalTidakHadirDenganTugas = ref(0)
 const totalDitolak = ref(0)
 const totalBelum = ref(0)
 const totalPages = ref(1)
+const requestingId = ref(null)
 
 // ─── Formatters ───────────────────────────────────────────────
 const formatDate = (isoString) => {
@@ -286,14 +376,90 @@ const formatDateTime = (isoString) => {
   return `${d}, ${t}`
 }
 
+// request
+// Helper: cek apakah slot ini sudah lewat hari ini jam 23:59 dan belum dipresensi
+// (baru bisa request kalau kondisi ini terpenuhi)
+const isRequestable = (history) => {
+  if (history.id_presensi) return false
+  if (history.is_opened_by_admin) return false
+  if (!history.tanggal) return false
+  return history.tanggal < new Date().toLocaleDateString('sv-SE')
+}
+
+// Helper: ambil info request dari store berdasarkan riwayat
+const getRequestInfo = (history) => {
+  // Prioritas: ambil dari response riwayat langsung (sudah di-join di backend)
+  if (history.request) return history.request
+  // Fallback: ambil dari store map (setelah user baru saja request)
+  const tanggal = String(history.tanggal).substring(0, 10)
+  return presensiRequestStore.getRequestInfo(history.jadwal?.id_jadwal, tanggal)
+}
+
+// Handler kirim request
+const handleSendRequest = async (history) => {
+  const id_jadwal = history.jadwal?.id_jadwal
+  const tanggal = String(history.tanggal).substring(0, 10)
+  if (!id_jadwal || !tanggal) return
+
+  const confirmed = await confirm({
+    title: 'Kirim Request Presensi',
+    message: `Request presensi untuk jadwal ${history.subject} pada ${history.date} akan dikirim ke admin. Lanjutkan?`,
+    confirmText: 'Kirim Request',
+    cancelText: 'Batal',
+    type: 'success',
+  })
+  if (!confirmed) return
+
+  requestingId.value = `${id_jadwal}_${tanggal}`
+  const result = await presensiRequestStore.createRequest({ id_jadwal, tanggal })
+  requestingId.value = null
+
+  if (result.success) {
+    const item = historyData.value.find(
+      h => h.jadwal?.id_jadwal === id_jadwal && String(h.tanggal).substring(0, 10) === tanggal
+    )
+    if (item) {
+      item.request = {
+        id: result.data.id,
+        status: 'Pending',
+        alasan_reject: null,
+        opened_at: null
+      }
+    }
+  } else {
+    await confirm({
+      title: 'Gagal',
+      message: result.message || 'Gagal mengirim request',
+      confirmText: 'OK',
+      type: 'reject',
+    })
+  }
+}
+
 // ─── Mapper ───────────────────────────────────────────────────
 const mapToHistory = (item) => {
   const jamMulai = item.jadwal?.jam_mulai?.substring(0, 5) || ''
   const jamSelesai = item.jadwal?.jam_selesai?.substring(0, 5) || ''
   const isBelum = item.presensi === null
+
+  const normTanggal = (raw) => {
+    if (!raw) return null
+    if (typeof raw === 'string' && raw.includes('T')) {
+      const d = new Date(raw)
+      d.setHours(d.getHours() + 7)
+      return d.toLocaleDateString('sv-SE')
+    }
+    return String(raw).substring(0, 10)
+  }
+  const tanggalWIB = normTanggal(item.tanggal)
+
   return {
     id_jadwal: item.jadwal?.id_jadwal,
     id_presensi: item.id_presensi,
+    tanggal: tanggalWIB,
+    jadwal: { id_jadwal: item.jadwal?.id_jadwal },
+    is_opened_by_admin: item.is_opened_by_admin || false,
+    request: item.request || null,
     hari: item.jadwal?.hari || '',
     date: formatDate(item.tanggal),
     timeRange: `${jamMulai} – ${jamSelesai}`,
@@ -426,5 +592,8 @@ const displayPages = computed(() => {
 })
 
 watch(currentPage, () => fetchRiwayat())
-onMounted(() => fetchRiwayat())
+onMounted(async () => {
+  await presensiRequestStore.getMyRequests()
+  await fetchRiwayat()
+})
 </script>

@@ -53,7 +53,7 @@ export const ROLE_MENUS = {
 }
 
 export const ROLE_PERMISSIONS = {
-  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings'],
+  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings', 'requests'],
   [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
   [ROLES.PIKET]: ['/', 'approval', 'profile'],
   [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile'],

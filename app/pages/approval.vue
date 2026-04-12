@@ -401,12 +401,32 @@
                             </div>
                         </div>
 
-                        <template v-if="isPastFilterDate">
-                            <span v-if="row.is_opened_by_admin"
+                            <!-- ACTION SECTION DI TAB BELUM — VERSI BARU -->
+                            <!-- ACTION SECTION DI TAB BELUM — VERSI BARU -->
+                        <template v-if="isRowPastDate(row)">
+
+                            <!-- Sudah dibuka manual (tidak ada request, atau request sudah selesai) -->
+                            <span v-if="row.is_opened_by_admin && !row.request_info"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
                                 <CheckCircle class="h-3 w-3" />
                                 Sudah Dibuka
                             </span>
+
+                            <!-- Ada request Pending dari KM → hanya tampilkan badge, tanpa tombol Buka -->
+                            <span v-else-if="row.request_info?.status === 'Pending'"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-amber-50 border border-amber-200 text-amber-700">
+                                <Clock class="h-3 w-3" />
+                                Request Pending dari KM
+                            </span>
+
+                            <!-- Ada request Approved dari KM → tampilkan info saja -->
+                            <span v-else-if="row.request_info?.status === 'Approved'"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
+                                <CheckCircle class="h-3 w-3" />
+                                Dibuka via Request KM
+                            </span>
+
+                            <!-- Tidak ada request atau request Rejected → tombol Buka normal -->
                             <button v-else @click="handleOpenPresensi(row)" :disabled="openingId === row.id_jadwal"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-sm transition-colors disabled:opacity-50"
                                 :class="openingId === row.id_jadwal
@@ -416,8 +436,10 @@
                                 <Unlock v-else class="h-3 w-3" />
                                 {{ openingId === row.id_jadwal ? 'Membuka...' : 'Buka' }}
                             </button>
+
                         </template>
 
+                        <!-- Belum jadwal lewat → label saja (tidak berubah) -->
                         <span v-else
                             class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
                             Belum diabsen
@@ -642,8 +664,11 @@ const filterKelas = ref('')
 const activeTab = ref('pending')
 
 const todayISO = () => new Date().toLocaleDateString('sv-SE')
-const filterDateRange = ref([todayISO(), todayISO()])
-const activeDateShortcut = ref('today')
+const filterDateRange = ref([
+    (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toLocaleDateString('sv-SE') })(),
+    todayISO()
+])
+const activeDateShortcut = ref('week')
 const setDateShortcut = async (type) => {
     activeDateShortcut.value = type
     const end = new Date()
@@ -668,10 +693,12 @@ const formatDateRangeLabel = computed(() => {
     return `${new Date(start + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} – ${new Date(end + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`
 })
 
-const isPastFilterDate = computed(() => {
-    if (!filterDateRange.value?.[1]) return false
-    return filterDateRange.value[1] < todayISO()
-})
+const isRowPastDate = (row) => {
+    if (!row.tanggal_slot) return false
+    const d = new Date(row.tanggal_slot)
+    d.setHours(d.getHours() + 7)
+    return d.toLocaleDateString('sv-SE') < todayISO()
+}
 
 const openingId = ref(null)
 
