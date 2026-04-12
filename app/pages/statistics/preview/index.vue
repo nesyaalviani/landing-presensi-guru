@@ -688,14 +688,6 @@ async function fetchPreviewData() {
     const data = await apiFetch('/guru/preview-data', params)
     previewData.value = data
 
-    // ========== TAMBAHKAN CONSOLE LOG INI ==========
-    console.log('=== VUE PREVIEW DATA ===');
-    console.log('performa length:', data.performa.length);
-    console.log('ROWS_P1_FULL:', ROWS_P1_FULL);
-    console.log('totalGuru:', data.performa.length);
-    console.log('isSinglePage:', data.performa.length <= ROWS_P1_FULL);
-    // ==============================================
-
   } catch (err_) {
     error.value = err_.message || 'Gagal memuat data. Silakan coba lagi.'
     previewData.value = { ...EMPTY_DATA }
