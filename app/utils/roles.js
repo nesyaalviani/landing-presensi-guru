@@ -20,6 +20,7 @@ export const ROLE_MENUS = {
     { type: 'divider', label: 'User Management' },
     { path: '/users', label: 'User', icon: 'User' },
     { path: '/teacher', label: 'Data Guru', icon: 'Users' },
+    { type: 'divider', label: 'Pengaturan' },
     { path: '/settings', label: 'Pengaturan', icon: 'Settings' },
 
   ],

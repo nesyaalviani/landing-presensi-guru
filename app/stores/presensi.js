@@ -377,7 +377,28 @@ export const usePresensiStore = defineStore('presensi', {
                     message: error.data?.message || 'Gagal mengambil riwayat presensi.'
                 }
             }
-        }
+        },
+        async openPresensi(idJadwal, tanggal) {
+            this.error = null
+            const config = useRuntimeConfig()
+
+            try {
+                const token = process.client ? localStorage.getItem('token') : null
+                const response = await $fetch('/presensi/open', {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: { id_jadwal: idJadwal, tanggal }
+                })
+                return { success: true, data: response }
+            } catch (error) {
+                this.error = error.data?.message || 'Gagal membuka presensi'
+                return { success: false, message: error.data?.message || 'Gagal membuka presensi' }
+            }
+        },
     },
 
     getters: {

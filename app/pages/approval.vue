@@ -208,7 +208,29 @@
                                 </span>
                             </div>
                         </div>
-                        <span
+
+                        <!-- BARU: tombol Buka — hanya muncul kalau filterDate adalah hari lalu -->
+                        <template v-if="isPastFilterDate">
+                            <!-- Sudah dibuka → disabled -->
+                            <span v-if="row.is_opened_by_admin"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
+                                <CheckCircle class="h-3 w-3" />
+                                Sudah Dibuka
+                            </span>
+                            <!-- Belum dibuka → aktif -->
+                            <button v-else @click="handleOpenPresensi(row)" :disabled="openingId === row.id_jadwal"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-sm transition-colors disabled:opacity-50"
+                                :class="openingId === row.id_jadwal
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'">
+                                <Loader2 v-if="openingId === row.id_jadwal" class="h-3 w-3 animate-spin" />
+                                <Unlock v-else class="h-3 w-3" />
+                                {{ openingId === row.id_jadwal ? 'Membuka...' : 'Buka' }}
+                            </button>
+                        </template>
+
+                        <!-- Hari ini: label biasa (tidak berubah) -->
+                        <span v-else
                             class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
                             Belum diabsen
                         </span>
@@ -417,7 +439,7 @@ import { useSettingsStore } from '~/stores/settings'
 import { useClassroomsStore } from '~/stores/classrooms'
 import {
     Clock, CheckCircle, XCircle, Search, X,
-    FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX
+    FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX, Unlock
 } from 'lucide-vue-next'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -438,6 +460,11 @@ const activeTab = ref('pending')
 
 const todayISO = () => new Date().toLocaleDateString('sv-SE')
 const filterDate = ref(todayISO())
+// Apakah filter tanggal yang sedang aktif adalah hari lalu?
+const isPastFilterDate = computed(() => filterDate.value < todayISO())
+
+// ID jadwal yang sedang dalam proses dibuka (untuk disable tombol)
+const openingId = ref(null)
 
 const showImageModal = ref(false)
 const selectedImage = ref('')
@@ -771,6 +798,24 @@ const handleBulkApprove = async () => {
         scrollToAlert()
     } finally {
         processingId.value = null
+    }
+}
+
+const handleOpenPresensi = async (row) => {
+    openingId.value = row.id_jadwal
+    const result = await presensiStore.openPresensi(row.id_jadwal, filterDate.value)
+    openingId.value = null
+
+    if (result.success) {
+        // Refresh data tab belum supaya tombol langsung berubah jadi "Sudah Dibuka"
+        loading.value = true
+        await presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
+        loading.value = false
+        showAlert('success', 'Presensi berhasil dibuka. KM punya 24 jam untuk mengisi.')
+        scrollToAlert()
+    } else {
+        showAlert('error', result.message || 'Gagal membuka presensi')
+        scrollToAlert()
     }
 }
 

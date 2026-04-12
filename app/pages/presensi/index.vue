@@ -23,8 +23,7 @@
     </div>
   </div>
 
-  <div v-else-if="schedules.length === 0"
-    class="bg-slate-50 flex flex-col items-center justify-center px-6 py-24">
+  <div v-else-if="schedules.length === 0" class="bg-slate-50 flex flex-col items-center justify-center px-6 py-24">
     <div class="text-center max-w-sm w-full">
       <div class="relative inline-flex items-center justify-center mb-8">
         <div class="w-28 h-28 rounded-full flex items-center justify-center" :class="stateConfig.ringBg">
@@ -32,11 +31,13 @@
             <component :is="stateConfig.icon" class="w-8 h-8" :class="stateConfig.iconColor" :stroke-width="1.75" />
           </div>
         </div>
-        <span class="absolute top-1 right-1 w-3 h-3 rounded-full border-2 border-slate-50" :class="stateConfig.dotColor"></span>
+        <span class="absolute top-1 right-1 w-3 h-3 rounded-full border-2 border-slate-50"
+          :class="stateConfig.dotColor"></span>
       </div>
       <h2 class="text-xl font-bold text-slate-800 mb-2 tracking-tight">{{ stateConfig.title }}</h2>
       <p class="text-sm text-slate-500 leading-relaxed mb-6">{{ stateConfig.description }}</p>
-      <span class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border" :class="stateConfig.badgeClass">
+      <span class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border"
+        :class="stateConfig.badgeClass">
         <span class="w-1.5 h-1.5 rounded-full" :class="stateConfig.dotColor"></span>
         {{ emptyStateKeterangan ?? stateConfig.badgeLabel }}
       </span>
@@ -88,26 +89,36 @@
 
         <!-- Cards -->
         <div class="space-y-3 mb-6">
-          <div
-            v-for="schedule in paginatedSchedules"
-            :key="schedule.id"
+          <div v-for="schedule in paginatedSchedules"
+            :key="schedule.isOpenedPast ? `opened-${schedule.id}-${schedule.openedTanggal}` : schedule.id"
             class="group relative bg-white rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-md"
-            :class="cardBorderClass(schedule)"
-          >
+            :class="cardBorderClass(schedule)">
             <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" :class="accentBarClass(schedule)"></div>
 
             <div class="pl-5 pr-4 sm:pr-5 py-4 sm:py-5">
 
               <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <Clock class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   <span class="text-sm font-bold text-slate-700 tabular-nums">{{ schedule.timeRange }}</span>
-                  <span class="text-slate-300 text-xs">|</span>
-                  <span class="text-xs font-medium" :class="timeStatusTextClass(schedule)">
-                    {{ timeStatusLabel(schedule) }}
+
+                  <!-- Badge tanggal untuk opened past jadwal -->
+                  <span v-if="schedule.isOpenedPast"
+                    class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 border border-orange-200">
+                    <CalendarClock class="w-2.5 h-2.5" />
+                    {{ formatOpenedDate(schedule.openedTanggal) }}
                   </span>
+
+                  <template v-else>
+                    <span class="text-slate-300 text-xs">|</span>
+                    <span class="text-xs font-medium" :class="timeStatusTextClass(schedule)">
+                      {{ timeStatusLabel(schedule) }}
+                    </span>
+                  </template>
                 </div>
-                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
+
+                <span
+                  class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
                   :class="statusBadgeClass(schedule)">
                   <component :is="statusIcon(schedule)" class="w-3 h-3" />
                   {{ statusLabel(schedule) }}
@@ -140,30 +151,42 @@
               </div>
 
               <div class="flex items-center justify-between gap-3">
-                <!-- Countdown chip -->
-                <div v-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
+                <!-- Countdown chip — hanya untuk jadwal hari ini yang belum dimulai -->
+                <div
+                  v-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai' && !schedule.isOpenedPast"
                   class="inline-flex items-center gap-1.5 text-xs text-slate-500">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-300 animate-pulse"></span>
                   Mulai dalam
-                  <span class="font-bold tabular-nums text-slate-700">{{ getCountdown(schedule.jam_mulai) ?? '—' }}</span>
+                  <span class="font-bold tabular-nums text-slate-700">{{ getCountdown(schedule.jam_mulai) ?? '—'
+                    }}</span>
                 </div>
                 <div v-else class="flex-1"></div>
 
                 <!-- Tombol aksi -->
-               <div class="flex-shrink-0">
+                <div class="flex-shrink-0">
+                  <!-- Opened past jadwal: tombol presensi langsung aktif -->
+                  <button v-if="schedule.isOpenedPast && schedule.status === 'belum'"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 active:scale-95 rounded-lg shadow-sm transition-all"
+                    @click="handlePresensi(schedule)">
+                    <Plus class="w-4 h-4" /> Presensi
+                  </button>
+
+                  <!-- Jadwal hari ini: aktif kalau sedang berlangsung / sudah selesai -->
                   <button
-                    v-if="schedule.status === 'belum' && (schedule.timeStatus === 'sedang_berlangsung' || schedule.timeStatus === 'sudah_selesai')"
+                    v-else-if="schedule.status === 'belum' && (schedule.timeStatus === 'sedang_berlangsung' || schedule.timeStatus === 'sudah_selesai')"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-lg shadow-sm transition-all"
                     @click="handlePresensi(schedule)">
                     <Plus class="w-4 h-4" /> Presensi
                   </button>
 
+                  <!-- Belum dimulai -->
                   <button v-else-if="schedule.status === 'belum' && schedule.timeStatus === 'belum_dimulai'"
                     class="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed"
                     disabled>
                     <Lock class="w-3.5 h-3.5" /> Belum Dibuka
                   </button>
 
+                  <!-- Rejected: kirim ulang -->
                   <button v-else-if="schedule.status === 'Rejected'" :disabled="isBandingExpired(schedule)"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all shadow-sm"
                     :class="isBandingExpired(schedule)
@@ -174,6 +197,7 @@
                     {{ isBandingExpired(schedule) ? 'Kedaluwarsa' : 'Kirim Ulang' }}
                   </button>
 
+                  <!-- Sudah presensi -->
                   <span v-else
                     class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-400 bg-slate-50 rounded-lg border border-slate-100">
                     <CheckCircle2 class="w-3.5 h-3.5" /> Sudah Presensi
@@ -228,7 +252,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   ChevronRight, ChevronLeft, Clock, X, User, Plus, RotateCcw,
-  Info, CalendarOff, Coffee, CalendarX, UsersRound,
+  Info, CalendarOff, Coffee, CalendarX, UsersRound, CalendarClock,
   CheckCircle2, XCircle, AlertCircle, MessageSquare, Lock
 } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
@@ -298,7 +322,7 @@ const formattedTime = computed(() => {
 const emptyStateType = computed(() => {
   const msg = (presensiStore.error || '').toLowerCase()
   if (msg.includes('weekend') || msg.includes('sabtu') || msg.includes('minggu')) return 'weekend'
-  if (msg.includes('tidak tersedia saat ini') || msg.includes('sedang ujian') || msg.includes('sedang')) return 'kegiatan' // [FIX]
+  if (msg.includes('tidak tersedia saat ini') || msg.includes('sedang ujian') || msg.includes('sedang')) return 'kegiatan'
   if (msg.includes('tidak ada kbm')) return 'libur'
   return 'kosong'
 })
@@ -328,53 +352,62 @@ const visiblePages = computed(() => {
 
 // ─── Per-card style helpers ───────────────────────────────────
 const accentBarClass = (s) => {
-  if (s.status === 'Approved')                         return 'bg-green-500'
-  if (s.status === 'Rejected')                         return 'bg-red-500'
-  if (s.status === 'Pending')                          return 'bg-yellow-400'
-  if (s.timeStatus === 'sedang_berlangsung')            return 'bg-blue-500'
-  if (s.timeStatus === 'sudah_selesai')                 return 'bg-slate-300'
+  if (s.status === 'Approved') return 'bg-green-500'
+  if (s.status === 'Rejected') return 'bg-red-500'
+  if (s.status === 'Pending') return 'bg-yellow-400'
+  if (s.isOpenedPast) return 'bg-orange-400'
+  if (s.timeStatus === 'sedang_berlangsung') return 'bg-blue-500'
+  if (s.timeStatus === 'sudah_selesai') return 'bg-slate-300'
   return 'bg-slate-200'
 }
 const cardBorderClass = (s) => {
-  if (s.status === 'Approved')                         return 'border-green-100 hover:border-green-200'
-  if (s.status === 'Rejected')                         return 'border-red-100 hover:border-red-200'
-  if (s.status === 'Pending')                          return 'border-yellow-100 hover:border-yellow-200'
-  if (s.timeStatus === 'sedang_berlangsung')            return 'border-blue-100 hover:border-blue-200'
+  if (s.status === 'Approved') return 'border-green-100 hover:border-green-200'
+  if (s.status === 'Rejected') return 'border-red-100 hover:border-red-200'
+  if (s.status === 'Pending') return 'border-yellow-100 hover:border-yellow-200'
+  if (s.isOpenedPast) return 'border-orange-100 hover:border-orange-200'
+  if (s.timeStatus === 'sedang_berlangsung') return 'border-blue-100 hover:border-blue-200'
   return 'border-slate-200 hover:border-slate-300'
 }
 const timeStatusLabel = (s) => {
   if (s.timeStatus === 'sedang_berlangsung') return 'Sedang Berlangsung'
-  if (s.timeStatus === 'sudah_selesai')      return 'Sudah Selesai'
+  if (s.timeStatus === 'sudah_selesai') return 'Sudah Selesai'
   return 'Belum Dimulai'
 }
 const timeStatusTextClass = (s) => {
   if (s.timeStatus === 'sedang_berlangsung') return 'text-blue-600 font-semibold'
-  if (s.timeStatus === 'sudah_selesai')      return 'text-slate-400'
+  if (s.timeStatus === 'sudah_selesai') return 'text-slate-400'
   return 'text-slate-400'
 }
 const statusLabel = (s) => {
-  if (s.status === 'Approved')                         return 'Disetujui'
-  if (s.status === 'Rejected')                         return 'Ditolak'
-  if (s.status === 'Pending')                          return 'Menunggu'
-  if (s.timeStatus === 'belum_dimulai')                return 'Terjadwal'
-  if (s.timeStatus === 'sedang_berlangsung')            return 'Belum Presensi'
+  if (s.status === 'Approved') return 'Disetujui'
+  if (s.status === 'Rejected') return 'Ditolak'
+  if (s.status === 'Pending') return 'Menunggu'
+  if (s.timeStatus === 'belum_dimulai') return 'Terjadwal'
+  if (s.timeStatus === 'sedang_berlangsung') return 'Belum Presensi'
   return 'Belum Presensi'
 }
 const statusBadgeClass = (s) => {
   if (s.status === 'Approved') return 'bg-green-100 text-green-700'
   if (s.status === 'Rejected') return 'bg-red-100 text-red-600'
-  if (s.status === 'Pending')  return 'bg-yellow-100 text-yellow-700'
+  if (s.status === 'Pending') return 'bg-yellow-100 text-yellow-700'
+  if (s.isOpenedPast) return 'bg-orange-100 text-orange-700'
   if (s.timeStatus === 'sedang_berlangsung') return 'bg-blue-100 text-blue-700'
   return 'bg-slate-100 text-slate-500'
 }
 const statusIcon = (s) => {
   if (s.status === 'Approved') return CheckCircle2
   if (s.status === 'Rejected') return XCircle
-  if (s.status === 'Pending')  return Clock
   return Clock
 }
 
 // ─── Methods ──────────────────────────────────────────────────
+const formatOpenedDate = (tanggal) => {
+  if (!tanggal) return ''
+  return new Date(tanggal + 'T00:00:00').toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short'
+  })
+}
+
 const getCountdown = (jamMulai) => {
   if (!jamMulai) return null
   const [h, m, s] = jamMulai.split(':').map(Number)
@@ -388,24 +421,32 @@ const getCountdown = (jamMulai) => {
   const pad = n => String(n).padStart(2, '0')
   return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
 }
+
 const handlePresensi = (schedule) => {
-  if (schedule.timeStatus === 'belum_dimulai') return
-  router.push({ path: '/presensi/create', query: { jadwalId: schedule.id } })
+  if (schedule.timeStatus === 'belum_dimulai' && !schedule.isOpenedPast) return
+  const query = { jadwalId: schedule.id }
+  if (schedule.isOpenedPast && schedule.openedTanggal) {
+    query.tanggal = schedule.openedTanggal
+  }
+  router.push({ path: '/presensi/create', query })
 }
+
 const handleResubmit = (schedule) => {
   const pid = schedule.presensi?.id ?? schedule.presensi?.id_presensi ?? null
   if (!pid) return
   router.push({ path: '/presensi/create', query: { jadwalId: schedule.id, presensiId: pid, mode: 'resubmit' } })
 }
+
 const isBandingExpired = (schedule) => {
   if (schedule.status !== 'Rejected') return false
   const rejectedAt = schedule.presensi?.rejected_at
   if (!rejectedAt) return false
   return (now.value - new Date(rejectedAt)) / (1000 * 60 * 60) > 24
 }
+
 const previousPage = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage     = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-const goToPage     = (page) => { currentPage.value = page }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const goToPage = (page) => { currentPage.value = page }
 
 // ─── Lifecycle ────────────────────────────────────────────────
 onMounted(async () => {

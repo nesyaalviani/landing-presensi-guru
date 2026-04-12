@@ -54,7 +54,7 @@
                                 class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
                                 <ul ref="kelasListRef" class="custom-scroll max-h-52 overflow-y-auto py-1"
                                     @scroll="onKelasListScroll">
-                                    <li @mousedown.prevent="resetAllFilters"
+                                    <li @mousedown.prevent="clearKelasFilter"
                                         class="px-4 py-2 text-sm cursor-pointer transition-colors"
                                         :class="!selectedKelas ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
                                         Semua Kelas
@@ -426,9 +426,6 @@ import { useStatisticsStore } from '@/stores/statistics'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler)
 
-// ========================
-// Sort Icon component
-// ========================
 const SortIcon = {
     props: ['field', 'sortField', 'sortDir'],
     components: { ArrowUpDown, ArrowUp, ArrowDown },
@@ -495,7 +492,7 @@ const fetchKelasDropdown = async (reset = false) => {
             kelasDropdownItems.value = reset
                 ? [...incoming]
                 : [...kelasDropdownItems.value, ...incoming]
-            kelasHasMore.value = kelasPage.value < (p.totalPages ?? 1)  // ← pakai pagination BE
+            kelasHasMore.value = kelasPage.value < (p.totalPages ?? 1)
             if (!reset) kelasPage.value++
             else kelasPage.value = 2
         }
@@ -532,6 +529,16 @@ const selectKelasItem = async (kelas) => {
     kelasDropdownOpen.value = false
     await onFilterChange()
 }
+
+// ── FIX: clearKelasFilter — hanya reset kelas, TIDAK reset periode ──
+const clearKelasFilter = async () => {
+    selectedKelas.value = ''
+    kelasSearchQuery.value = ''
+    kelasDropdownOpen.value = false
+    await onFilterChange()
+}
+
+// ── resetAllFilters — hanya dipanggil dari tombol "Hapus Filter" ──
 const resetAllFilters = async () => {
     selectedPeriode.value = 'bulan'
     selectedKelas.value = ''
@@ -560,8 +567,10 @@ const handleClickOutside = (e) => {
     if (guruDropdownRef.value && !guruDropdownRef.value.contains(e.target)) guruDropdownOpen.value = false
 }
 
+// ── FIX: onFilterChange — tutup guru dropdown + reset selectedGuru ──
 const onFilterChange = async () => {
     selectedGuru.value = ''
+    guruDropdownOpen.value = false
     await statisticsStore.fetchAll(selectedPeriode.value, selectedKelas.value || null, null)
 }
 
