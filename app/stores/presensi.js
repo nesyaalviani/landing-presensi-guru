@@ -385,11 +385,9 @@ export const usePresensiStore = defineStore('presensi', {
                 }
             }
         },
-        async openPresensi(idJadwal, tanggal) {
-            this.error = null
-            const config = useRuntimeConfig()
-
+        async openPresensi(id_jadwal, tanggal) {
             try {
+                const config = useRuntimeConfig()
                 const token = process.client ? localStorage.getItem('token') : null
                 const response = await $fetch('/presensi/open', {
                     method: 'PUT',
@@ -398,12 +396,11 @@ export const usePresensiStore = defineStore('presensi', {
                         'Content-Type': 'application/json',
                         ...(token && { Authorization: `Bearer ${token}` })
                     },
-                    body: { id_jadwal: idJadwal, tanggal }
+                    body: { id_jadwal, tanggal }
                 })
-                return { success: true, data: response }
-            } catch (error) {
-                this.error = error.data?.message || 'Gagal membuka presensi'
-                return { success: false, message: error.data?.message || 'Gagal membuka presensi' }
+                return { success: true, data: response.data, message: response.message }
+            } catch (err) {
+                return { success: false, message: err.data?.message || 'Gagal membuka presensi' }
             }
         },
     },

@@ -402,31 +402,30 @@
                         </div>
 
                             <!-- ACTION SECTION DI TAB BELUM — VERSI BARU -->
-                            <!-- ACTION SECTION DI TAB BELUM — VERSI BARU -->
-                        <template v-if="isRowPastDate(row)">
+                            <template v-if="isRowPastDate(row)">
 
-                            <!-- Sudah dibuka manual (tidak ada request, atau request sudah selesai) -->
+                            <!-- 1. Sudah dibuka manual, tidak ada request sama sekali -->
                             <span v-if="row.is_opened_by_admin && !row.request_info"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
                                 <CheckCircle class="h-3 w-3" />
                                 Sudah Dibuka
                             </span>
 
-                            <!-- Ada request Pending dari KM → hanya tampilkan badge, tanpa tombol Buka -->
+                            <!-- 2. Ada request Pending → tombol Buka di-block -->
                             <span v-else-if="row.request_info?.status === 'Pending'"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-amber-50 border border-amber-200 text-amber-700">
                                 <Clock class="h-3 w-3" />
                                 Request Pending dari KM
                             </span>
 
-                            <!-- Ada request Approved dari KM → tampilkan info saja -->
+                            <!-- 3. Ada request Approved → KM sedang dalam window isi -->
                             <span v-else-if="row.request_info?.status === 'Approved'"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
                                 <CheckCircle class="h-3 w-3" />
                                 Dibuka via Request KM
                             </span>
 
-                            <!-- Tidak ada request atau request Rejected → tombol Buka normal -->
+                            <!-- 4. Tidak ada request aktif → tombol Buka normal -->
                             <button v-else @click="handleOpenPresensi(row)" :disabled="openingId === row.id_jadwal"
                                 class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-sm transition-colors disabled:opacity-50"
                                 :class="openingId === row.id_jadwal
@@ -439,7 +438,6 @@
 
                         </template>
 
-                        <!-- Belum jadwal lewat → label saja (tidak berubah) -->
                         <span v-else
                             class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
                             Belum diabsen
@@ -664,11 +662,8 @@ const filterKelas = ref('')
 const activeTab = ref('pending')
 
 const todayISO = () => new Date().toLocaleDateString('sv-SE')
-const filterDateRange = ref([
-    (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toLocaleDateString('sv-SE') })(),
-    todayISO()
-])
-const activeDateShortcut = ref('week')
+const filterDateRange = ref([todayISO(), todayISO()])
+const activeDateShortcut = ref('today')
 const setDateShortcut = async (type) => {
     activeDateShortcut.value = type
     const end = new Date()
@@ -1135,7 +1130,13 @@ const handleBulkApprove = async () => {
 }
 
 const handleOpenPresensi = async (row) => {
-    const tanggal = row.tanggal_slot || filterDateRange.value[0]
+    let tanggal = row.tanggal_slot || filterDateRange.value[0]
+    // Normalize dari ISO UTC ke WIB date string
+    if (tanggal && tanggal.includes('T')) {
+        const d = new Date(tanggal)
+        d.setHours(d.getHours() + 7)
+        tanggal = d.toLocaleDateString('sv-SE')
+    }
     openingId.value = row.id_jadwal
     const result = await presensiStore.openPresensi(row.id_jadwal, tanggal)
     openingId.value = null
