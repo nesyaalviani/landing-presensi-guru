@@ -114,6 +114,10 @@
                             <tr>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    No
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Nama Kelas
                                 </th>
                                 <th scope="col"
@@ -134,6 +138,9 @@
                             <template v-if="loading">
                                 <tr v-for="i in 10" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="h-5 w-8 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -150,7 +157,7 @@
 
                             <template v-else-if="error">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12">
+                                    <td colspan="5" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
                                             <button @click="fetchClassrooms"
@@ -173,8 +180,11 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="classroom in classrooms" :key="classroom.id"
+                                <tr v-for="(classroom, index) in classrooms" :key="classroom.id"
                                     class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ (currentPage - 1) * 10 + index + 1 }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ classroom.name }}
                                     </td>
