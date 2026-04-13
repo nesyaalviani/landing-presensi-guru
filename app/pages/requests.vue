@@ -169,34 +169,31 @@
                         </p>
                     </div>
 
-                    <!-- Status badge -->
-                    <span class="flex-shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-sm" :class="req.status === 'Pending'
-                        ? 'bg-amber-100 text-amber-700'
-                        : req.status === 'Approved'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-rose-100 text-rose-600'">
-                        {{ req.status === 'Pending' ? 'Menunggu'
-                            : req.status === 'Approved' ? 'Disetujui'
-                        : 'Ditolak' }}
-                    </span>
+                    <div class="flex-shrink-0 flex items-center gap-2">
 
-                    <!-- Action buttons — hanya untuk Pending -->
-                    <div v-if="req.status === 'Pending'" class="flex-shrink-0 flex gap-1.5">
-                        <button @click="openRejectPanel(req)" :disabled="!!processingId"
-                            class="px-3 py-1.5 text-[11px] font-semibold rounded-sm text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors disabled:opacity-40">
-                            Tolak
-                        </button>
-                        <button @click="handleApprove(req)" :disabled="!!processingId"
-                            class="px-3 py-1.5 text-[11px] font-semibold rounded-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-40 flex items-center gap-1">
-                            <Loader2 v-if="processingId === req.id" class="h-3 w-3 animate-spin" />
-                            <span>{{ processingId === req.id ? 'Memproses...' : 'Setujui' }}</span>
-                        </button>
-                    </div>
+                        <!-- Action buttons — hanya untuk Pending -->
+                        <div v-if="req.status === 'Pending'" class="flex gap-1.5">
+                            <button @click="openRejectPanel(req)" :disabled="!!processingId"
+                                class="px-3 py-1.5 text-[11px] font-semibold rounded-sm text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors disabled:opacity-40">
+                                Tolak
+                            </button>
+                            <button @click="handleApprove(req)" :disabled="!!processingId"
+                                class="px-3 py-1.5 text-[11px] font-semibold rounded-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+                                <Loader2 v-if="processingId === req.id" class="h-3 w-3 animate-spin" />
+                                <span>{{ processingId === req.id ? 'Memproses...' : 'Setujui' }}</span>
+                            </button>
+                        </div>
 
-                    <!-- Sudah diproses → icon saja -->
-                    <div v-else class="flex-shrink-0 w-[88px] flex justify-center">
-                        <CheckCircle v-if="req.status === 'Approved'" class="h-4 w-4 text-emerald-400" />
-                        <XCircle v-else class="h-4 w-4 text-rose-400" />
+                        <!-- Status badge -->
+                        <span v-if="req.status !== 'Pending'"
+                            class="text-[11px] font-semibold px-2.5 py-1 rounded-sm flex items-center gap-1.5" :class="req.status === 'Approved'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-rose-100 text-rose-600'">
+                            <CheckCircle v-if="req.status === 'Approved'" class="h-3.5 w-3.5" />
+                            <XCircle v-else class="h-3.5 w-3.5" />
+                            {{ req.status === 'Approved' ? 'Disetujui' : 'Ditolak' }}
+                        </span>
+
                     </div>
 
                 </div>

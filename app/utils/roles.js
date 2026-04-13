@@ -27,7 +27,6 @@ export const ROLE_MENUS = {
   ],
 
   [ROLES.KM]: [
-    { type: 'divider', label: 'Presensi' },
     { path: "/presensi", label: "Presensi", icon: "ClipboardCheck" },
     { path: "/riwayat-presensi", label: "Riwayat Presensi", icon: "History" },
     { path: "/kalender", label: "Kalender", icon: "Calendar" },
