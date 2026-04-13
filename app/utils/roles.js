@@ -27,16 +27,22 @@ export const ROLE_MENUS = {
   ],
 
   [ROLES.KM]: [
+    { type: 'divider', label: 'Presensi' },
     { path: "/presensi", label: "Presensi", icon: "ClipboardCheck" },
     { path: "/riwayat-presensi", label: "Riwayat Presensi", icon: "History" },
     { path: "/kalender", label: "Kalender", icon: "Calendar" },
+    { type: 'divider', label: 'Tentang Kami' },
     { path: "/about", label: "Tentang Kami", icon: "Info" },
   ],
 
   [ROLES.PIKET]: [
-    { path: "/", label: "Dashboard", icon: "Home" },
-    { path: "/approval", label: "Presensi", icon: "ClipboardCheck" },
-    { path: "/about", label: "Tentang Kami", icon: "Info" },
+    { path: '/', label: 'Dashboard', icon: 'Home' },
+    { type: 'divider', label: 'Presensi' },
+    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' },
+    { path: '/requests', label: 'Request Presensi', icon: 'Send' },
+    { path: '/kalender', label: 'Kalender', icon: 'Calendar' },
+    { type: 'divider', label: 'Tentang Kami' },
+    { path: '/about', label: 'Tentang Kami', icon: 'Info' },
   ],
 
   [ROLES.KS]: [
@@ -44,6 +50,7 @@ export const ROLE_MENUS = {
     { type: "divider", label: "Reporting" },
     { path: "/statistics", label: "Statistik Presensi", icon: "ChartLine" },
     { path: "/kalender", label: "Kalender", icon: "Calendar" },
+    { type: "divider", label: "Tentang Kami" },
     { path: "/about", label: "Tentang Kami", icon: "Info" },
   ],
 
@@ -52,6 +59,8 @@ export const ROLE_MENUS = {
     { type: "divider", label: "Reporting" },
     { path: "/statistics", label: "Statistik Presensi", icon: "ChartLine" },
     { path: "/kalender", label: "Kalender", icon: "Calendar" },
+    { type: "divider", label: "Tentang Kami" },
+    { path: "/about", label: "Tentang Kami", icon: "Info" },
   ],
 };
 
@@ -69,10 +78,12 @@ export const ROLE_PERMISSIONS = {
     "approval",
     "settings",
     "about",
+    "requests",
   ],
   [ROLES.KM]: ["presensi", "riwayat-presensi", "profile", "kalender", "about"],
-  [ROLES.PIKET]: ["/", "approval", "profile", "about"],
+  [ROLES.PIKET]: ["/", "approval", "profile", "about", "requests"],
   [ROLES.KS]: ["/", "statistics", "kalender", "profile", "about"],
+  [ROLES.PENGAWAS]: ["/", "statistics", "kalender", "profile", "about"],
 };
 
 export const ROLE_DEFAULT_ROUTES = {
