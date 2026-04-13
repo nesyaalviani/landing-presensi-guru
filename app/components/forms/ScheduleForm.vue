@@ -443,7 +443,7 @@ const handleGuruClickOutside = (e) => {
 }
 
 // ===================== HARI dropdown =====================
-const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
 
 const hariDropdownOpen = ref(false)
 const hariDropdownRef = ref(null)

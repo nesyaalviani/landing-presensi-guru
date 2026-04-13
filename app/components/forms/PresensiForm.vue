@@ -486,6 +486,11 @@ const handleSubmit = async () => {
     formData.append('status', presensiData.value.statusKehadiran)
     formData.append('memberikan_tugas', presensiData.value.memberikanTugas)
 
+    const tanggalTarget = route.query.tanggal
+    if (tanggalTarget) {
+      formData.append('tanggal', tanggalTarget)
+    }
+
     if (presensiData.value.foto) {
       formData.append('foto', presensiData.value.foto)
     }

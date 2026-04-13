@@ -208,7 +208,9 @@
                     :key="log.id"
                     class="flex items-center gap-2 sm:gap-3">
                     <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-300 shrink-0"></span>
-                    <span class="flex-1 text-[11px] sm:text-xs text-slate-500 truncate">{{ log.message }}</span>
+                    <span class="flex-1 text-[11px] sm:text-xs text-slate-500 truncate">
+                      {{ formatLog(log) }}
+                    </span>
                     <span class="text-[10px] sm:text-xs text-slate-400 shrink-0">{{ log.time }}</span>
                   </div>
                 </div>
@@ -307,11 +309,12 @@ const activeSince = computed(() => {
   })
 })
 
-const activityLogs = ref([
-  { id: 1, message: 'Persetujuan massal dinonaktifkan oleh Admin', time: '08:32' },
-  { id: 2, message: 'Persetujuan massal diaktifkan oleh Admin', time: '07:15' },
-  { id: 3, message: 'Pengaturan sistem dibuka', time: '07:10' },
-])
+const activityLogs = computed(() => settingsStore.activityLogs)
+
+const formatLog = (log) => {
+  const actionMap = { enabled: 'diaktifkan', disabled: 'dinonaktifkan' }
+  return `Persetujuan massal ${actionMap[log.action]} oleh ${log.actor}`
+}
 
 const toggleApproveAll = () => {
   if (settingsStore.loading) return
@@ -320,22 +323,15 @@ const toggleApproveAll = () => {
 
 const confirmToggle = async () => {
   const newVal = !settingsStore.bulkApprovalEnabled
+
+  showModal.value = false 
+
   const result = await settingsStore.setBulkApprovalStatus(newVal)
 
   if (result.success) {
     if (newVal) activatedAt.value = new Date()
-    const action = newVal ? 'diaktifkan' : 'dinonaktifkan'
-    const now = new Date()
-    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-    activityLogs.value.unshift({
-      id: Date.now(),
-      message: `Persetujuan massal ${action} oleh Admin`,
-      time: timeStr
-    })
-    if (activityLogs.value.length > 5) activityLogs.value = activityLogs.value.slice(0, 5)
+    await settingsStore.fetchActivityLogs()
   }
-
-  showModal.value = false
 }
 
 const cancelToggle = () => {
@@ -344,6 +340,7 @@ const cancelToggle = () => {
 
 onMounted(async () => {
   await settingsStore.fetchBulkApprovalStatus()
+  await settingsStore.fetchActivityLogs()
 })
 </script>
 

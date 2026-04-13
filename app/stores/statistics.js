@@ -30,15 +30,23 @@ export const useStatisticsStore = defineStore('statistics', {
 
         performaGuru: [],
         loadingPerforma: false,
+        performaTotal: 0,
 
         lineChart: { labels: [], datasets: [], guruList: [] },
         loadingLine: false,
 
-        unpresensiStats: { total_belum: 0 },
+        unpresensiStats: { total_belum: 0, total_ditolak: 0 },
         loadingUnpresensi: false,
     }),
 
     actions: {
+        _buildParams(range, id_kelas, date_from, date_to) {
+            const params = new URLSearchParams({ range })
+            if (id_kelas) params.set('id_kelas', id_kelas)
+            if (range === 'custom' && date_from) params.set('date_from', date_from)
+            if (range === 'custom' && date_to) params.set('date_to', date_to)
+            return params
+        },
         async getKelas(params = {}) {
             const config = useRuntimeConfig()
             try {
@@ -66,14 +74,13 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getSummaryStats(range = 'bulan', id_kelas = null) {
+        async getSummaryStats(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingSummary = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/summary-stats?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -87,14 +94,13 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getBarHadirVsTidak(range = 'bulan', id_kelas = null) {
+        async getBarHadirVsTidak(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingBar = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/bar?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -113,14 +119,13 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getTrenKeseluruhan(range = 'bulan', id_kelas = null) {
+        async getTrenKeseluruhan(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingTren = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/tren?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -139,14 +144,13 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getTopHadir(range = 'bulan', id_kelas = null) {
+        async getTopHadir(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingTopHadir = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/top-hadir?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -160,14 +164,13 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getTopTidakHadir(range = 'bulan', id_kelas = null) {
+        async getTopTidakHadir(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingTopTidakHadir = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/top-tidak-hadir?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
@@ -181,35 +184,44 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getPerformaGuru(range = 'bulan', id_kelas = null) {
-            this.loadingPerforma = true
-            const config = useRuntimeConfig()
+        async getPerformaGuru(range = 'bulan', id_kelas = null, date_from = null, date_to = null, { search = '', limit = 20, offset = 0 } = {}) {
+            this.loadingPerforma = true;
+            const config = useRuntimeConfig();
             try {
-                let token = null
-                if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                let token = null;
+                if (process.client) token = localStorage.getItem('token');
+                const params = this._buildParams(range, id_kelas, date_from, date_to);
+                if (search) params.set('search', search);
+                if (limit === 'all') params.set('limit', 'all');
+                else {
+                    params.set('limit', limit);
+                    params.set('offset', offset);
+                }
                 const response = await $fetch(`/guru/performa-guru?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
-                })
-                this.performaGuru = response.data || []
+                });
+                if (offset === 0 || limit === 'all') {
+                    this.performaGuru = response.data || [];
+                } else {
+                    this.performaGuru = [...this.performaGuru, ...(response.data || [])];
+                }
+                this.performaTotal = response.total || 0;
             } catch (err) {
-                console.error('Performa guru error:', err)
+                console.error('Performa guru error:', err);
             } finally {
-                this.loadingPerforma = false
+                this.loadingPerforma = false;
             }
         },
 
-        async getLinePerGuru(range = 'bulan', id_kelas = null, nama_guru = null) {
+        async getLinePerGuru(range = 'bulan', id_kelas = null, nama_guru = null, date_from = null, date_to = null) {
             this.loadingLine = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 if (nama_guru) params.set('nama_guru', nama_guru)
                 const response = await $fetch(`/guru/line?${params}`, {
                     method: 'GET',
@@ -231,20 +243,22 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async getUnpresensiStats(range = 'bulan', id_kelas = null) {
+        async getUnpresensiStats(range = 'bulan', id_kelas = null, date_from = null, date_to = null) {
             this.loadingUnpresensi = true
             const config = useRuntimeConfig()
             try {
                 let token = null
                 if (process.client) token = localStorage.getItem('token')
-                const params = new URLSearchParams({ range })
-                if (id_kelas) params.set('id_kelas', id_kelas)
+                const params = this._buildParams(range, id_kelas, date_from, date_to)
                 const response = await $fetch(`/guru/unpresensi-stats?${params}`, {
                     method: 'GET',
                     baseURL: config.public.apiBase,
                     headers: { ...(token && { Authorization: `Bearer ${token}` }) }
                 })
-                this.unpresensiStats = { total_belum: response.total_belum || 0 }
+                this.unpresensiStats = {
+                    total_belum: response.total_belum || 0,
+                    total_ditolak: response.total_ditolak || 0
+                }
             } catch (err) {
                 console.error('Unpresensi stats error:', err)
             } finally {
@@ -252,17 +266,17 @@ export const useStatisticsStore = defineStore('statistics', {
             }
         },
 
-        async fetchAll(range = 'bulan', id_kelas = null, nama_guru = null) {
+        async fetchAll(range = 'bulan', id_kelas = null, nama_guru = null, date_from = null, date_to = null) {
             await Promise.all([
-                this.getSummaryStats(range, id_kelas),
-                this.getBarHadirVsTidak(range, id_kelas),
-                this.getTrenKeseluruhan(range, id_kelas),
-                this.getTopHadir(range, id_kelas),
-                this.getTopTidakHadir(range, id_kelas),
-                this.getPerformaGuru(range, id_kelas),
-                this.getLinePerGuru(range, id_kelas, nama_guru),
-                this.getUnpresensiStats(range, id_kelas),
+                this.getSummaryStats(range, id_kelas, date_from, date_to),
+                this.getBarHadirVsTidak(range, id_kelas, date_from, date_to),
+                this.getTrenKeseluruhan(range, id_kelas, date_from, date_to),
+                this.getTopHadir(range, id_kelas, date_from, date_to),
+                this.getTopTidakHadir(range, id_kelas, date_from, date_to),
+                this.getPerformaGuru(range, id_kelas, date_from, date_to),
+                this.getLinePerGuru(range, id_kelas, nama_guru, date_from, date_to),
+                this.getUnpresensiStats(range, id_kelas, date_from, date_to),
             ])
-        }
+        },
     }
 })

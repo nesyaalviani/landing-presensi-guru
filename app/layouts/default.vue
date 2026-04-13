@@ -246,6 +246,7 @@ const iconComponents = {
   CalendarCog,
   Settings,
   Info,
+  Send,
 };
 
 const userRole = computed(() => authStore.user?.role);

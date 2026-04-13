@@ -23,6 +23,155 @@
             </div>
         </div>
 
+       <div class="bg-white rounded-sm border border-slate-200 overflow-hidden">
+
+            <!-- Header panel jadwal -->
+            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <BookOpen class="h-4 w-4 text-blue-500 flex-shrink-0" />
+                    <div>
+                        <p class="text-xs font-semibold text-slate-800">Jadwal Pelajaran</p>
+                        <p class="text-[11px] text-slate-400 leading-tight">
+                            {{ filterKelas ? selectedKelasName : `Hari ini — ${getTodayHari()}` }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button v-if="filterKelas" type="button" @click="jadwalPanelCollapsed = !jadwalPanelCollapsed"
+                        class="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded-sm hover:bg-slate-100">
+                        <ChevronDown class="h-3.5 w-3.5 transition-transform duration-200"
+                            :class="{ 'rotate-180': jadwalPanelCollapsed }" />
+                        <span>{{ jadwalPanelCollapsed ? 'Tampilkan' : 'Sembunyikan' }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <Transition
+                enter-active-class="transition-all duration-200 ease-out overflow-hidden"
+                leave-active-class="transition-all duration-150 ease-in overflow-hidden"
+                enter-from-class="opacity-0 max-h-0"
+                enter-to-class="opacity-100 max-h-[400px]"
+                leave-from-class="opacity-100 max-h-[400px]"
+                leave-to-class="opacity-0 max-h-0">
+                <div v-if="!jadwalPanelCollapsed">
+
+                <div v-if="!filterKelas" class="py-8 flex flex-col items-center justify-center gap-2 text-center px-4">
+                    <div class="h-9 w-9 rounded-sm bg-slate-100 flex items-center justify-center">
+                        <BookOpen class="h-4 w-4 text-slate-300" />
+                    </div>
+                        <p class="text-xs font-semibold text-slate-500">Pilih kelas untuk melihat jadwal</p>
+                        <p class="text-[11px] text-slate-400">Gunakan filter kelas di bawah untuk menampilkan jadwal pelajaran</p>
+                    </div>
+
+                    <!-- Loading skeleton jadwal -->
+                    <div v-if="jadwalLoading" class="p-3">
+                        <div class="flex gap-2 overflow-x-auto pb-1">
+                            <div v-for="i in 6" :key="i"
+                                class="animate-pulse flex-shrink-0 w-40 flex gap-2 p-2.5 rounded-sm border border-slate-100 bg-slate-50">
+                                <div class="w-12 h-8 bg-slate-200 rounded-sm flex-shrink-0"></div>
+                                <div class="flex-1 space-y-1.5 py-0.5">
+                                    <div class="h-2.5 bg-slate-200 rounded w-3/4"></div>
+                                    <div class="h-2 bg-slate-100 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty state jadwal -->
+                   <div v-else-if="filterKelas && filteredJadwal.length === 0" class="py-6 text-center px-4">
+                        <div class="h-8 w-8 rounded-sm bg-slate-100 flex items-center justify-center mx-auto mb-2">
+                            <BookOpen class="h-4 w-4 text-slate-300" />
+                        </div>
+                        <p class="text-xs font-semibold text-slate-600">Tidak ada jadwal</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            {{ jadwalFilterHari ? `Tidak ada jadwal pada hari ${jadwalFilterHari}` : 'Belum ada jadwal untuk kelas ini' }}
+                        </p>
+                    </div>
+
+                    <div v-else class="p-3 space-y-3">
+                        <template v-for="(group, hari) in groupedJadwal" :key="hari">
+                            <div class="flex items-start gap-3">
+                                <!-- Label hari -->
+                                <div class="flex-shrink-0 w-14 pt-1">
+                                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{{ hari }}</span>
+                                </div>
+                                <div class="flex gap-2 overflow-x-auto pb-1 flex-1 jadwal-scroll">
+                                    <div v-for="jadwal in group" :key="jadwal.id_jadwal"
+                                        class="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-sm border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 transition-colors min-w-[160px]">
+                                        <!-- Blok waktu -->
+                                        <div class="flex-shrink-0 text-center bg-white border border-blue-100 rounded-sm py-1 px-1.5 min-w-[44px]">
+                                            <p class="text-[11px] font-bold text-blue-700 leading-none">{{ formatTime(jadwal.jam_mulai) }}</p>
+                                            <p class="text-[10px] text-blue-400 leading-none mt-0.5">{{ formatTime(jadwal.jam_selesai) }}</p>
+                                        </div>
+                                        <!-- Info -->
+                                        <div class="min-w-0">
+                                            <p class="text-[11px] font-semibold text-slate-800 truncate leading-tight max-w-[100px]">
+                                                {{ jadwal.guru?.mapel?.nama_mapel || 'N/A' }}
+                                            </p>
+                                            <p class="text-[10px] text-slate-500 truncate max-w-[100px]">
+                                                {{ jadwal.guru?.nama_guru || 'N/A' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div v-if="!jadwalLoading && filteredJadwal.length > 0"
+                        class="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-400">Total jadwal</span>
+                        <span class="text-[11px] font-semibold text-slate-600">{{ filteredJadwal.length }} sesi</span>
+                    </div>
+
+                </div>
+            </Transition>
+        </div>
+
+                <!-- Progress Bar Presensi -->
+        <div class="bg-white rounded-sm border border-slate-200 px-4 py-3">
+
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <TrendingUp class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                    <span class="text-xs font-semibold text-slate-700">Tingkat pengisian presensi</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] text-slate-400">
+                        {{ presensiMasuk }} dari {{ presensiStore.summary.total }} jadwal
+                    </span>
+                    <span class="text-xs font-bold"
+                        :class="presensiPct >= 80
+                            ? 'text-emerald-600'
+                            : presensiPct >= 50
+                                ? 'text-amber-600'
+                                : 'text-rose-500'">
+                        {{ presensiPct }}%
+                    </span>
+                </div>
+            </div>
+
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                    class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
+                    :style="{ width: presensiPct + '%' }">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                <div class="flex items-center gap-1.5">
+                    <div class="h-2.5 w-2.5 rounded-sm bg-blue-500 flex-shrink-0"></div>
+                    <span class="text-[11px] text-slate-500">Sudah presensi</span>
+                    <span class="text-[11px] font-semibold text-slate-700">{{ presensiMasuk }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="h-2.5 w-2.5 rounded-sm bg-slate-200 flex-shrink-0"></div>
+                    <span class="text-[11px] text-slate-400">Belum presensi</span>
+                    <span class="text-[11px] font-semibold text-slate-400">{{ presensiStore.summary.belum }}</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Filters -->
         <div class="bg-white rounded-sm border border-slate-200 p-3">
             <div class="flex flex-col sm:flex-row gap-2 flex-wrap">
@@ -85,9 +234,52 @@
                     </Transition>
                 </div>
 
-                <!-- Date filter -->
-                <input v-model="filterDate" type="date" @change="fetchWithFilters"
-                    class="px-3 py-2 text-xs border border-slate-200 rounded-sm focus:ring-2 focus:ring-blue-500 bg-slate-50 outline-none transition" />
+                <!-- Date range filter -->
+                <div class="flex items-center border border-slate-200 rounded-sm bg-slate-50 overflow-hidden">
+                    <!-- Shortcut buttons -->
+                    <div class="flex gap-0.5 p-1 border-r border-slate-200">
+                        <button type="button" @click="setDateShortcut('today')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'today'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            Hari ini
+                        </button>
+                        <button type="button" @click="setDateShortcut('week')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'week'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            7 hari
+                        </button>
+                        <button type="button" @click="setDateShortcut('month')"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors" :class="activeDateShortcut === 'month'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            Bulan ini
+                        </button>
+                        <button type="button" @click="toggleCustomDate"
+                            class="px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors flex items-center gap-1"
+                            :class="activeDateShortcut === 'custom'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'">
+                            <CalendarDays class="h-3 w-3" />
+                            Kustom
+                        </button>
+                    </div>
+
+                    <!-- Custom range inputs -->
+                    <div v-if="activeDateShortcut === 'custom'" class="flex items-center gap-1.5 px-3">
+                        <input v-model="filterDateRange[0]" type="date" @change="fetchWithFilters"
+                            class="text-[11px] border-none bg-transparent text-slate-700 outline-none py-1 w-[82px]" />
+                        <span class="text-slate-300 text-xs leading-none">–</span>
+                        <input v-model="filterDateRange[1]" type="date" @change="fetchWithFilters"
+                            class="text-[11px] border-none bg-transparent text-slate-700 outline-none py-1 w-[82px]" />
+                    </div>
+
+                    <!-- Label range aktif -->
+                    <div v-else class="px-3 text-[11px] text-slate-400">
+                        {{ formatDateRangeLabel }}
+                    </div>
+                </div>
 
                 <!-- Hapus Filter -->
                 <button v-if="hasActiveFilter" type="button" @click="resetAllFilters"
@@ -130,7 +322,7 @@
 
             <div class="p-3">
 
-                <!-- BULK BAR — tampil hanya di tab pending kalau bulk enabled -->
+                <!-- BULK BAR -->
                 <div v-if="settingsStore.bulkApprovalEnabled && activeTab === 'pending' && allPendingIds.length > 0"
                     class="flex items-center justify-between gap-3 mb-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm">
 
@@ -208,9 +400,47 @@
                                 </span>
                             </div>
                         </div>
-                        <span
+
+                            <!-- ACTION SECTION DI TAB BELUM — VERSI BARU -->
+                            <template v-if="isRowPastDate(row)">
+
+                            <!-- 1. Sudah dibuka manual, tidak ada request sama sekali -->
+                            <span v-if="row.is_opened_by_admin && !row.request_info"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
+                                <CheckCircle class="h-3 w-3" />
+                                Sudah Dibuka
+                            </span>
+
+                            <!-- 2. Ada request Pending → tombol Buka di-block -->
+                            <span v-else-if="row.request_info?.status === 'Pending'"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-amber-50 border border-amber-200 text-amber-700">
+                                <Clock class="h-3 w-3" />
+                                Request Pending dari KM
+                            </span>
+
+                            <!-- 3. Ada request Approved → KM sedang dalam window isi -->
+                            <span v-else-if="row.request_info?.status === 'Approved'"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-sm bg-emerald-50 border border-emerald-200 text-emerald-600">
+                                <CheckCircle class="h-3 w-3" />
+                                Dibuka via Request KM
+                            </span>
+
+                            <!-- 4. Tidak ada request aktif → tombol Buka normal -->
+                            <button v-else @click="handleOpenPresensi(row)" :disabled="openingId === row.id_jadwal"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-sm transition-colors disabled:opacity-50"
+                                :class="openingId === row.id_jadwal
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'">
+                                <Loader2 v-if="openingId === row.id_jadwal" class="h-3 w-3 animate-spin" />
+                                <Unlock v-else class="h-3 w-3" />
+                                {{ openingId === row.id_jadwal ? 'Membuka...' : 'Buka' }}
+                            </button>
+
+                        </template>
+
+                        <span v-else
                             class="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-sm bg-slate-100 text-slate-500">
-                            Belum diabsen
+                            Belum dipresensi
                         </span>
                     </div>
                 </div>
@@ -255,7 +485,7 @@
                                 </span>
                             </div>
 
-                            <!-- Checkbox bulk — pojok kiri atas, hanya tab pending + bulk enabled -->
+                            <!-- Checkbox bulk -->
                             <div v-if="settingsStore.bulkApprovalEnabled && row.status_approve === 'Pending' && row.id_presensi"
                                 class="absolute top-1.5 left-1.5 z-10" @click.stop>
                                 <input type="checkbox" :checked="selectedIds.includes(row.id_presensi)"
@@ -307,7 +537,7 @@
                                 "{{ row.catatan }}"
                             </p>
 
-                            <!-- Action buttons — hanya di tab pending -->
+                            <!-- Action buttons -->
                             <div v-if="row.id_presensi && row.status_approve === 'Pending'"
                                 class="flex gap-1.5 mt-auto pt-1">
                                 <button @click="openSingleRejectPanel(row)" :disabled="!!processingId"
@@ -411,14 +641,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { usePresensiStore } from '~/stores/presensi'
 import { useSettingsStore } from '~/stores/settings'
 import { useClassroomsStore } from '~/stores/classrooms'
-import {
-    Clock, CheckCircle, XCircle, Search, X,
-    FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX
-} from 'lucide-vue-next'
+import { Clock, CheckCircle, XCircle, Search, X, FileText, Loader2, ChevronDown, ImageOff, ZoomIn, UserX, Unlock, CalendarDays, BookOpen, TrendingUp } from 'lucide-vue-next'
 import { useConfirm } from '~/composables/useConfirm'
 
 const presensiStore = usePresensiStore()
@@ -426,9 +653,7 @@ const settingsStore = useSettingsStore()
 const classroomsStore = useClassroomsStore()
 const { confirm } = useConfirm()
 
-// ─────────────────────────────────────────────
 // STATE
-// ─────────────────────────────────────────────
 const loading = ref(false)
 const processingId = ref(null)
 
@@ -437,7 +662,40 @@ const filterKelas = ref('')
 const activeTab = ref('pending')
 
 const todayISO = () => new Date().toLocaleDateString('sv-SE')
-const filterDate = ref(todayISO())
+const filterDateRange = ref([todayISO(), todayISO()])
+const activeDateShortcut = ref('today')
+const setDateShortcut = async (type) => {
+    activeDateShortcut.value = type
+    const end = new Date()
+    const start = new Date()
+    if (type === 'week') start.setDate(start.getDate() - 6)
+    if (type === 'month') start.setDate(1)
+    filterDateRange.value = [
+        start.toLocaleDateString('sv-SE'),
+        end.toLocaleDateString('sv-SE')
+    ]
+    await fetchWithFilters()
+}
+
+const toggleCustomDate = () => {
+    activeDateShortcut.value = 'custom'
+}
+
+const formatDateRangeLabel = computed(() => {
+    const [start, end] = filterDateRange.value
+    if (!start || !end) return ''
+    if (start === end) return new Date(start + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    return `${new Date(start + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} – ${new Date(end + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`
+})
+
+const isRowPastDate = (row) => {
+    if (!row.tanggal_slot) return false
+    const d = new Date(row.tanggal_slot)
+    d.setHours(d.getHours() + 7)
+    return d.toLocaleDateString('sv-SE') < todayISO()
+}
+
+const openingId = ref(null)
 
 const showImageModal = ref(false)
 const selectedImage = ref('')
@@ -448,12 +706,104 @@ const rejectTarget = ref(null)
 const alasanReject = ref('')
 const alasanRejectError = ref('')
 
-// Bulk state
 const selectedIds = ref([])
 
-const {
-    alertType, alertMessage, alertRedirectDelay, alertRedirectFn, showAlert, clearAlert
+const { alertType, alertMessage, alertRedirectDelay, alertRedirectFn, showAlert, clearAlert
 } = useAlert()
+
+const jadwalData = ref([])
+const jadwalLoading = ref(false)
+const jadwalFilterHari = ref('')
+const jadwalPanelCollapsed = ref(false) 
+
+// const hariOptions = [
+//     { value: 'Senin', label: 'Senin' },
+//     { value: 'Selasa', label: 'Selasa' },
+//     { value: 'Rabu', label: 'Rabu' },
+//     { value: 'Kamis', label: 'Kamis' },
+//     { value: 'Jumat', label: 'Jumat' },
+//     { value: 'Sabtu', label: 'Sabtu' },
+// ]
+
+const hariOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+
+const selectedKelasName = computed(() => {
+    if (!filterKelas.value) return ''
+    return kelasNameCache.value[filterKelas.value] || ''
+})
+
+const presensiMasuk = computed(() => {
+    const total = presensiStore.summary.total || 0
+    const belum = presensiStore.summary.belum || 0
+    return total - belum
+})
+
+const presensiPct = computed(() => {
+    const total = presensiStore.summary.total || 0
+    if (total === 0) return 0
+    return Math.round((presensiMasuk.value / total) * 100)
+})
+
+const filteredJadwal = computed(() => {
+    if (!jadwalFilterHari.value) return jadwalData.value
+    return jadwalData.value.filter(j => j.hari === jadwalFilterHari.value)
+})
+
+const groupedJadwal = computed(() => {
+    const groups = {}
+    filteredJadwal.value.forEach(j => {
+        if (!groups[j.hari]) groups[j.hari] = []
+        groups[j.hari].push(j)
+    })
+    Object.keys(groups).forEach(hari => {
+        groups[hari].sort((a, b) => a.jam_mulai.localeCompare(b.jam_mulai))
+    })
+    const sorted = {}
+    hariOrder.forEach(h => {
+        if (groups[h]) sorted[h] = groups[h]
+    })
+    return sorted
+})
+
+const fetchJadwal = async (id_kelas) => {
+    if (!id_kelas) {
+        jadwalData.value = []
+        return
+    }
+    jadwalLoading.value = true
+    try {
+        const config = useRuntimeConfig()
+        let token = null
+        if (process.client) token = localStorage.getItem('token')
+
+        const response = await $fetch(`/jadwal?id_kelas=${id_kelas}`, {
+            method: 'GET',
+            baseURL: config.public.apiBase,
+            headers: {
+                ...(token && { Authorization: `Bearer ${token}` })
+            }
+        })
+        jadwalData.value = Array.isArray(response)
+            ? response
+            : response?.data?.data || response?.data || []
+    } catch (e) {
+        console.error('fetchJadwal error:', e)
+        jadwalData.value = []
+    } finally {
+        jadwalLoading.value = false
+    }
+}
+
+const getTodayHari = () => {
+    const hariMap = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    return hariMap[new Date().getDay()]
+}
+
+watch(filterKelas, (newVal) => {
+    jadwalFilterHari.value = newVal ? getTodayHari() : ''
+    jadwalPanelCollapsed.value = false
+    fetchJadwal(newVal)
+})
 
 // ─────────────────────────────────────────────
 // BULK COMPUTED
@@ -595,15 +945,19 @@ const selectKelasItem = async (kelas) => {
 // HAPUS FILTER
 // ─────────────────────────────────────────────
 const hasActiveFilter = computed(() => {
-    return !!searchQuery.value || !!filterKelas.value || filterDate.value !== todayISO()
+    return !!searchQuery.value || !!filterKelas.value || activeDateShortcut.value !== 'today'
 })
 
 const resetAllFilters = async () => {
     searchQuery.value = ''
     filterKelas.value = ''
-    filterDate.value = todayISO()
+    filterDateRange.value = [todayISO(), todayISO()]
+    activeDateShortcut.value = 'today'
     kelasSearchQuery.value = ''
     kelasDropdownOpen.value = false
+    jadwalData.value = []
+    jadwalFilterHari.value = getTodayHari()
+    jadwalPanelCollapsed.value = false 
     clearTimeout(searchTimer)
     await fetchKelasDropdown(true)
     await fetchWithFilters()
@@ -640,7 +994,8 @@ const onSearchInput = () => {
 // HELPERS FILTER
 // ─────────────────────────────────────────────
 const getCurrentFilters = () => ({
-    tanggal: filterDate.value || undefined,
+    tanggal_mulai: filterDateRange.value?.[0] || todayISO(),
+    tanggal_selesai: filterDateRange.value?.[1] || todayISO(),
     id_kelas: filterKelas.value || undefined,
     search: searchQuery.value.trim() || undefined
 })
@@ -774,6 +1129,30 @@ const handleBulkApprove = async () => {
     }
 }
 
+const handleOpenPresensi = async (row) => {
+    let tanggal = row.tanggal_slot || filterDateRange.value[0]
+    // Normalize dari ISO UTC ke WIB date string
+    if (tanggal && tanggal.includes('T')) {
+        const d = new Date(tanggal)
+        d.setHours(d.getHours() + 7)
+        tanggal = d.toLocaleDateString('sv-SE')
+    }
+    openingId.value = row.id_jadwal
+    const result = await presensiStore.openPresensi(row.id_jadwal, tanggal)
+    openingId.value = null
+
+    if (result.success) {
+        loading.value = true
+        await presensiStore.getPresensiTab(activeTab.value, getCurrentFilters())
+        loading.value = false
+        showAlert('success', 'Presensi berhasil dibuka. KM punya 24 jam untuk mengisi.')
+        scrollToAlert()
+    } else {
+        showAlert('error', result.message || 'Gagal membuka presensi')
+        scrollToAlert()
+    }
+}
+
 // ─────────────────────────────────────────────
 // CLICK OUTSIDE
 // ─────────────────────────────────────────────
@@ -897,5 +1276,41 @@ onUnmounted(() => {
 .kelas-scroll {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+}
+
+.jadwal-scroll::-webkit-scrollbar {
+    height: 3px;
+}
+
+.jadwal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.jadwal-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 99px;
+}
+
+.jadwal-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+.jadwal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+input[type="date"] {
+    padding-right: 0;
 }
 </style>

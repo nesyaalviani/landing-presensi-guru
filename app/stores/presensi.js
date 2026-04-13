@@ -39,7 +39,12 @@ export const usePresensiStore = defineStore('presensi', {
             try {
                 const token = process.client ? localStorage.getItem('token') : null
                 const queryParams = new URLSearchParams()
-                if (filters.tanggal) queryParams.set('tanggal', filters.tanggal)
+
+                // Support range
+                if (filters.tanggal_mulai) queryParams.set('tanggal_mulai', filters.tanggal_mulai)
+                if (filters.tanggal_selesai) queryParams.set('tanggal_selesai', filters.tanggal_selesai)
+                // Legacy fallback
+                if (!filters.tanggal_mulai && filters.tanggal) queryParams.set('tanggal', filters.tanggal)
                 if (filters.id_kelas) queryParams.set('id_kelas', filters.id_kelas)
 
                 const qs = queryParams.toString()
@@ -79,7 +84,12 @@ export const usePresensiStore = defineStore('presensi', {
             try {
                 const token = process.client ? localStorage.getItem('token') : null
                 const queryParams = new URLSearchParams()
-                if (filters.tanggal) queryParams.set('tanggal', filters.tanggal)
+
+                // Support range
+                if (filters.tanggal_mulai) queryParams.set('tanggal_mulai', filters.tanggal_mulai)
+                if (filters.tanggal_selesai) queryParams.set('tanggal_selesai', filters.tanggal_selesai)
+                // Legacy fallback
+                if (!filters.tanggal_mulai && filters.tanggal) queryParams.set('tanggal', filters.tanggal)
                 if (filters.id_kelas) queryParams.set('id_kelas', filters.id_kelas)
                 if (filters.search) queryParams.set('search', filters.search)
                 queryParams.set('status', statusMap[tab])
@@ -96,10 +106,7 @@ export const usePresensiStore = defineStore('presensi', {
             } catch (error) {
                 this.error = error.data?.message || 'Failed to fetch presensi tab'
                 this.loading = false
-                return {
-                    success: false,
-                    message: error.data?.message || 'Gagal mengambil data presensi.'
-                }
+                return { success: false, message: error.data?.message || 'Gagal mengambil data presensi.' }
             }
         },
 
@@ -377,7 +384,25 @@ export const usePresensiStore = defineStore('presensi', {
                     message: error.data?.message || 'Gagal mengambil riwayat presensi.'
                 }
             }
-        }
+        },
+        async openPresensi(id_jadwal, tanggal) {
+            try {
+                const config = useRuntimeConfig()
+                const token = process.client ? localStorage.getItem('token') : null
+                const response = await $fetch('/presensi/open', {
+                    method: 'PUT',
+                    baseURL: config.public.apiBase,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    body: { id_jadwal, tanggal }
+                })
+                return { success: true, data: response.data, message: response.message }
+            } catch (err) {
+                return { success: false, message: err.data?.message || 'Gagal membuka presensi' }
+            }
+        },
     },
 
     getters: {

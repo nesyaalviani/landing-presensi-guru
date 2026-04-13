@@ -33,6 +33,19 @@
                         </Transition>
                     </div>
 
+                    <Transition enter-active-class="transition duration-100 ease-out"
+                        enter-from-class="opacity-0 -translate-x-1" enter-to-class="opacity-100 translate-x-0"
+                        leave-active-class="transition duration-75 ease-in" leave-from-class="opacity-100 translate-x-0"
+                        leave-to-class="opacity-0 -translate-x-1">
+                        <div v-if="selectedPeriode === 'custom'" class="flex items-center gap-2">
+                            <input v-model="dateFrom" type="date" :max="dateTo || undefined"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 outline-none focus:border-blue-400 w-[130px]" />
+                            <span class="text-gray-400 text-sm">—</span>
+                            <input v-model="dateTo" type="date" :min="dateFrom || undefined"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-sm bg-white text-gray-700 outline-none focus:border-blue-400 w-[130px]" />
+                        </div>
+                    </Transition>
+
                     <!-- Kelas -->
                     <div class="relative" ref="kelasDropdownRef">
                         <div class="flex items-center border rounded-sm bg-white overflow-hidden transition-colors min-w-[160px]"
@@ -54,7 +67,7 @@
                                 class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-sm shadow-lg">
                                 <ul ref="kelasListRef" class="custom-scroll max-h-52 overflow-y-auto py-1"
                                     @scroll="onKelasListScroll">
-                                    <li @mousedown.prevent="resetAllFilters"
+                                    <li @mousedown.prevent="clearKelasFilter"
                                         class="px-4 py-2 text-sm cursor-pointer transition-colors"
                                         :class="!selectedKelas ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-500 hover:bg-gray-50'">
                                         Semua Kelas
@@ -110,13 +123,15 @@
                 <div v-if="statisticsStore.loadingSummary" class="h-8 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
                 <div v-else class="flex items-end gap-2">
                     <p class="text-2xl font-bold text-emerald-600">{{ statisticsStore.summaryStats.pct_hadir }}%</p>
-                    <span v-if="statisticsStore.summaryStats.trend !== 0"
+                    <span v-if="statisticsStore.summaryStats.trend !== 0 && selectedPeriode !== 'custom'"
                         :class="['text-xs font-medium mb-1', statisticsStore.summaryStats.trend > 0 ? 'text-emerald-500' : 'text-red-400']">
                         {{ statisticsStore.summaryStats.trend > 0 ? '▲' : '▼' }}
                         {{ Math.abs(statisticsStore.summaryStats.trend) }}%
                     </span>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">vs periode sebelumnya</p>
+                <p class="text-xs text-gray-400 mt-1">
+                    {{ selectedPeriode === 'custom' ? 'dari total presensi' : 'vs periode sebelumnya' }}
+                </p>
             </div>
             <div class="bg-white rounded-sm border border-gray-200 px-5 py-4">
                 <p class="text-xs text-gray-400 mb-1">Tingkat Ketidakhadiran</p>
@@ -126,9 +141,16 @@
             </div>
             <div class="bg-amber-50 rounded-sm border border-amber-200 px-5 py-4">
                 <p class="text-xs text-amber-500 mb-1">Belum Dipresensi</p>
-                <div v-if="statisticsStore.loadingUnpresensi" class="h-8 w-20 bg-amber-200 rounded animate-pulse mt-1"></div>
-                <p v-else class="text-2xl font-bold text-amber-700">{{ statisticsStore.unpresensiStats.total_belum }}</p>
-                <p class="text-xs text-amber-500 mt-1">slot jadwal terlewat</p>
+                <div v-if="statisticsStore.loadingUnpresensi" class="h-8 w-20 bg-amber-200 rounded animate-pulse mt-1">
+                </div>
+                <p v-else class="text-2xl font-bold text-amber-700">{{ statisticsStore.unpresensiStats.total_belum }}
+                </p>
+                <p class="text-xs text-amber-500 mt-1">
+                    slot jadwal terlewat
+                    <span v-if="statisticsStore.unpresensiStats.total_ditolak > 0" class="text-red-400">
+                        · {{ statisticsStore.unpresensiStats.total_ditolak }} ditolak
+                    </span>
+                </p>
             </div>
         </div>
 
@@ -215,14 +237,24 @@
                             <div :class="[
                                 'flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
                                 guru.rank === 1 ? 'bg-red-100 text-red-500' :
-                                guru.rank === 2 ? 'bg-orange-100 text-orange-500' :
-                                guru.rank === 3 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-50 text-gray-400'
+                                    guru.rank === 2 ? 'bg-orange-100 text-orange-500' :
+                                        guru.rank === 3 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-50 text-gray-400'
                             ]">{{ guru.rank }}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate">{{ guru.nama_guru }}</p>
-                                <p class="text-xs text-gray-400">{{ guru.total_tidak_hadir }} kali tidak hadir</p>
+                                <!-- Tambah breakdown di sini -->
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-xs text-red-400">
+                                        {{ guru.total_tidak_hadir_murni }}x murni
+                                    </span>
+                                    <span class="text-gray-200 text-xs">·</span>
+                                    <span class="text-xs text-amber-400">
+                                        {{ guru.total_tidak_hadir_tugas }}x + tugas
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex-shrink-0 text-sm font-semibold text-red-400">{{ guru.total_tidak_hadir }}x</div>
+                            <div class="flex-shrink-0 text-sm font-semibold text-red-400">{{ guru.total_tidak_hadir }}x
+                            </div>
                         </div>
                     </div>
                     <div v-else class="px-6 py-10 text-center text-sm text-gray-400">Belum ada data untuk periode ini</div>
@@ -242,7 +274,7 @@
                 </div>
                 <div class="relative w-full sm:w-56">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                    <input v-model="searchGuru" type="text" placeholder="Cari nama guru..."
+                    <input v-model="searchGuru" type="text" placeholder="Cari nama guru..." @input="onSearchGuruInput"
                         class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-sm outline-none focus:border-blue-500" />
                 </div>
             </div>
@@ -317,6 +349,13 @@
                                         guru.tidak_dipresensi > 0 ? 'text-amber-500' : 'text-gray-300'
                                     ]">
                                         {{ guru.tidak_dipresensi }}
+                                        <span v-if="guru.ditolak > 0 && guru.ditolak === guru.tidak_dipresensi"
+                                            class="text-xs text-red-400 font-normal">
+                                            (semua ditolak)
+                                        </span>
+                                        <span v-else-if="guru.ditolak > 0" class="text-xs text-red-400 font-normal">
+                                            ({{ guru.ditolak }} ditolak)
+                                        </span>
                                     </span>
                                 </td>
                                 <td class="px-4 py-3.5">
@@ -336,6 +375,20 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">
+                            Menampilkan {{ statisticsStore.performaGuru.length }} dari {{ statisticsStore.performaTotal
+                            }} guru
+                        </p>
+                        <button v-if="performaHasMore" type="button" @click="loadAllPerforma"
+                            :disabled="performaLoadingAll"
+                            class="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors">
+                            <Loader2 v-if="performaLoadingAll" class="h-3.5 w-3.5 animate-spin" />
+                            <span>{{ performaLoadingAll ? 'Memuat...' : `Tampilkan semua
+                                (${statisticsStore.performaTotal})` }}</span>
+                        </button>
+                        <span v-else class="text-xs text-gray-400">Semua data ditampilkan</span>
+                    </div>
                 </div>
                 <div v-else class="px-6 py-10 text-center text-sm text-gray-400">
                     {{ searchGuru ? `Tidak ada guru dengan nama "${searchGuru}"` : 'Belum ada data untuk periode ini' }}
@@ -415,7 +468,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Line, Bar } from 'vue-chartjs'
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
@@ -426,9 +479,6 @@ import { useStatisticsStore } from '@/stores/statistics'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler)
 
-// ========================
-// Sort Icon component
-// ========================
 const SortIcon = {
     props: ['field', 'sortField', 'sortDir'],
     components: { ArrowUpDown, ArrowUp, ArrowDown },
@@ -443,14 +493,16 @@ const statisticsStore = useStatisticsStore()
 const selectedPeriode = ref('bulan')
 const selectedKelas = ref('')
 const selectedGuru = ref('')
-const searchGuru = ref('')
 const sortField = ref('pct_hadir')
 const sortDir = ref('desc')
+const dateFrom = ref('')
+const dateTo = ref('')
 
 const PERIODE_LIST = [
     { value: 'minggu', label: 'Minggu Ini' },
     { value: 'bulan', label: 'Bulan Ini' },
     { value: 'tahun', label: 'Tahun Ini' },
+    { value: 'custom', label: 'Rentang Tanggal' },
 ]
 
 // ── Periode dropdown ──────────────────────────────────────
@@ -461,7 +513,11 @@ const togglePeriodeDropdown = () => { periodeDropdownOpen.value = !periodeDropdo
 const selectPeriode = async (p) => {
     selectedPeriode.value = p.value
     periodeDropdownOpen.value = false
-    await onFilterChange()
+    if (p.value !== 'custom') {
+        dateFrom.value = ''
+        dateTo.value = ''
+        await onFilterChange()
+    }
 }
 
 // ── Kelas dropdown (infinite scroll + search) ─────────────
@@ -495,7 +551,7 @@ const fetchKelasDropdown = async (reset = false) => {
             kelasDropdownItems.value = reset
                 ? [...incoming]
                 : [...kelasDropdownItems.value, ...incoming]
-            kelasHasMore.value = kelasPage.value < (p.totalPages ?? 1)  // ← pakai pagination BE
+            kelasHasMore.value = kelasPage.value < (p.totalPages ?? 1)
             if (!reset) kelasPage.value++
             else kelasPage.value = 2
         }
@@ -532,12 +588,25 @@ const selectKelasItem = async (kelas) => {
     kelasDropdownOpen.value = false
     await onFilterChange()
 }
+
+// ── FIX: clearKelasFilter — hanya reset kelas, TIDAK reset periode ──
+const clearKelasFilter = async () => {
+    selectedKelas.value = ''
+    kelasSearchQuery.value = ''
+    kelasDropdownOpen.value = false
+    await onFilterChange()
+}
+
+// ── resetAllFilters — hanya dipanggil dari tombol "Hapus Filter" ──
 const resetAllFilters = async () => {
     selectedPeriode.value = 'bulan'
     selectedKelas.value = ''
     kelasSearchQuery.value = ''
     kelasDropdownOpen.value = false
     periodeDropdownOpen.value = false
+    dateFrom.value = ''
+    dateTo.value = ''
+    searchGuru.value = ''   // ← tambah ini
     await fetchKelasDropdown(true)
     await statisticsStore.fetchAll('bulan', null, null)
 }
@@ -560,22 +629,39 @@ const handleClickOutside = (e) => {
     if (guruDropdownRef.value && !guruDropdownRef.value.contains(e.target)) guruDropdownOpen.value = false
 }
 
+// ── FIX: onFilterChange — tutup guru dropdown + reset selectedGuru ──
 const onFilterChange = async () => {
     selectedGuru.value = ''
-    await statisticsStore.fetchAll(selectedPeriode.value, selectedKelas.value || null, null)
+    guruDropdownOpen.value = false
+    searchGuru.value = ''   // ← tambah ini
+    await statisticsStore.fetchAll(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+    )
 }
 
 const onGuruChange = async () => {
     await statisticsStore.getLinePerGuru(
         selectedPeriode.value,
         selectedKelas.value || null,
-        selectedGuru.value || null
+        selectedGuru.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
     )
 }
 
 const clearGuruFilter = async () => {
     selectedGuru.value = ''
-    await statisticsStore.getLinePerGuru(selectedPeriode.value, selectedKelas.value || null, null)
+    await statisticsStore.getLinePerGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+    )
 }
 
 const sortBy = (field) => {
@@ -587,27 +673,55 @@ const sortBy = (field) => {
     }
 }
 
+const searchGuru = ref('')
+const performaLoadingAll = ref(false)
+let searchGuruTimer = null
+
+const performaHasMore = computed(() =>
+    statisticsStore.performaGuru.length < statisticsStore.performaTotal
+)
+
+// sort tetap client-side karena data sudah dari server
 const filteredPerforma = computed(() => {
-    let data = [...statisticsStore.performaGuru]
-
-    if (searchGuru.value.trim()) {
-        const q = searchGuru.value.toLowerCase()
-        data = data.filter(g => g.nama_guru.toLowerCase().includes(q))
-    }
-
+    const data = [...statisticsStore.performaGuru]
     data.sort((a, b) => {
         const aVal = a[sortField.value]
         const bVal = b[sortField.value]
         if (typeof aVal === 'string') {
-            return sortDir.value === 'asc'
-                ? aVal.localeCompare(bVal)
-                : bVal.localeCompare(aVal)
+            return sortDir.value === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
         }
         return sortDir.value === 'asc' ? aVal - bVal : bVal - aVal
     })
-
     return data
 })
+
+const onSearchGuruInput = () => {
+    clearTimeout(searchGuruTimer)
+    searchGuruTimer = setTimeout(() => fetchPerforma(true), 350)
+}
+
+const fetchPerforma = async (reset = false) => {
+    const offset = reset ? 0 : statisticsStore.performaGuru.length
+    await statisticsStore.getPerformaGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+        { search: searchGuru.value, limit: 20, offset }
+    )
+}
+
+const loadAllPerforma = async () => {
+    performaLoadingAll.value = true
+    await statisticsStore.getPerformaGuru(
+        selectedPeriode.value,
+        selectedKelas.value || null,
+        selectedPeriode.value === 'custom' ? dateFrom.value : null,
+        selectedPeriode.value === 'custom' ? dateTo.value : null,
+        { search: searchGuru.value, limit: 'all', offset: 0 }
+    )
+    performaLoadingAll.value = false
+}
 
 onMounted(async () => {
     await statisticsStore.getKelas()
@@ -740,6 +854,12 @@ const lineChartOptions = {
         y: { grid: { color: '#f1f5f9' }, border: { display: false }, beginAtZero: true, ticks: { font: { size: 12 }, color: '#94a3b8', stepSize: 1 } }
     }
 }
+
+watch([dateFrom, dateTo], async () => {
+    if (selectedPeriode.value === 'custom' && dateFrom.value && dateTo.value) {
+        await onFilterChange()
+    }
+})
 </script>
 
 <style scoped>
@@ -765,5 +885,20 @@ const lineChartOptions = {
 .custom-scroll {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+
+input[type="date"] {
+    padding-right: 8px;
 }
 </style>
