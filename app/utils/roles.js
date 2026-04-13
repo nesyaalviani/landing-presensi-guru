@@ -20,6 +20,7 @@ export const ROLE_MENUS = {
     { path: '/users', label: 'User', icon: 'User' },
     { path: '/teacher', label: 'Data Guru', icon: 'Users' },
     { path: '/settings', label: 'Pengaturan', icon: 'Settings' },
+    { path: '/about', label: 'Tentang Kami', icon: 'Info' },
 
   ],
 
@@ -27,11 +28,13 @@ export const ROLE_MENUS = {
     { path: '/presensi', label: 'Presensi', icon: 'ClipboardCheck' },
     { path: '/riwayat-presensi', label: 'Riwayat Presensi', icon: 'History' },
     { path: '/kalender', label: 'Kalender', icon: 'Calendar' },
+    { path: '/about', label: 'Tentang Kami', icon: 'Info' },
   ],
 
   [ROLES.PIKET]: [
     { path: '/', label: 'Dashboard', icon: 'Home' },
-    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' }
+    { path: '/approval', label: 'Presensi', icon: 'ClipboardCheck' },
+    { path: '/about', label: 'Tentang Kami', icon: 'Info' },
   ],
 
   [ROLES.KS]: [
@@ -39,15 +42,16 @@ export const ROLE_MENUS = {
     { type: 'divider', label: 'Reporting' },
     { path: '/statistics', label: 'Statistik Presensi', icon: 'ChartLine' },
     { path: '/kalender', label: 'Kalender', icon: 'Calendar' },
+    { path: '/about', label: 'Tentang Kami', icon: 'Info' },
     
   ]
 }
 
 export const ROLE_PERMISSIONS = {
-  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings'],
-  [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender'],
-  [ROLES.PIKET]: ['/', 'approval', 'profile'],
-  [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile']
+  [ROLES.ADMIN]: ['/', 'classroom', 'subjects', 'schedule', 'users', 'teacher', 'profile', 'statistics', 'kalender', 'approval', 'settings',  'about'],
+  [ROLES.KM]: ['presensi', 'riwayat-presensi', 'profile', 'kalender', 'about'],
+  [ROLES.PIKET]: ['/', 'approval', 'profile', 'about'],
+  [ROLES.KS]: ['/', 'statistics', 'kalender', 'profile', 'about']
 }
 
 export const ROLE_DEFAULT_ROUTES = {
