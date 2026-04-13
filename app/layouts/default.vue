@@ -220,6 +220,7 @@ import {
   CalendarCog,
   Settings,
   Info,
+  Send
 } from "lucide-vue-next";
 import { useAuthStore } from "~/stores/auth";
 import { getMenuByRole, getRoleLabel } from "~/utils/roles";
