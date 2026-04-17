@@ -130,7 +130,8 @@
                         ? 'border-green-500 bg-green-500'
                         : 'border-gray-300'
                     ]">
-                      <Check v-if="presensiData.statusKehadiran === 'Hadir'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
+                      <Check v-if="presensiData.statusKehadiran === 'Hadir'"
+                        class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Hadir</div>
@@ -153,7 +154,8 @@
                         ? 'border-red-500 bg-red-500'
                         : 'border-gray-300'
                     ]">
-                      <Check v-if="presensiData.statusKehadiran === 'Tidak Hadir'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
+                      <Check v-if="presensiData.statusKehadiran === 'Tidak Hadir'"
+                        class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Tidak Hadir</div>
@@ -183,7 +185,8 @@
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
                     ]">
-                      <Check v-if="presensiData.memberikanTugas === 'ya'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
+                      <Check v-if="presensiData.memberikanTugas === 'ya'"
+                        class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Ya, Ada Tugas</div>
@@ -206,7 +209,8 @@
                         ? 'border-gray-500 bg-gray-500'
                         : 'border-gray-300'
                     ]">
-                      <Check v-if="presensiData.memberikanTugas === 'tidak'" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
+                      <Check v-if="presensiData.memberikanTugas === 'tidak'"
+                        class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </div>
                     <div class="flex-1">
                       <div class="text-xs sm:text-sm font-medium text-gray-900">Tidak Ada Tugas</div>
@@ -221,8 +225,28 @@
               <label class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Bukti Foto <span class="text-red-500">*</span>
               </label>
-              <CameraCapture :existing-photo-url="previewImage" @captured="onPhotoCaptured" @removed="onPhotoRemoved"
-                @error="onPhotoError" />
+
+              <input type="file" accept="image/*" capture="environment" class="hidden" ref="cameraInputRef"
+                @change="onCameraInput" />
+
+              <div v-if="!previewImage" @click="cameraInputRef.click()"
+                class="flex flex-col items-center justify-center gap-3 py-8 sm:py-10 border-2 border-dashed border-gray-300 rounded-sm cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all">
+                <div class="bg-gray-100 rounded-full p-4">
+                  <Camera class="h-8 w-8 sm:h-10 sm:w-10 text-gray-400" />
+                </div>
+                <div class="text-center">
+                  <p class="text-sm sm:text-base font-medium text-gray-600">Tap untuk ambil foto</p>
+                  <p class="text-xs sm:text-sm text-gray-400 mt-0.5">Kamera akan langsung terbuka</p>
+                </div>
+              </div>
+
+              <div v-else class="relative">
+                <img :src="previewImage" class="w-full rounded-sm border border-gray-200 object-cover max-h-64" />
+                <button type="button" @click="onPhotoRemoved"
+                  class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                  <X class="h-3 w-3" />
+                </button>
+              </div>
             </div>
 
             <div>
@@ -282,10 +306,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { Check, X, RotateCcw, Loader2, Info } from 'lucide-vue-next'
+import { Check, X, RotateCcw, Loader2, Info, Camera } from 'lucide-vue-next'
 import { usePresensiStore } from '~/stores/presensi'
 import { useConfirm } from '~/composables/useConfirm'
-
 
 const route = useRoute()
 const router = useRouter()
@@ -312,6 +335,7 @@ const presensiData = ref({
 const previewImage = ref(null)
 const isSubmitting = ref(false)
 const alertRef = ref(null)
+const cameraInputRef = ref(null)
 
 const {
   alertType,
@@ -349,8 +373,6 @@ onMounted(async () => {
       router.push('/presensi')
       return
     }
-
-    // alasanReject.value = scheduleToday?.presensi?.alasan_reject || ''
 
     const jadwalResult = await presensiStore.getJadwalById(jadwalId)
     if (!jadwalResult.success) {
@@ -443,19 +465,17 @@ const canSubmit = computed(() => {
   return true
 })
 
-const onPhotoCaptured = (file, previewUrl) => {
+const onCameraInput = (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
   presensiData.value.foto = file
-  previewImage.value = previewUrl
+  previewImage.value = URL.createObjectURL(file)
 }
 
 const onPhotoRemoved = () => {
   presensiData.value.foto = null
   previewImage.value = null
-}
-
-const onPhotoError = (message) => {
-  showAlert('error', message)
-  scrollToAlert()
+  if (cameraInputRef.value) cameraInputRef.value.value = ''
 }
 
 const handleSubmit = async () => {
@@ -466,16 +486,16 @@ const handleSubmit = async () => {
   }
 
   if (getIsResubmitMode()) {
-  const confirmed = await confirm({
-    title: 'Kirim Ulang Presensi',
-    message: `Apakah Anda yakin ingin mengirim ulang presensi untuk mata pelajaran "${presensiData.value.namaMapel}"? Presensi akan kembali ke status Pending.`,
-    confirmText: 'Kirim Ulang',
-    cancelText: 'Batal',
-    type: 'resubmit',
-  })
+    const confirmed = await confirm({
+      title: 'Kirim Ulang Presensi',
+      message: `Apakah Anda yakin ingin mengirim ulang presensi untuk mata pelajaran "${presensiData.value.namaMapel}"? Presensi akan kembali ke status Pending.`,
+      confirmText: 'Kirim Ulang',
+      cancelText: 'Batal',
+      type: 'resubmit',
+    })
 
-  if (!confirmed) return
-}
+    if (!confirmed) return
+  }
 
   isSubmitting.value = true
   clearAlert()

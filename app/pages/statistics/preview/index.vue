@@ -111,7 +111,9 @@
           ══════════════════════════════════════ -->
           <div class="pdf-page">
             <div class="kop">
-              <div class="kop-logo">LOGO</div>
+              <div class="kop-logo">
+                <img src="/logo/logo.png" alt="Logo" class="kop-logo-img" />
+              </div>
               <div class="kop-center">
                 <div class="kop-instansi">PEMERINTAH DAERAH KABUPATEN BANDUNG BARAT</div>
                 <div class="kop-instansi">DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
@@ -1296,18 +1298,18 @@ onUnmounted(() => {
 }
 
 .kop-logo {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 2px solid #1e3a5f;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #1e3a5f;
-  text-align: center;
-  flex-shrink: 0;
+}
+
+.kop-logo-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 
 .kop-center {
