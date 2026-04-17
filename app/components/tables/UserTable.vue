@@ -80,6 +80,10 @@
                             <tr>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    No
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Nama
                                 </th>
                                 <th scope="col"
@@ -104,6 +108,9 @@
                             <template v-if="loading">
                                 <tr v-for="i in perPage" :key="'skeleton-' + i" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="h-5 w-8 bg-gray-200 rounded animate-pulse"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="h-5 w-26 sm:w-36 bg-gray-200 rounded animate-pulse"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -123,7 +130,7 @@
 
                             <template v-else-if="error">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12">
+                                    <td colspan="6" class="px-6 py-12">
                                         <div class="text-center">
                                             <p class="text-sm text-red-600">{{ error }}</p>
                                             <button @click="fetchUsers()"
@@ -146,7 +153,11 @@
                             </template>
 
                             <template v-else>
-                                <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition-colors">
+                                <tr v-for="(user, index) in users" :key="user.id"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ (page - 1) * perPage + index + 1 }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ user.name }}
                                     </td>

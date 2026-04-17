@@ -111,7 +111,9 @@
           ══════════════════════════════════════ -->
           <div class="pdf-page">
             <div class="kop">
-              <div class="kop-logo">LOGO</div>
+              <div class="kop-logo">
+                <img src="/logo/logo.png" alt="Logo" class="kop-logo-img" />
+              </div>
               <div class="kop-center">
                 <div class="kop-instansi">PEMERINTAH DAERAH KABUPATEN BANDUNG BARAT</div>
                 <div class="kop-instansi">DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
@@ -185,6 +187,13 @@
                       <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                       <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
                         {{ g.tidak_dipresensi }}
+                        <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+                          style="font-size:8px; color:#dc2626;">
+                          (semua ditolak)
+                        </span>
+                        <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+                          ({{ g.ditolak }} ditolak)
+                        </span>
                       </td>
                       <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                       <td class="tc">
@@ -224,6 +233,7 @@
                       </tbody>
                     </table>
                   </div>
+                  <!-- BARU -->
                   <div class="section">
                     <div class="section-title red-title">IV. TOP 10 KETIDAKHADIRAN</div>
                     <table class="rank-table">
@@ -231,17 +241,21 @@
                         <tr>
                           <th>#</th>
                           <th>Nama Guru</th>
-                          <th>Jml</th>
+                          <th>Murni</th>
+                          <th>+ Tugas</th>
+                          <th>Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="g in previewData.top_tidak_hadir" :key="g.nama_guru">
                           <td class="tc gray">{{ g.rank }}</td>
                           <td>{{ g.nama_guru }}</td>
+                          <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir_murni }}x</td>
+                          <td class="tc orange-txt">{{ g.total_tidak_hadir_tugas }}x</td>
                           <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir }}x</td>
                         </tr>
                         <tr v-if="previewData.top_tidak_hadir.length === 0">
-                          <td colspan="3" class="tc muted" style="padding:10px">—</td>
+                          <td colspan="5" class="tc muted" style="padding:10px">—</td>
                         </tr>
                       </tbody>
                     </table>
@@ -323,8 +337,15 @@
                         <td class="tc orange-txt">{{ g.tidak_hadir_tugas }}</td>
                         <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                         <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
-                          {{ g.tidak_dipresensi }}
-                        </td>
+  {{ g.tidak_dipresensi }}
+  <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+    style="font-size:8px; color:#dc2626;">
+    (semua ditolak)
+  </span>
+  <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+    ({{ g.ditolak }} ditolak)
+  </span>
+</td>
                         <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                         <td class="tc">
                           <span class="badge" :class="badgeClass(g.pct_hadir)">{{ badgeLabel(g.pct_hadir) }}</span>
@@ -379,6 +400,13 @@
                       <td class="tc red-txt">{{ g.tidak_hadir }}</td>
                       <td class="tc" :class="g.tidak_dipresensi > 0 ? 'orange-txt' : 'muted'">
                         {{ g.tidak_dipresensi }}
+                        <span v-if="g.ditolak > 0 && g.ditolak === g.tidak_dipresensi"
+                          style="font-size:8px; color:#dc2626;">
+                          (semua ditolak)
+                        </span>
+                        <span v-else-if="g.ditolak > 0" style="font-size:8px; color:#dc2626;">
+                          ({{ g.ditolak }} ditolak)
+                        </span>
                       </td>
                       <td class="tc bold-pct" :style="pctColor(g.pct_hadir)">{{ g.pct_hadir }}%</td>
                       <td class="tc">
@@ -413,6 +441,7 @@
                     </tbody>
                   </table>
                 </div>
+                <!-- GANTI BAGIAN INI di dalam template v-if="totalPages === 1" -->
                 <div class="section">
                   <div class="section-title red-title">IV. TOP 10 KETIDAKHADIRAN</div>
                   <table class="rank-table">
@@ -420,17 +449,21 @@
                       <tr>
                         <th>#</th>
                         <th>Nama Guru</th>
-                        <th>Jml</th>
+                        <th>Murni</th>
+                        <th>+ Tugas</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="g in previewData.top_tidak_hadir" :key="g.nama_guru">
                         <td class="tc gray">{{ g.rank }}</td>
                         <td>{{ g.nama_guru }}</td>
+                        <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir_murni }}x</td>
+                        <td class="tc orange-txt">{{ g.total_tidak_hadir_tugas }}x</td>
                         <td class="tc red-txt bold-pct">{{ g.total_tidak_hadir }}x</td>
                       </tr>
                       <tr v-if="previewData.top_tidak_hadir.length === 0">
-                        <td colspan="3" class="tc muted" style="padding:10px">—</td>
+                        <td colspan="5" class="tc muted" style="padding:10px">—</td>
                       </tr>
                     </tbody>
                   </table>
@@ -677,6 +710,7 @@ async function fetchPreviewData() {
     if (selectedKelas.value) params.id_kelas = selectedKelas.value
     const data = await apiFetch('/guru/preview-data', params)
     previewData.value = data
+
   } catch (err_) {
     error.value = err_.message || 'Gagal memuat data. Silakan coba lagi.'
     previewData.value = { ...EMPTY_DATA }
@@ -684,7 +718,6 @@ async function fetchPreviewData() {
     loading.value = false
   }
 }
-
 // ─────────────────────────────────────────────
 // Kelas — infinite scroll
 // ─────────────────────────────────────────────
@@ -1265,18 +1298,18 @@ onUnmounted(() => {
 }
 
 .kop-logo {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 2px solid #1e3a5f;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #1e3a5f;
-  text-align: center;
-  flex-shrink: 0;
+}
+
+.kop-logo-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 
 .kop-center {
@@ -1728,5 +1761,16 @@ onUnmounted(() => {
   .preview-main {
     padding: 16px 8px;
   }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(40%) sepia(10%) saturate(500%) hue-rotate(180deg);
+  cursor: pointer;
+  margin-left: -8px;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
 }
 </style>

@@ -172,14 +172,24 @@
           </div>
           <div v-for="item in belumPresensiList" :key="item.id"
             class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
-            <div class="w-1.5 h-8 rounded-full bg-red-200 flex-shrink-0"></div>
+
+            <!-- Ganti warna bar kalau ditolak -->
+            <div class="w-1.5 h-8 rounded-full flex-shrink-0" :class="item.ditolak ? 'bg-red-400' : 'bg-red-200'"></div>
+
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 truncate">{{ item.guru }}</p>
               <p class="text-xs text-gray-400 truncate">{{ item.mapel }} · {{ item.kelas }}</p>
             </div>
-            <p class="text-xs text-gray-400 flex-shrink-0 bg-gray-100 px-2 py-1 rounded-sm font-mono">
-              {{ item.jam }}
-            </p>
+
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <!-- Badge ditolak -->
+              <span v-if="item.ditolak" class="text-xs bg-red-100 text-red-500 font-medium px-2 py-0.5 rounded-full">
+                Ditolak
+              </span>
+              <p class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-sm font-mono">
+                {{ item.jam }}
+              </p>
+            </div>
           </div>
         </div>
 

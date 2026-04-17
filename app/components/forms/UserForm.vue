@@ -90,6 +90,15 @@
                                 ]">
                                     <span class="text-sm font-medium">Kepala Sekolah</span>
                                 </div>
+
+                                <div @click="formData.id_role = 5" :class="[
+                                    'cursor-pointer border rounded-sm px-4 py-2.5 text-center transition-all',
+                                    formData.id_role === 5
+                                        ? 'border-blue-500 bg-blue-500 text-white'
+                                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                                ]">
+                                    <span class="text-sm font-medium">Pengawas</span>
+                                </div>
                             </div>
                             <p class="mt-1.5 text-xs text-gray-500">Pilih role sesuai dengan tugas pengguna</p>
                         </div>
